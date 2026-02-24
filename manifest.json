@@ -1,0 +1,24 @@
+{
+    "name": "Finance Dashboard",
+    "short_name": "Finance",
+    "description": "Dashboard quản lý tài chính cá nhân thông minh",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#0a0a14",
+    "theme_color": "#0f0f1a",
+    "orientation": "portrait-primary",
+    "lang": "vi",
+    "icons": [
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "finance",
+        "productivity"
+    ]
+}

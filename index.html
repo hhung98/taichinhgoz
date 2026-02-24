@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Tài Chính Cá Nhân | Quản Lý Thu Chi KRW-VND</title>
+    <meta name="description"
+        content="Dashboard quản lý tài chính cá nhân thông minh: theo dõi thu nhập, chi tiêu, ngân sách 12 tháng, tỉ giá KRW/VND realtime.">
+    <meta name="keywords" content="quản lý tài chính, thu chi, ngân sách, KRW, VND, dashboard">
+    <meta name="author" content="Finance Tracker">
+    <meta name="theme-color" content="#0f0f1a" id="metaThemeColor">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
+    </script>
+</head>
+
+<body>
+    <!-- AUTH OVERLAY -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2 class="auth-logo">💰 Finance Dashboard</h2>
+                <p class="auth-subtitle">Đăng nhập để quản lý tài chính</p>
+            </div>
+            <form id="authForm" onsubmit="handleAuth(event)">
+                <div class="auth-field" id="nameField" style="display:none">
+                    <label>Họ tên</label>
+                    <input type="text" id="authName" placeholder="Nguyễn Văn A" autocomplete="name">
+                </div>
+                <div class="auth-field">
+                    <label>Email</label>
+                    <input type="email" id="authEmail" placeholder="email@example.com" required autocomplete="email">
+                </div>
+                <div class="auth-field">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="authPassword" placeholder="Tối thiểu 6 ký tự" required minlength="6"
+                        autocomplete="current-password">
+                </div>
+                <button type="submit" class="auth-btn primary" id="authSubmitBtn">🔑 Đăng nhập</button>
+            </form>
+            <div class="auth-divider"><span>hoặc</span></div>
+            <button class="auth-btn google" onclick="handleGoogleLogin()">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                    <path fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+                Đăng nhập với Google
+            </button>
+            <div class="auth-toggle">
+                <span id="authToggleText">Chưa có tài khoản?</span>
+                <button type="button" class="auth-link" onclick="toggleAuthMode()" id="authToggleBtn">Đăng ký</button>
+            </div>
+            <div class="auth-error" id="authError"></div>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Đang tải...</p>
+    </div>
+
+    <div class="app-wrapper" id="appWrapper" style="display:none">
+        <!-- HEADER -->
+        <header class="header" role="banner">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="logo">💰 Finance Dashboard</h1>
+                    <p class="subtitle">Quản lý thu nhập & chi tiêu thông minh</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-badge" id="userBadge">
+                        <span class="user-avatar" id="userAvatar">👤</span>
+                        <span class="user-name" id="userName"></span>
+                    </div>
+                    <button class="logout-btn" onclick="handleLogout()" title="Đăng xuất">
+                        <span class="logout-icon">⬅</span> Đăng xuất
+                    </button>
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Dark/Light Mode"
+                        aria-label="Chuyển theme">🌙</button>
+                    <div class="date-badge" id="currentDate"></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content" role="main">
+            <!-- EXCHANGE RATE BAR -->
+            <section class="exchange-bar" aria-label="Tỷ giá hối đoái">
+                <div class="exchange-bar-rate">
+                    <div class="exchange-bar-flag">🇰🇷 KRW → 🇻🇳 VND</div>
+                    <div class="exchange-bar-value" id="exchangeRateValue">Đang tải...</div>
+                    <div class="exchange-bar-sub" id="exchangeSubtext">1 KRW = ... VND</div>
+                    <div class="exchange-status live" id="exchangeStatus"><span class="pulse-dot"></span> Đang kết
+                        nối...</div>
+                </div>
+                <div class="exchange-bar-rate">
+                    <div class="exchange-bar-flag">🇺🇸 USD → 🇻🇳 VND</div>
+                    <div class="exchange-bar-value" id="usdRateValue">Đang tải...</div>
+                    <div class="exchange-bar-sub" id="usdSubtext">1 USD = ... VND</div>
+                </div>
+                <div class="exchange-bar-converter">
+                    <div class="converter-row">
+                        <span class="converter-label">🇰🇷 ₩</span>
+                        <input class="converter-input" type="number" id="krwInput" placeholder="Nhập KRW"
+                            oninput="convertFromKRW()">
+                    </div>
+                    <div class="converter-row">
+                        <span class="converter-label">🇻🇳 ₫</span>
+                        <input class="converter-input" type="number" id="vndInput" placeholder="Nhập VND"
+                            oninput="convertFromVND()">
+                    </div>
+                    <div class="converter-result" id="converterResult">Nhập số tiền để quy đổi</div>
+                </div>
+            </section>
+
+            <!-- SUMMARY CARDS -->
+            <section class="stats-section" aria-label="Tổng quan">
+                <div class="summary-grid">
+                    <article class="summary-card balance">
+                        <div class="card-icon">💎</div>
+                        <div class="card-label">Số dư hiện tại</div>
+                        <div class="card-value" id="totalBalance">0 ₫</div>
+                        <div class="card-sub" id="balanceKRW">≈ 0 ₩</div>
+                    </article>
+                    <article class="summary-card income">
+                        <div class="card-icon">📈</div>
+                        <div class="card-label">Tổng thu nhập</div>
+                        <div class="card-value" id="totalIncome">0 ₫</div>
+                        <div class="card-sub" id="incomeKRW">≈ 0 ₩</div>
+                    </article>
+                    <article class="summary-card expense">
+                        <div class="card-icon">📉</div>
+                        <div class="card-label">Tổng chi tiêu</div>
+                        <div class="card-value" id="totalExpense">0 ₫</div>
+                        <div class="card-sub" id="expenseKRW">≈ 0 ₩</div>
+                    </article>
+                    <article class="summary-card savings">
+                        <div class="card-icon">🎯</div>
+                        <div class="card-label">Tỉ lệ tiết kiệm</div>
+                        <div class="card-value" id="savingsRate">0%</div>
+                        <div class="card-sub" id="savingsLabel">--</div>
+                    </article>
+                    <article class="summary-card health" id="healthCard">
+                        <div class="card-icon" id="healthIcon">🏥</div>
+                        <div class="card-label">Sức khỏe tài chính</div>
+                        <div class="card-value health-score" id="healthScore">--</div>
+                        <div class="card-sub" id="healthLabel">Chưa có dữ liệu</div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- SAVINGS GOAL -->
+            <section class="panel savings-goal-panel" aria-label="Mục tiêu tiết kiệm">
+                <div class="panel-header">
+                    <h2 class="panel-title"><span class="icon">🎯</span> Mục tiêu tiết kiệm</h2>
+                </div>
+                <div id="savingsGoalContent">
+                    <div class="goal-form" id="goalForm">
+                        <input type="text" id="goalName" placeholder="Tên mục tiêu (VD: Mua laptop)" class="goal-input">
+                        <div class="goal-amount-wrapper">
+                            <input type="number" id="goalAmount" placeholder="Số tiền (₩ KRW)" class="goal-input"
+                                oninput="previewGoalVND()">
+                            <span class="goal-vnd-preview" id="goalVndPreview"></span>
+                        </div>
+                        <input type="number" id="goalMonths" placeholder="Số tháng" class="goal-input" min="1"
+                            max="120">
+                        <button onclick="addSavingsGoal()" class="goal-add-btn">➕ Thêm</button>
+                    </div>
+                    <div id="goalsList"></div>
+                </div>
+            </section>
+
+            <!-- 12-MONTH BUDGET TABLE -->
+            <section class="budget-section panel" aria-label="Bảng ngân sách 12 tháng">
+                <div class="panel-header">
+                    <h2 class="panel-title"><span class="icon">📅</span> Ngân Sách 12 Tháng</h2>
+                    <div class="year-selector">
+                        <button onclick="changeYear(-1)">◀</button>
+                        <span class="year-label" id="yearLabel">2026</span>
+                        <button onclick="changeYear(1)">▶</button>
+                    </div>
+                </div>
+
+                <!-- KRW Dashboard Summary above table -->
+                <div class="budget-dashboard" id="budgetDashboard">
+                    <div class="budget-dash-item income-dash">
+                        <span class="dash-label">📈 Tổng Thu nhập</span>
+                        <span class="dash-value" id="dashTotalIncome">0 ₩</span>
+                    </div>
+                    <div class="budget-dash-item expense-dash">
+                        <span class="dash-label">📉 Tổng Chi tiêu</span>
+                        <span class="dash-value" id="dashTotalExpense">0 ₩</span>
+                    </div>
+                    <div class="budget-dash-item balance-dash">
+                        <span class="dash-label">💰 Còn lại</span>
+                        <span class="dash-value" id="dashTotalBalance">0 ₩</span>
+                    </div>
+                    <div class="budget-dash-item savings-dash">
+                        <span class="dash-label">🎯 Tỉ lệ tiết kiệm</span>
+                        <span class="dash-value" id="dashSavingsRate">0%</span>
+                    </div>
+                </div>
+
+                <div class="budget-table-container">
+                    <table class="monthly-table">
+                        <thead>
+                            <tr>
+                                <th>Tháng</th>
+                                <th>Thu nhập<br><small class="th-pct green">₩ KRW</small></th>
+                                <th>Sinh hoạt<br><small class="th-pct blue">35%</small></th>
+                                <th>Dự phòng<br><small class="th-pct yellow">45%</small></th>
+                                <th>Đầu tư<br><small class="th-pct purple">20%</small></th>
+                                <th>Chi tiêu<br><small class="th-pct red">₩ KRW</small></th>
+                                <th>Còn lại</th>
+                                <th>Dư/Thiếu<br><small class="th-pct green">SH-CT</small></th>
+                            </tr>
+                        </thead>
+                        <tbody id="budgetTableBody"></tbody>
+                        <tfoot id="budgetTableFoot"></tfoot>
+                    </table>
+                </div>
+                <div class="table-legend">
+                    <div class="table-legend-item">
+                        <div class="table-legend-dot" style="background:#74b9ff"></div> Sinh hoạt 35%
+                    </div>
+                    <div class="table-legend-item">
+                        <div class="table-legend-dot" style="background:#ff9f43"></div> Dự phòng 45%
+                    </div>
+                    <div class="table-legend-item">
+                        <div class="table-legend-dot" style="background:#a29bfe"></div> Đầu tư 20%
+                    </div>
+                </div>
+
+                <!-- BUDGET OVERVIEW CHART -->
+                <div class="budget-chart-section">
+                    <h3 class="chart-title">📊 Biểu đồ tổng quan các tháng</h3>
+                    <div class="budget-chart-legend">
+                        <span class="chart-legend-item"><span class="legend-dot" style="background:#00b894"></span> Thu
+                            nhập</span>
+                        <span class="chart-legend-item"><span class="legend-dot" style="background:#e17055"></span> Chi
+                            tiêu</span>
+                        <span class="chart-legend-item"><span class="legend-dot" style="background:#0984e3"></span> Sinh
+                            hoạt</span>
+                        <span class="chart-legend-item"><span class="legend-dot" style="background:#fdcb6e"></span>
+                            Dư/Thiếu</span>
+                    </div>
+                    <div class="budget-chart-container" id="budgetOverviewChart"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer" role="contentinfo">
+            <p>💰 Finance Dashboard &copy; 2026 — goz ☁️</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="supabase.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
