@@ -856,6 +856,15 @@ body {
     color: var(--accent-red);
 }
 
+.cell-new-val {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--accent-teal);
+    opacity: 0.85;
+    margin-left: 2px;
+    white-space: nowrap;
+}
+
 .monthly-table tfoot td {
     font-weight: 700;
     border-top: 2px solid var(--border);
@@ -990,94 +999,16 @@ body {
 }
 
 .budget-chart-container {
-    display: flex;
-    gap: 6px;
-    align-items: flex-end;
     padding: 10px 0;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
-.chart-bar-group {
-    flex: 1;
-    min-width: 60px;
-    text-align: center;
-    padding: 4px 2px;
-    border-radius: var(--radius-xs);
-    transition: var(--transition);
-}
-
-.chart-bar-group:hover {
-    background: rgba(108, 92, 231, 0.06);
-}
-
-.chart-bar-group.current-month {
-    background: rgba(108, 92, 231, 0.1);
-    border: 1px solid rgba(108, 92, 231, 0.2);
-}
-
-.chart-bars {
-    display: flex;
-    gap: 2px;
-    align-items: flex-end;
-    justify-content: center;
-    height: 140px;
-}
-
-.chart-bar-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.bar-val {
-    font-size: 0.5rem;
-    color: var(--text-muted);
-    letter-spacing: -0.5px;
-    white-space: nowrap;
-}
-
-.chart-bar {
-    width: 10px;
-    border-radius: 3px 3px 0 0;
-    transition: height 0.5s ease;
-}
-
-.chart-bar.income-bar {
-    background: #00b894;
-}
-
-.chart-bar.expense-bar {
-    background: #e17055;
-}
-
-.chart-bar.living-bar {
-    background: #0984e3;
-}
-
-.chart-bar.surplus-bar {
-    background: #fdcb6e;
-}
-
-.chart-bar-label {
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    font-weight: 600;
-    margin-top: 6px;
-}
-
-@media (max-width: 768px) {
-    .budget-chart-container {
-        gap: 3px;
-    }
-
-    .chart-bar-group {
-        min-width: 45px;
-    }
-
-    .chart-bar {
-        width: 7px;
-    }
+.line-chart-svg {
+    width: 100%;
+    height: auto;
+    min-height: 200px;
+    display: block;
 }
 
 .empty-state {
@@ -1928,31 +1859,8 @@ body {
     }
 
     /* Chart mobile */
-    .budget-chart-container {
-        gap: 3px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 6px;
-    }
-
-    .chart-bar-group {
-        min-width: 42px;
-    }
-
-    .chart-bar {
-        width: 6px;
-    }
-
-    .chart-bars {
-        height: 100px;
-    }
-
-    .bar-val {
-        font-size: 0.42rem;
-    }
-
-    .chart-bar-label {
-        font-size: 0.58rem;
+    .line-chart-svg {
+        min-height: 180px;
     }
 
     .budget-chart-legend {

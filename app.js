@@ -74,7 +74,7 @@ async function showApp() {
     setDefaultDate();
     renderAll();
     fetchExchangeRate();
-    setInterval(fetchExchangeRate, 300000);
+    setInterval(fetchExchangeRate, 1980000);
     registerSW();
 }
 
@@ -204,7 +204,7 @@ async function fetchExchangeRate() {
             exchangeRate = parseFloat(krwData.rate);
             usdRate = parseFloat(usdData.rate);
             exchangeStatus = 'live';
-            updateRateUI(widget, statusEl, usdWidget, usdSubtext, 'Realtime ~5p');
+            updateRateUI(widget, statusEl, usdWidget, usdSubtext, 'Realtime ~33p');
             return;
         }
         throw new Error(krwData.message || 'Twelve Data error');
@@ -224,7 +224,7 @@ async function fetchExchangeRate() {
         exchangeRate = krwData.rates.VND;
         usdRate = usdData.rates.VND;
         exchangeStatus = 'live';
-        updateRateUI(widget, statusEl, usdWidget, usdSubtext, 'Live ~5p');
+        updateRateUI(widget, statusEl, usdWidget, usdSubtext, 'Live ~33p');
         return;
     } catch (e) {
         console.log('ExchangeRate-API failed:', e.message);
@@ -454,21 +454,28 @@ function renderMonthlyBudgetTable() {
     if (!tbody || !tfoot) return;
     const rate = exchangeRate || 18.5;
     let tI = 0, tL = 0, tR = 0, tV = 0, tE = 0, tS = 0;
+    let tRnew = 0, tVnew = 0;
     let rows = '';
     for (let m = 0; m < 12; m++) {
         const key = getBudgetKey(budgetYear, m), data = monthlyBudget[key] || {};
         const inc = Number(data.income || 0), exp = Number(data.expense || 0);
         const living = Math.round(inc * 0.35), reserve = Math.round(inc * 0.45), invest = Math.round(inc * 0.20);
         const balance = inc - exp, surplus = living - exp;
+        const reserveFromBalance = Math.round(balance * 0.45);
+        const investFromBalance = Math.round(balance * 0.20);
         tI += inc; tL += living; tR += reserve; tV += invest; tE += exp; tS += surplus;
+        tRnew += (inc || exp) ? reserveFromBalance : 0;
+        tVnew += (inc || exp) ? investFromBalance : 0;
         const bC = balance >= 0 ? 'positive' : 'negative', sC = surplus >= 0 ? 'positive' : 'negative';
         const isCurrent = budgetYear === new Date().getFullYear() && m === new Date().getMonth();
+        const reserveDisplay = inc ? `${fmtFull(reserve)}<span class="cell-new-val">/ ${fmtFull(reserveFromBalance)}</span>` : '-';
+        const investDisplay = inc ? `${fmtFull(invest)}<span class="cell-new-val">/ ${fmtFull(investFromBalance)}</span>` : '-';
         rows += `<tr${isCurrent ? ' style="background:rgba(108,92,231,0.08);"' : ''}>
             <td>${MONTHS[m]}</td>
             <td><input class="income-input" type="number" value="${inc || ''}" placeholder="₩" onchange="onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-living">${inc ? fmtFull(living) : '-'}</td>
-            <td class="cell-reserve">${inc ? fmtFull(reserve) : '-'}</td>
-            <td class="cell-invest">${inc ? fmtFull(invest) : '-'}</td>
+            <td class="cell-reserve">${reserveDisplay}</td>
+            <td class="cell-invest">${investDisplay}</td>
             <td><input class="expense-input" type="number" value="${exp || ''}" placeholder="₩" onchange="onExpenseInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-balance ${bC}">${inc || exp ? fmtFull(balance) : '-'}</td>
             <td class="cell-surplus ${sC}">${inc || exp ? fmtFull(surplus) : '-'}</td>
@@ -480,8 +487,8 @@ function renderMonthlyBudgetTable() {
         <td><strong>Tổng ₩</strong></td>
         <td style="color:var(--accent-green);font-weight:700;text-align:center;">${fmtFull(tI)}</td>
         <td class="cell-living">${fmtFull(tL)}</td>
-        <td class="cell-reserve">${fmtFull(tR)}</td>
-        <td class="cell-invest">${fmtFull(tV)}</td>
+        <td class="cell-reserve">${fmtFull(tR)}<span class="cell-new-val">/ ${fmtFull(tRnew)}</span></td>
+        <td class="cell-invest">${fmtFull(tV)}<span class="cell-new-val">/ ${fmtFull(tVnew)}</span></td>
         <td style="color:var(--accent-red);font-weight:700;text-align:center;">${fmtFull(tE)}</td>
         <td class="cell-balance ${bC}">${fmtFull(tB)}</td>
         <td class="cell-surplus ${sC}">${fmtFull(tS)}</td>
@@ -490,65 +497,147 @@ function renderMonthlyBudgetTable() {
         <td><strong>Tổng ₫</strong></td>
         <td style="color:var(--accent-green);text-align:center;">${fmtFull(Math.round(tI * rate))}</td>
         <td class="cell-living">${fmtFull(Math.round(tL * rate))}</td>
-        <td class="cell-reserve">${fmtFull(Math.round(tR * rate))}</td>
-        <td class="cell-invest">${fmtFull(Math.round(tV * rate))}</td>
+        <td class="cell-reserve">${fmtFull(Math.round(tR * rate))}<span class="cell-new-val">/ ${fmtFull(Math.round(tRnew * rate))}</span></td>
+        <td class="cell-invest">${fmtFull(Math.round(tV * rate))}<span class="cell-new-val">/ ${fmtFull(Math.round(tVnew * rate))}</span></td>
         <td style="color:var(--accent-red);text-align:center;">${fmtFull(Math.round(tE * rate))}</td>
         <td class="cell-balance ${bC}">${fmtFull(Math.round(tB * rate))}</td>
         <td class="cell-surplus ${sC}">${fmtFull(Math.round(tS * rate))}</td>
     </tr>`;
 }
 
-// ===== Budget Overview Chart =====
+// ===== Budget Overview Line Chart =====
 function renderBudgetOverviewChart() {
     const container = document.getElementById('budgetOverviewChart');
     if (!container) return;
     const labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
-    const data = [];
+    const series = { income: [], living: [], expense: [], balance: [], reserve: [], invest: [] };
     let hasData = false;
     for (let m = 0; m < 12; m++) {
         const key = getBudgetKey(budgetYear, m), bd = monthlyBudget[key] || {};
         const inc = Number(bd.income || 0), exp = Number(bd.expense || 0);
         const living = Math.round(inc * 0.35);
-        const surplus = living - exp;
+        const reserve = Math.round(inc * 0.45);
+        const invest = Math.round(inc * 0.20);
+        const bal = inc - exp;
         if (inc || exp) hasData = true;
-        data.push({ label: labels[m], income: inc, expense: exp, living, surplus });
+        series.income.push(inc);
+        series.living.push(living);
+        series.expense.push(exp);
+        series.balance.push(bal);
+        series.reserve.push(reserve);
+        series.invest.push(invest);
     }
     if (!hasData) {
         container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>Nhập dữ liệu để xem biểu đồ</p></div>';
         return;
     }
-    const mx = Math.max(...data.flatMap(d => [d.income, d.expense, d.living, Math.abs(d.surplus)]), 1);
-    const isCurrent = (m) => budgetYear === new Date().getFullYear() && m === new Date().getMonth();
-    container.innerHTML = data.map((d, i) => {
-        const incH = Math.max((d.income / mx) * 120, d.income ? 4 : 0);
-        const expH = Math.max((d.expense / mx) * 120, d.expense ? 4 : 0);
-        const livH = Math.max((d.living / mx) * 120, d.living ? 4 : 0);
-        const hasSurplus = d.income || d.expense;
-        const surH = hasSurplus ? Math.max((Math.abs(d.surplus) / mx) * 120, 4) : 0;
-        const surColor = d.surplus >= 0 ? '#fdcb6e' : '#d63031';
-        const current = isCurrent(i) ? ' current-month' : '';
-        return `<div class="chart-bar-group${current}">
-            <div class="chart-bars">
-                <div class="chart-bar-wrapper">
-                    <span class="bar-val">${d.income ? fmtCompact(d.income) : ''}</span>
-                    <div class="chart-bar income-bar" style="height:${incH}px" title="Thu: ${fmtKRW(d.income)}"></div>
-                </div>
-                <div class="chart-bar-wrapper">
-                    <span class="bar-val">${d.expense ? fmtCompact(d.expense) : ''}</span>
-                    <div class="chart-bar expense-bar" style="height:${expH}px" title="Chi: ${fmtKRW(d.expense)}"></div>
-                </div>
-                <div class="chart-bar-wrapper">
-                    <span class="bar-val">${d.living ? fmtCompact(d.living) : ''}</span>
-                    <div class="chart-bar living-bar" style="height:${livH}px" title="SH: ${fmtKRW(d.living)}"></div>
-                </div>
-                <div class="chart-bar-wrapper">
-                    <span class="bar-val" style="color:${surColor}">${d.surplus ? fmtCompact(d.surplus) : ''}</span>
-                    <div class="chart-bar surplus-bar" style="height:${surH}px;background:${surColor}" title="Dư/Thiếu: ${fmtKRW(d.surplus)}"></div>
-                </div>
-            </div>
-            <div class="chart-bar-label">${d.label}</div>
-        </div>`;
-    }).join('');
+
+    // Chart dimensions
+    const W = 900, H = 340;
+    const pad = { top: 25, right: 20, bottom: 35, left: 55 };
+    const cW = W - pad.left - pad.right;
+    const cH = H - pad.top - pad.bottom;
+
+    // Find max value for Y axis
+    const allVals = [...series.income, ...series.living, ...series.expense, ...series.balance, ...series.reserve, ...series.invest];
+    const maxVal = Math.max(...allVals, 1);
+    const niceMax = getNiceMax(maxVal);
+
+    // Helper functions
+    function getNiceMax(v) {
+        if (v <= 0) return 100;
+        const mag = Math.pow(10, Math.floor(Math.log10(v)));
+        const norm = v / mag;
+        if (norm <= 1.5) return 1.5 * mag;
+        if (norm <= 2) return 2 * mag;
+        if (norm <= 3) return 3 * mag;
+        if (norm <= 5) return 5 * mag;
+        if (norm <= 7.5) return 7.5 * mag;
+        return 10 * mag;
+    }
+    function xPos(i) { return pad.left + (i / 11) * cW; }
+    function yPos(v) { return pad.top + cH - (v / niceMax) * cH; }
+
+    // Build gridlines
+    const gridLines = 5;
+    let gridSvg = '';
+    for (let i = 0; i <= gridLines; i++) {
+        const val = Math.round((niceMax / gridLines) * i);
+        const y = yPos(val);
+        gridSvg += `<line x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4,3"/>`;
+        gridSvg += `<text x="${pad.left - 8}" y="${y + 4}" text-anchor="end" fill="var(--text-muted)" font-size="10" font-family="Inter,sans-serif">${fmtCompact(val)}</text>`;
+    }
+
+    // X axis labels
+    let xLabels = '';
+    for (let i = 0; i < 12; i++) {
+        const x = xPos(i);
+        xLabels += `<text x="${x}" y="${H - 8}" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-weight="600" font-family="Inter,sans-serif">${labels[i]}</text>`;
+    }
+
+    // Line series config
+    const lineConfig = [
+        { key: 'income', color: '#4a90d9', width: 2.5, dash: '', fill: true },
+        { key: 'living', color: '#e74c3c', width: 2, dash: '', fill: false },
+        { key: 'expense', color: '#8e44ad', width: 2, dash: '6,3', fill: false },
+        { key: 'balance', color: '#27ae60', width: 2, dash: '4,2', fill: false },
+        { key: 'reserve', color: '#f39c12', width: 1.8, dash: '3,3', fill: false },
+        { key: 'invest', color: '#00cec9', width: 1.8, dash: '3,3', fill: false },
+    ];
+
+    let linesSvg = '';
+    let dotsSvg = '';
+    let labelsSvg = '';
+
+    lineConfig.forEach(cfg => {
+        const vals = series[cfg.key];
+        // Build path
+        let points = [];
+        for (let i = 0; i < 12; i++) {
+            points.push(`${xPos(i).toFixed(1)},${yPos(vals[i]).toFixed(1)}`);
+        }
+        const pathD = 'M' + points.join('L');
+
+        // Fill area (only for income)
+        if (cfg.fill) {
+            const fillD = pathD + `L${xPos(11).toFixed(1)},${yPos(0).toFixed(1)}L${xPos(0).toFixed(1)},${yPos(0).toFixed(1)}Z`;
+            linesSvg += `<path d="${fillD}" fill="${cfg.color}" fill-opacity="0.08"/>`;
+        }
+
+        // Line
+        linesSvg += `<path d="${pathD}" fill="none" stroke="${cfg.color}" stroke-width="${cfg.width}" stroke-dasharray="${cfg.dash}" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+        // Dots and labels
+        for (let i = 0; i < 12; i++) {
+            if (vals[i] === 0 && !series.income[i] && !series.expense[i]) continue;
+            const x = xPos(i), y = yPos(vals[i]);
+            dotsSvg += `<circle cx="${x}" cy="${y}" r="3.5" fill="${cfg.color}" stroke="var(--bg-card)" stroke-width="1.5"/>`;
+            // Show value labels for key series
+            if (cfg.key === 'income' || cfg.key === 'expense' || cfg.key === 'balance') {
+                if (vals[i] !== 0) {
+                    const labelY = cfg.key === 'income' ? y - 10 : (cfg.key === 'balance' ? y + 15 : y - 10);
+                    labelsSvg += `<text x="${x}" y="${labelY}" text-anchor="middle" fill="${cfg.color}" font-size="9" font-weight="600" font-family="Inter,sans-serif">${fmtCompact(vals[i])}</text>`;
+                }
+            }
+        }
+    });
+
+    // Current month indicator
+    const curMonth = new Date().getMonth();
+    let curMonthSvg = '';
+    if (budgetYear === new Date().getFullYear()) {
+        const cx = xPos(curMonth);
+        curMonthSvg = `<line x1="${cx}" y1="${pad.top}" x2="${cx}" y2="${pad.top + cH}" stroke="var(--accent-primary)" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>`;
+    }
+
+    container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" class="line-chart-svg">
+        ${gridSvg}
+        ${xLabels}
+        ${curMonthSvg}
+        ${linesSvg}
+        ${dotsSvg}
+        ${labelsSvg}
+    </svg>`;
 }
 
 // ===== Toast =====
