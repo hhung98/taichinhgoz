@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finance-dashboard-v14';
+const CACHE_NAME = 'finance-dashboard-v15';
 const ASSETS = [
     'index.html',
     'style.css',

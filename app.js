@@ -508,8 +508,8 @@ function updateRowInline(month) {
     const inc = Number(data.income || 0), exp = Number(data.expense || 0);
     const living = Math.round(inc * 0.40), reserve = Math.round(inc * 0.40), invest = Math.round(inc * 0.20);
     const balance = inc - exp, surplus = living - exp;
-    const reserveFromBalance = Math.round(balance * 0.40);
-    const investFromBalance = Math.round(balance * 0.20);
+    const reserveFromBalance = Math.round(balance * (2/3));
+    const investFromBalance = balance - reserveFromBalance;
     const bC = balance >= 0 ? 'positive' : 'negative', sC = surplus >= 0 ? 'positive' : 'negative';
     const reserveDisplay = inc ? `${fmtFull(reserve)}<span class="cell-new-val">/ ${fmtFull(reserveFromBalance)}</span>` : '-';
     const investDisplay = inc ? `${fmtFull(invest)}<span class="cell-new-val">/ ${fmtFull(investFromBalance)}</span>` : '-';
@@ -537,8 +537,8 @@ function updateTableFooter() {
         const inc = Number(data.income || 0), exp = Number(data.expense || 0);
         const living = Math.round(inc * 0.40), reserve = Math.round(inc * 0.40), invest = Math.round(inc * 0.20);
         const balance = inc - exp, surplus = living - exp;
-        const reserveFromBalance = Math.round(balance * 0.40);
-        const investFromBalance = Math.round(balance * 0.20);
+        const reserveFromBalance = Math.round(balance * (2/3));
+        const investFromBalance = balance - reserveFromBalance;
         tI += inc; tL += living; tR += reserve; tV += invest; tE += exp; tS += surplus;
         tRnew += (inc || exp) ? reserveFromBalance : 0;
         tVnew += (inc || exp) ? investFromBalance : 0;
@@ -590,8 +590,8 @@ function renderMonthlyBudgetTable() {
         const inc = Number(data.income || 0), exp = Number(data.expense || 0);
         const living = Math.round(inc * 0.40), reserve = Math.round(inc * 0.40), invest = Math.round(inc * 0.20);
         const balance = inc - exp, surplus = living - exp;
-        const reserveFromBalance = Math.round(balance * 0.40);
-        const investFromBalance = Math.round(balance * 0.20);
+        const reserveFromBalance = Math.round(balance * (2/3));
+        const investFromBalance = balance - reserveFromBalance;
         tI += inc; tL += living; tR += reserve; tV += invest; tE += exp; tS += surplus;
         tRnew += (inc || exp) ? reserveFromBalance : 0;
         tVnew += (inc || exp) ? investFromBalance : 0;
