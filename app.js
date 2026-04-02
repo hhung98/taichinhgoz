@@ -449,7 +449,7 @@ function renderSavingsGoals() {
     const container = document.getElementById('goalsList');
     if (!container) return;
     if (!savingsGoals.length) { container.innerHTML = ''; return; }
-    const { balanceKRW } = getBudgetTotals();
+    const { balanceKRW } = getAllTimeTotals();
     const balance = Math.round(balanceKRW * (exchangeRate || 18.5));
     const r = exchangeRate || 18.5;
 
