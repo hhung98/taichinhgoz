@@ -2217,3 +2217,95 @@ body {
         display: none;
     }
 }
+
+/* ===== Chart Zoom Button ===== */
+.chart-zoom-btn {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    color: var(--text-secondary);
+    font-size: 1rem;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.chart-zoom-btn:hover {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary-glow);
+    transform: scale(1.05);
+}
+
+.budget-chart-container {
+    cursor: pointer;
+}
+
+/* ===== Chart Fullscreen Overlay ===== */
+.chart-fullscreen-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.92);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+}
+
+.chart-fullscreen-overlay.active {
+    display: flex;
+}
+
+.chart-fs-close {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.chart-fs-close:hover {
+    background: rgba(255, 107, 107, 0.4);
+    border-color: rgba(255, 107, 107, 0.6);
+    transform: scale(1.1);
+}
+
+.chart-fs-content {
+    width: 95vw;
+    max-width: 1200px;
+    max-height: 85vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.chart-fs-content svg {
+    width: 100%;
+    height: auto;
+    min-height: 300px;
+}
+
+@media (max-width: 768px) {
+    .chart-fs-content {
+        width: 98vw;
+        max-height: 90vh;
+    }
+
+    .chart-fs-content svg {
+        min-height: 250px;
+    }
+}

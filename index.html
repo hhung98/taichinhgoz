@@ -128,6 +128,11 @@
                         <input class="converter-input" type="number" id="vndInput" placeholder="Nhập VND"
                             oninput="convertFromVND()">
                     </div>
+                    <div class="converter-row">
+                        <span class="converter-label">🇺🇸 $</span>
+                        <input class="converter-input" type="number" id="usdInput" placeholder="Nhập USD"
+                            oninput="convertFromUSD()">
+                    </div>
                     <div class="converter-result" id="converterResult">Nhập số tiền để quy đổi</div>
                 </div>
             </section>
@@ -226,8 +231,8 @@
                             <tr>
                                 <th>Tháng</th>
                                 <th>Thu nhập<br><small class="th-pct green">₩ KRW</small></th>
-                                <th>Sinh hoạt<br><small class="th-pct blue">35%</small></th>
-                                <th>Dự phòng<br><small class="th-pct yellow">45%</small></th>
+                                <th>Sinh hoạt<br><small class="th-pct blue">40%</small></th>
+                                <th>Dự phòng<br><small class="th-pct yellow">40%</small></th>
                                 <th>Đầu tư<br><small class="th-pct purple">20%</small></th>
                                 <th>Chi tiêu<br><small class="th-pct red">₩ KRW</small></th>
                                 <th>Còn lại</th>
@@ -240,10 +245,10 @@
                 </div>
                 <div class="table-legend">
                     <div class="table-legend-item">
-                        <div class="table-legend-dot" style="background:#74b9ff"></div> Sinh hoạt 35%
+                        <div class="table-legend-dot" style="background:#74b9ff"></div> Sinh hoạt 40%
                     </div>
                     <div class="table-legend-item">
-                        <div class="table-legend-dot" style="background:#ff9f43"></div> Dự phòng 45%
+                        <div class="table-legend-dot" style="background:#ff9f43"></div> Dự phòng 40%
                     </div>
                     <div class="table-legend-item">
                         <div class="table-legend-dot" style="background:#a29bfe"></div> Đầu tư 20%
@@ -252,22 +257,25 @@
 
                 <!-- BUDGET OVERVIEW CHART -->
                 <div class="budget-chart-section">
-                    <h3 class="chart-title">📊 Biểu đồ tổng quan các tháng</h3>
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <h3 class="chart-title">📊 Biểu đồ tổng quan các tháng</h3>
+                        <button class="chart-zoom-btn" onclick="openChartFullscreen()" title="Phóng to">🔍</button>
+                    </div>
                     <div class="budget-chart-legend">
                         <span class="chart-legend-item"><span class="legend-dot" style="background:#4a90d9"></span> Thu
                             nhập</span>
                         <span class="chart-legend-item"><span class="legend-dot" style="background:#e74c3c"></span> Sinh
-                            hoạt 35%</span>
+                            hoạt 40%</span>
                         <span class="chart-legend-item"><span class="legend-dot" style="background:#8e44ad"></span> Chi
                             tiêu</span>
                         <span class="chart-legend-item"><span class="legend-dot" style="background:#27ae60"></span> Còn
                             lại</span>
                         <span class="chart-legend-item"><span class="legend-dot" style="background:#f39c12"></span> Dự
-                            phòng 45%</span>
+                            phòng 40%</span>
                         <span class="chart-legend-item"><span class="legend-dot" style="background:#00cec9"></span> Đầu
                             tư 20%</span>
                     </div>
-                    <div class="budget-chart-container" id="budgetOverviewChart"></div>
+                    <div class="budget-chart-container" id="budgetOverviewChart" onclick="openChartFullscreen()"></div>
                 </div>
             </section>
         </main>
@@ -275,6 +283,11 @@
         <footer class="footer" role="contentinfo">
             <p>💰 Finance Dashboard &copy; 2026 — goz ☁️</p>
         </footer>
+    </div>
+
+    <div class="chart-fullscreen-overlay" id="chartFullscreen" onclick="closeChartFullscreen(event)">
+        <button class="chart-fs-close" onclick="closeChartFullscreen()">✕</button>
+        <div class="chart-fs-content" id="chartFullscreenContent"></div>
     </div>
 
     <div class="toast" id="toast"></div>

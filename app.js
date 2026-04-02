@@ -237,14 +237,50 @@ async function fetchExchangeRate() {
     statusEl.innerHTML = '⚡ Offline'; statusEl.className = 'exchange-status offline';
 }
 
-function convertFromKRW() { if (!exchangeRate) return; const krw = parseFloat(document.getElementById('krwInput').value) || 0; document.getElementById('converterResult').textContent = fmtVND(Math.round(krw * exchangeRate)) + ' (VND)'; }
-function convertFromVND() { if (!exchangeRate) return; const vnd = parseFloat(document.getElementById('vndInput').value) || 0; document.getElementById('converterResult').textContent = fmtKRW(Math.round(vnd / exchangeRate)) + ' (KRW)'; }
+function convertFromKRW() {
+    const r = exchangeRate || 18.5, u = usdRate || 25500;
+    const krw = parseFloat(document.getElementById('krwInput').value) || 0;
+    document.getElementById('vndInput').value = '';
+    document.getElementById('usdInput').value = '';
+    if (!krw) { document.getElementById('converterResult').textContent = 'Nhập số tiền để quy đổi'; return; }
+    const vnd = Math.round(krw * r);
+    const usd = (krw * r / u).toFixed(2);
+    document.getElementById('converterResult').innerHTML = '🇻🇳 ' + fmtVND(vnd) + '&nbsp;&nbsp;|&nbsp;&nbsp;🇺🇸 $' + fmtFull(parseFloat(usd));
+}
+function convertFromVND() {
+    const r = exchangeRate || 18.5, u = usdRate || 25500;
+    const vnd = parseFloat(document.getElementById('vndInput').value) || 0;
+    document.getElementById('krwInput').value = '';
+    document.getElementById('usdInput').value = '';
+    if (!vnd) { document.getElementById('converterResult').textContent = 'Nhập số tiền để quy đổi'; return; }
+    const krw = Math.round(vnd / r);
+    const usd = (vnd / u).toFixed(2);
+    document.getElementById('converterResult').innerHTML = '🇰🇷 ' + fmtKRW(krw) + '&nbsp;&nbsp;|&nbsp;&nbsp;🇺🇸 $' + fmtFull(parseFloat(usd));
+}
+function convertFromUSD() {
+    const r = exchangeRate || 18.5, u = usdRate || 25500;
+    const usd = parseFloat(document.getElementById('usdInput').value) || 0;
+    document.getElementById('krwInput').value = '';
+    document.getElementById('vndInput').value = '';
+    if (!usd) { document.getElementById('converterResult').textContent = 'Nhập số tiền để quy đổi'; return; }
+    const vnd = Math.round(usd * u);
+    const krw = Math.round(usd * u / r);
+    document.getElementById('converterResult').innerHTML = '🇰🇷 ' + fmtKRW(krw) + '&nbsp;&nbsp;|&nbsp;&nbsp;🇻🇳 ' + fmtVND(vnd);
+}
 
 function renderAll() {
     renderSummary();
     renderBudgetHealth();
     renderSavingsGoals();
     renderMonthlyBudgetTable();
+    renderBudgetDashboard();
+    renderBudgetOverviewChart();
+}
+
+function renderWithoutTable() {
+    renderSummary();
+    renderBudgetHealth();
+    renderSavingsGoals();
     renderBudgetDashboard();
     renderBudgetOverviewChart();
 }
@@ -263,7 +299,19 @@ function fmtCompact(a) {
 function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 // ===== Helper: get budget totals =====
-function getBudgetTotals() {
+function getBudgetTotals(year) {
+    const y = year || budgetYear;
+    let incKRW = 0, expKRW = 0;
+    for (let m = 0; m < 12; m++) {
+        const key = getBudgetKey(y, m);
+        const b = monthlyBudget[key] || {};
+        incKRW += Number(b.income || 0);
+        expKRW += Number(b.expense || 0);
+    }
+    return { incKRW, expKRW, balanceKRW: incKRW - expKRW };
+}
+
+function getAllTimeTotals() {
     let incKRW = 0, expKRW = 0;
     Object.values(monthlyBudget).forEach(b => {
         incKRW += Number(b.income || 0);
@@ -276,7 +324,7 @@ function getBudgetTotals() {
 function renderSummary() {
     const r = exchangeRate || 18.5;
     const u = usdRate || 25500;
-    const { incKRW, expKRW, balanceKRW } = getBudgetTotals();
+    const { incKRW, expKRW, balanceKRW } = getAllTimeTotals();
     const income = Math.round(incKRW * r);
     const expense = Math.round(expKRW * r);
     const balance = income - expense;
@@ -297,7 +345,16 @@ function renderSummary() {
     else sl.textContent = '--';
 }
 
-function animateVal(id, val) { const el = document.getElementById(id); if (!el) return; el.style.transform = 'scale(0.95)'; el.style.opacity = '0.7'; setTimeout(() => { el.textContent = val; el.style.transform = 'scale(1)'; el.style.opacity = '1'; }, 150); }
+function animateVal(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.textContent === val) return;
+    el.style.transform = 'scale(0.97)';
+    el.textContent = val;
+    requestAnimationFrame(() => {
+        el.style.transform = 'scale(1)';
+    });
+}
 
 // ===== Budget KRW Dashboard (above table) =====
 function renderBudgetDashboard() {
@@ -326,7 +383,7 @@ function renderBudgetHealth() {
     if (!income && !expense) { scoreEl.textContent = '--'; labelEl.textContent = 'Chưa có dữ liệu'; iconEl.textContent = '🏥'; return; }
     const sr = income > 0 ? (income - expense) / income : 0;
     const now = new Date(), ck = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const cb = monthlyBudget[ck] || {}, cl = Math.round(Number(cb.income || 0) * 0.35), ce = Number(cb.expense || 0);
+    const cb = monthlyBudget[ck] || {}, cl = Math.round(Number(cb.income || 0) * 0.40), ce = Number(cb.expense || 0);
     const ba = cl > 0 ? Math.max(0, 1 - (ce / cl - 1)) : 1;
     let score = Math.max(0, Math.min(100, Math.round(sr * 60 + ba * 40)));
     let grade, label, icon, color;
@@ -419,13 +476,15 @@ function renderSavingsGoals() {
 // ===== Budget Table =====
 function getBudgetKey(y, m) { return `${y}-${String(m + 1).padStart(2, '0')}`; }
 
-function changeYear(delta) { budgetYear += delta; document.getElementById('yearLabel').textContent = budgetYear; renderMonthlyBudgetTable(); renderBudgetDashboard(); renderBudgetOverviewChart(); }
+function changeYear(delta) { budgetYear += delta; document.getElementById('yearLabel').textContent = budgetYear; renderAll(); }
 
 function onIncomeInput(month, value) {
     const key = getBudgetKey(budgetYear, month);
     if (!monthlyBudget[key]) monthlyBudget[key] = {};
     monthlyBudget[key].income = parseInt(value) || 0;
-    renderAll();
+    updateRowInline(month);
+    renderWithoutTable();
+    updateTableFooter();
     debounceSaveBudget(budgetYear, month, monthlyBudget[key].income, monthlyBudget[key].expense || 0);
 }
 
@@ -433,8 +492,78 @@ function onExpenseInput(month, value) {
     const key = getBudgetKey(budgetYear, month);
     if (!monthlyBudget[key]) monthlyBudget[key] = {};
     monthlyBudget[key].expense = parseInt(value) || 0;
-    renderAll();
+    updateRowInline(month);
+    renderWithoutTable();
+    updateTableFooter();
     debounceSaveBudget(budgetYear, month, monthlyBudget[key].income || 0, monthlyBudget[key].expense);
+}
+
+function updateRowInline(month) {
+    const tbody = document.getElementById('budgetTableBody');
+    if (!tbody) return;
+    const row = tbody.rows[month];
+    if (!row) return;
+    const key = getBudgetKey(budgetYear, month);
+    const data = monthlyBudget[key] || {};
+    const inc = Number(data.income || 0), exp = Number(data.expense || 0);
+    const living = Math.round(inc * 0.40), reserve = Math.round(inc * 0.40), invest = Math.round(inc * 0.20);
+    const balance = inc - exp, surplus = living - exp;
+    const reserveFromBalance = Math.round(balance * 0.40);
+    const investFromBalance = Math.round(balance * 0.20);
+    const bC = balance >= 0 ? 'positive' : 'negative', sC = surplus >= 0 ? 'positive' : 'negative';
+    const reserveDisplay = inc ? `${fmtFull(reserve)}<span class="cell-new-val">/ ${fmtFull(reserveFromBalance)}</span>` : '-';
+    const investDisplay = inc ? `${fmtFull(invest)}<span class="cell-new-val">/ ${fmtFull(investFromBalance)}</span>` : '-';
+    // Update cells (skip col 0=month, 1=income input, 5=expense input)
+    row.cells[2].innerHTML = inc ? fmtFull(living) : '-';
+    row.cells[2].className = 'cell-living';
+    row.cells[3].innerHTML = reserveDisplay;
+    row.cells[3].className = 'cell-reserve';
+    row.cells[4].innerHTML = investDisplay;
+    row.cells[4].className = 'cell-invest';
+    row.cells[6].innerHTML = inc || exp ? fmtFull(balance) : '-';
+    row.cells[6].className = `cell-balance ${bC}`;
+    row.cells[7].innerHTML = inc || exp ? fmtFull(surplus) : '-';
+    row.cells[7].className = `cell-surplus ${sC}`;
+}
+
+function updateTableFooter() {
+    const tfoot = document.getElementById('budgetTableFoot');
+    if (!tfoot) return;
+    const rate = exchangeRate || 18.5;
+    let tI = 0, tL = 0, tR = 0, tV = 0, tE = 0, tS = 0;
+    let tRnew = 0, tVnew = 0;
+    for (let m = 0; m < 12; m++) {
+        const key = getBudgetKey(budgetYear, m), data = monthlyBudget[key] || {};
+        const inc = Number(data.income || 0), exp = Number(data.expense || 0);
+        const living = Math.round(inc * 0.40), reserve = Math.round(inc * 0.40), invest = Math.round(inc * 0.20);
+        const balance = inc - exp, surplus = living - exp;
+        const reserveFromBalance = Math.round(balance * 0.40);
+        const investFromBalance = Math.round(balance * 0.20);
+        tI += inc; tL += living; tR += reserve; tV += invest; tE += exp; tS += surplus;
+        tRnew += (inc || exp) ? reserveFromBalance : 0;
+        tVnew += (inc || exp) ? investFromBalance : 0;
+    }
+    const tB = tI - tE, bC = tB >= 0 ? 'positive' : 'negative', sC = tS >= 0 ? 'positive' : 'negative';
+    tfoot.innerHTML = `<tr>
+        <td><strong>Tổng ₩</strong></td>
+        <td style="color:var(--accent-green);font-weight:700;text-align:center;">${fmtFull(tI)}</td>
+        <td class="cell-living">${fmtFull(tL)}</td>
+        <td class="cell-reserve">${fmtFull(tR)}<span class="cell-new-val">/ ${fmtFull(tRnew)}</span></td>
+        <td class="cell-invest">${fmtFull(tV)}<span class="cell-new-val">/ ${fmtFull(tVnew)}</span></td>
+        <td style="color:var(--accent-red);font-weight:700;text-align:center;">${fmtFull(tE)}</td>
+        <td class="cell-balance ${bC}">${fmtFull(tB)}</td>
+        <td class="cell-surplus ${sC}">${fmtFull(tS)}</td>
+    </tr>
+    <tr style="font-size:0.68rem;opacity:0.75;">
+        <td><strong>Tổng ₫</strong></td>
+        <td style="color:var(--accent-green);text-align:center;">${fmtFull(Math.round(tI * rate))}</td>
+        <td class="cell-living">${fmtFull(Math.round(tL * rate))}</td>
+        <td class="cell-reserve">${fmtFull(Math.round(tR * rate))}<span class="cell-new-val">/ ${fmtFull(Math.round(tRnew * rate))}</span></td>
+        <td class="cell-invest">${fmtFull(Math.round(tV * rate))}<span class="cell-new-val">/ ${fmtFull(Math.round(tVnew * rate))}</span></td>
+        <td style="color:var(--accent-red);text-align:center;">${fmtFull(Math.round(tE * rate))}</td>
+        <td class="cell-balance ${bC}">${fmtFull(Math.round(tB * rate))}</td>
+        <td class="cell-surplus ${sC}">${fmtFull(Math.round(tS * rate))}</td>
+    </tr>`;
 }
 
 function debounceSaveBudget(year, month, income, expense) {
@@ -459,9 +588,9 @@ function renderMonthlyBudgetTable() {
     for (let m = 0; m < 12; m++) {
         const key = getBudgetKey(budgetYear, m), data = monthlyBudget[key] || {};
         const inc = Number(data.income || 0), exp = Number(data.expense || 0);
-        const living = Math.round(inc * 0.35), reserve = Math.round(inc * 0.45), invest = Math.round(inc * 0.20);
+        const living = Math.round(inc * 0.40), reserve = Math.round(inc * 0.40), invest = Math.round(inc * 0.20);
         const balance = inc - exp, surplus = living - exp;
-        const reserveFromBalance = Math.round(balance * 0.45);
+        const reserveFromBalance = Math.round(balance * 0.40);
         const investFromBalance = Math.round(balance * 0.20);
         tI += inc; tL += living; tR += reserve; tV += invest; tE += exp; tS += surplus;
         tRnew += (inc || exp) ? reserveFromBalance : 0;
@@ -472,11 +601,11 @@ function renderMonthlyBudgetTable() {
         const investDisplay = inc ? `${fmtFull(invest)}<span class="cell-new-val">/ ${fmtFull(investFromBalance)}</span>` : '-';
         rows += `<tr${isCurrent ? ' style="background:rgba(108,92,231,0.08);"' : ''}>
             <td>${MONTHS[m]}</td>
-            <td><input class="income-input" type="number" value="${inc || ''}" placeholder="₩" onchange="onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
+            <td><input class="income-input" type="number" value="${inc || ''}" placeholder="₩" oninput="onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-living">${inc ? fmtFull(living) : '-'}</td>
             <td class="cell-reserve">${reserveDisplay}</td>
             <td class="cell-invest">${investDisplay}</td>
-            <td><input class="expense-input" type="number" value="${exp || ''}" placeholder="₩" onchange="onExpenseInput(${m},this.value)" onfocus="this.select()"></td>
+            <td><input class="expense-input" type="number" value="${exp || ''}" placeholder="₩" oninput="onExpenseInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-balance ${bC}">${inc || exp ? fmtFull(balance) : '-'}</td>
             <td class="cell-surplus ${sC}">${inc || exp ? fmtFull(surplus) : '-'}</td>
         </tr>`;
@@ -515,8 +644,8 @@ function renderBudgetOverviewChart() {
     for (let m = 0; m < 12; m++) {
         const key = getBudgetKey(budgetYear, m), bd = monthlyBudget[key] || {};
         const inc = Number(bd.income || 0), exp = Number(bd.expense || 0);
-        const living = Math.round(inc * 0.35);
-        const reserve = Math.round(inc * 0.45);
+        const living = Math.round(inc * 0.40);
+        const reserve = Math.round(inc * 0.40);
         const invest = Math.round(inc * 0.20);
         const bal = inc - exp;
         if (inc || exp) hasData = true;
@@ -638,6 +767,26 @@ function renderBudgetOverviewChart() {
         ${dotsSvg}
         ${labelsSvg}
     </svg>`;
+}
+
+// ===== Chart Fullscreen =====
+function openChartFullscreen() {
+    const chart = document.getElementById('budgetOverviewChart');
+    const overlay = document.getElementById('chartFullscreen');
+    const content = document.getElementById('chartFullscreenContent');
+    if (!chart || !overlay || !content) return;
+    const svg = chart.querySelector('svg');
+    if (!svg) { showToast('Chưa có biểu đồ để phóng to', 'info'); return; }
+    content.innerHTML = svg.outerHTML;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeChartFullscreen(e) {
+    if (e && e.target !== document.getElementById('chartFullscreen')) return;
+    const overlay = document.getElementById('chartFullscreen');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 // ===== Toast =====
