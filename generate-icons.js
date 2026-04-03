@@ -5,8 +5,8 @@ const http = require('https');
 // Download a simple finance icon as proper PNG from a public source
 function downloadIcon(size, filename) {
     return new Promise((resolve, reject) => {
-        // Use UI Avatars API to generate a simple icon
-        const url = `https://ui-avatars.com/api/?name=%F0%9F%92%B0&size=${size}&background=0f0f1a&color=ffd93d&format=png&bold=true&font-size=0.5`;
+        // Use UI Avatars API to generate a professional GOZ logo as proper PNG
+        const url = `https://ui-avatars.com/api/?name=GOZ&size=${size}&background=0f0f1a&color=ffd93d&format=png&bold=true&font-size=0.5&uppercase=true&rounded=false`;
         const file = fs.createWriteStream(filename);
         http.get(url, (res) => {
             res.pipe(file);
