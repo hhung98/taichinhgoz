@@ -239,7 +239,7 @@ async function fetchExchangeRate() {
 
 function convertFromKRW() {
     const r = exchangeRate || 18.5, u = usdRate || 25500;
-    const krw = parseFloat(document.getElementById('krwInput').value) || 0;
+    const krw = parseRawValue(document.getElementById('krwInput').value);
     document.getElementById('vndInput').value = '';
     document.getElementById('usdInput').value = '';
     if (!krw) { document.getElementById('converterResult').textContent = 'Nhập số tiền để quy đổi'; return; }
@@ -249,7 +249,7 @@ function convertFromKRW() {
 }
 function convertFromVND() {
     const r = exchangeRate || 18.5, u = usdRate || 25500;
-    const vnd = parseFloat(document.getElementById('vndInput').value) || 0;
+    const vnd = parseRawValue(document.getElementById('vndInput').value);
     document.getElementById('krwInput').value = '';
     document.getElementById('usdInput').value = '';
     if (!vnd) { document.getElementById('converterResult').textContent = 'Nhập số tiền để quy đổi'; return; }
@@ -259,7 +259,7 @@ function convertFromVND() {
 }
 function convertFromUSD() {
     const r = exchangeRate || 18.5, u = usdRate || 25500;
-    const usd = parseFloat(document.getElementById('usdInput').value) || 0;
+    const usd = parseRawValue(document.getElementById('usdInput').value);
     document.getElementById('krwInput').value = '';
     document.getElementById('vndInput').value = '';
     if (!usd) { document.getElementById('converterResult').textContent = 'Nhập số tiền để quy đổi'; return; }
@@ -288,15 +288,35 @@ function renderWithoutTable() {
 }
 
 // ===== Formatters =====
-function fmtVND(a) { return new Intl.NumberFormat('vi-VN').format(a) + ' ₫'; }
-function fmtKRW(a) { return new Intl.NumberFormat('ko-KR').format(a) + ' ₩'; }
-function fmtFull(a) { return new Intl.NumberFormat('vi-VN').format(a); }
-function fmtCompact(a) {
-    if (!a) return '';
-    const abs = Math.abs(a);
-    if (abs >= 1000000) return (a / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-    if (abs >= 1000) return (a / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-    return a.toString();
+function fmtVND(v) { return v.toLocaleString('vi-VN') + ' ₫'; }
+function fmtKRW(v) { return v.toLocaleString('vi-VN') + ' ₩'; }
+function fmtFull(v) { return v.toLocaleString('vi-VN'); }
+function fmtFullRaw(v) { return v.toLocaleString('vi-VN'); }
+function fmtCompact(v) {
+    if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+    return v.toLocaleString('vi-VN');
+}
+
+// Extract raw integer from formatted string
+function parseRawValue(valStr) {
+    return parseInt(String(valStr).replace(/\D/g, ''), 10) || 0;
+}
+
+// Live formatter for inputs
+function formatInputLive(el) {
+    let cursor = el.selectionStart;
+    let oldLength = el.value.length;
+    let rawStr = el.value.replace(/\D/g, '');
+    if (rawStr === '') {
+        el.value = '';
+        return;
+    }
+    let formatted = parseInt(rawStr, 10).toLocaleString('vi-VN');
+    el.value = formatted;
+    let newLength = formatted.length;
+    cursor += (newLength - oldLength);
+    el.setSelectionRange(cursor, cursor);
 }
 function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
@@ -403,20 +423,15 @@ function renderBudgetHealth() {
 
 // ===== Savings Goals =====
 function previewGoalVND() {
-    const krw = parseInt(document.getElementById('goalAmount').value) || 0;
-    const el = document.getElementById('goalVndPreview');
-    if (!el) return;
-    if (krw > 0) {
-        const r = exchangeRate || 18.5;
-        el.textContent = '≈ ' + fmtVND(Math.round(krw * r));
-    } else {
-        el.textContent = '';
-    }
+    const raw = parseRawValue(document.getElementById('goalAmount').value);
+    const krw = raw || 0;
+    const r = exchangeRate || 18.5;
+    document.getElementById('goalVndPreview').textContent = krw ? `≈ ${fmtFull(Math.round(krw * r))} ₫` : '';
 }
 
 async function addSavingsGoal() {
     const name = document.getElementById('goalName').value.trim();
-    const amountKRW = parseInt(document.getElementById('goalAmount').value);
+    const amountKRW = parseRawValue(document.getElementById('goalAmount').value);
     const months = parseInt(document.getElementById('goalMonths').value);
     if (!name || !amountKRW || !months) { showToast('Điền đầy đủ mục tiêu!', 'error'); return; }
 
@@ -483,7 +498,7 @@ function changeYear(delta) { budgetYear += delta; document.getElementById('yearL
 function onIncomeInput(month, value) {
     const key = getBudgetKey(budgetYear, month);
     if (!monthlyBudget[key]) monthlyBudget[key] = {};
-    monthlyBudget[key].income = parseInt(value) || 0;
+    monthlyBudget[key].income = parseRawValue(value);
     updateRowInline(month);
     renderWithoutTable();
     updateTableFooter();
@@ -493,7 +508,7 @@ function onIncomeInput(month, value) {
 function onExpenseInput(month, value) {
     const key = getBudgetKey(budgetYear, month);
     if (!monthlyBudget[key]) monthlyBudget[key] = {};
-    monthlyBudget[key].expense = parseInt(value) || 0;
+    monthlyBudget[key].expense = parseRawValue(value);
     updateRowInline(month);
     renderWithoutTable();
     updateTableFooter();
@@ -601,13 +616,16 @@ function renderMonthlyBudgetTable() {
         const isCurrent = budgetYear === new Date().getFullYear() && m === new Date().getMonth();
         const reserveDisplay = inc ? `${fmtFull(reserve)}<span class="cell-new-val">/ ${fmtFull(reserveFromBalance)}</span>` : '-';
         const investDisplay = inc ? `${fmtFull(invest)}<span class="cell-new-val">/ ${fmtFull(investFromBalance)}</span>` : '-';
+        // Extract raw number value to display normally, but formatted
+        const incVal = inc ? fmtFullRaw(inc) : '';
+        const expVal = exp ? fmtFullRaw(exp) : '';
         rows += `<tr${isCurrent ? ' style="background:rgba(108,92,231,0.08);"' : ''}>
             <td>${MONTHS[m]}</td>
-            <td><input class="income-input" type="number" value="${inc || ''}" placeholder="₩" oninput="onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
+            <td><input class="income-input" type="text" inputmode="numeric" value="${incVal}" placeholder="₩" oninput="formatInputLive(this); onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-living">${inc ? fmtFull(living) : '-'}</td>
             <td class="cell-reserve">${reserveDisplay}</td>
             <td class="cell-invest">${investDisplay}</td>
-            <td><input class="expense-input" type="number" value="${exp || ''}" placeholder="₩" oninput="onExpenseInput(${m},this.value)" onfocus="this.select()"></td>
+            <td><input class="expense-input" type="text" inputmode="numeric" value="${expVal}" placeholder="₩" oninput="formatInputLive(this); onExpenseInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-balance ${bC}">${inc || exp ? fmtFull(balance) : '-'}</td>
             <td class="cell-surplus ${sC}">${inc || exp ? fmtFull(surplus) : '-'}</td>
         </tr>`;

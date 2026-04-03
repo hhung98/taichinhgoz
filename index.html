@@ -120,18 +120,18 @@
                 <div class="exchange-bar-converter">
                     <div class="converter-row">
                         <span class="converter-label">🇰🇷 ₩</span>
-                        <input class="converter-input" type="number" id="krwInput" placeholder="Nhập KRW"
-                            oninput="convertFromKRW()">
+                        <input class="converter-input" type="text" inputmode="numeric" id="krwInput" placeholder="Nhập KRW"
+                            oninput="formatInputLive(this); convertFromKRW()">
                     </div>
                     <div class="converter-row">
                         <span class="converter-label">🇻🇳 ₫</span>
-                        <input class="converter-input" type="number" id="vndInput" placeholder="Nhập VND"
-                            oninput="convertFromVND()">
+                        <input class="converter-input" type="text" inputmode="numeric" id="vndInput" placeholder="Nhập VND"
+                            oninput="formatInputLive(this); convertFromVND()">
                     </div>
                     <div class="converter-row">
                         <span class="converter-label">🇺🇸 $</span>
-                        <input class="converter-input" type="number" id="usdInput" placeholder="Nhập USD"
-                            oninput="convertFromUSD()">
+                        <input class="converter-input" type="text" inputmode="numeric" id="usdInput" placeholder="Nhập USD"
+                            oninput="formatInputLive(this); convertFromUSD()">
                     </div>
                     <div class="converter-result" id="converterResult">Nhập số tiền để quy đổi</div>
                 </div>
@@ -182,8 +182,8 @@
                     <div class="goal-form" id="goalForm">
                         <input type="text" id="goalName" placeholder="Tên mục tiêu (VD: Mua laptop)" class="goal-input">
                         <div class="goal-amount-wrapper">
-                            <input type="number" id="goalAmount" placeholder="Số tiền (₩ KRW)" class="goal-input"
-                                oninput="previewGoalVND()">
+                            <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền (₩ KRW)" class="goal-input"
+                                oninput="formatInputLive(this); previewGoalVND()">
                             <span class="goal-vnd-preview" id="goalVndPreview"></span>
                         </div>
                         <input type="number" id="goalMonths" placeholder="Số tháng" class="goal-input" min="1"
