@@ -119,7 +119,13 @@
                 <div class="header-right">
                     <div class="user-badge" id="userBadge">
                         <span class="user-avatar" id="userAvatar">👤</span>
-                        <span class="user-name" id="userName"></span>
+                        <div class="pin-toggle-wrapper" onclick="togglePinSetting(); event.stopPropagation();" title="Bật/tất khóa mã PIN">
+                            <span class="pin-toggle-label">🔒 PIN</span>
+                            <div class="pin-toggle-switch" id="pinToggleSwitch"></div>
+                        </div>
+                        <div class="user-info-column">
+                            <span class="user-name" id="userName"></span>
+                        </div>
                     </div>
                     <button class="logout-btn" onclick="handleLogout()" title="Đăng xuất">
                         <span class="logout-icon">⬅</span> Đăng xuất

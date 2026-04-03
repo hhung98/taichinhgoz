@@ -1,8 +1,9 @@
-const CACHE_NAME = 'finance-dashboard-v20';
+const CACHE_NAME = 'finance-dashboard-v24';
 const ASSETS = [
     'index.html',
     'style.css',
     'app.js',
+    'supabase.js',
     'manifest.json'
 ];
 

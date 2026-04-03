@@ -134,7 +134,7 @@ async function deleteGoalFromDB(goalId) {
     if (error) throw error;
 }
 
-// ===== Profile =====
+// ===== Profiles =====
 async function getProfile() {
     const { data, error } = await supabaseClient
         .from('profiles')
@@ -144,3 +144,18 @@ async function getProfile() {
     if (error && error.code !== 'PGRST116') throw error;
     return data;
 }
+
+// ===== Global Export =====
+window.initSupabase = initSupabase;
+window.signUpWithEmail = signUpWithEmail;
+window.signInWithEmail = signInWithEmail;
+window.signInWithGoogle = signInWithGoogle;
+window.signOut = signOut;
+window.getSession = getSession;
+window.onAuthStateChange = onAuthStateChange;
+window.loadBudgets = loadBudgets;
+window.saveBudget = saveBudget;
+window.loadGoals = loadGoals;
+window.saveGoal = saveGoal;
+window.deleteGoalFromDB = deleteGoalFromDB;
+window.getProfile = getProfile;

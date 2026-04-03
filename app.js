@@ -15,6 +15,7 @@ const MONTHS = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Th�
 // ===== Init =====
 // ===== PIN LOCK =====
 let appPin = localStorage.getItem('app_pin');
+let pinEnabled = localStorage.getItem('pin_enabled') !== 'false'; // default ON
 let currentPinInput = '';
 let pinSetupStep = 1; // 1: setting up, 2: confirming
 let tempPin = '';
@@ -27,6 +28,13 @@ function checkPinState() {
     
     currentPinInput = '';
     updatePinDots();
+    updatePinToggleUI();
+    
+    // If PIN is disabled, skip the lock screen
+    if (!pinEnabled) {
+        overlay.classList.add('hidden');
+        return;
+    }
     
     if (appPin) {
         overlay.classList.remove('hidden');
@@ -125,6 +133,40 @@ async function forgotPin() {
         localStorage.removeItem('app_pin');
         appPin = null;
         await handleLogout();
+    }
+}
+
+function togglePinSetting() {
+    if (pinEnabled) {
+        if (confirm('Tắt khóa mã PIN?\n\nLần sau mở app sẽ không cần nhập PIN nữa.')) {
+            pinEnabled = false;
+            localStorage.setItem('pin_enabled', 'false');
+            localStorage.removeItem('app_pin');
+            appPin = null;
+            updatePinToggleUI();
+            showToast('🔓 Đã tắt khóa PIN', 'info');
+        }
+    } else {
+        pinEnabled = true;
+        localStorage.setItem('pin_enabled', 'true');
+        // Clear old PIN just in case to force new creation
+        appPin = null;
+        localStorage.removeItem('app_pin');
+        updatePinToggleUI();
+        // Immediately show PIN creation screen
+        checkPinState();
+        showToast('🔒 Hãy tạo mã PIN mới', 'info');
+    }
+}
+
+function updatePinToggleUI() {
+    const sw = document.getElementById('pinToggleSwitch');
+    if (!sw) return;
+    // UI should reflect pinEnabled regardless of appPin existence
+    if (pinEnabled) {
+        sw.classList.add('active');
+    } else {
+        sw.classList.remove('active');
     }
 }
 

@@ -13,4 +13,4 @@ http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': types[ext] || 'text/plain', 'Cache-Control': 'no-cache, no-store, must-revalidate' });
         res.end(data);
     });
-}).listen(8080, () => console.log('Server running on http://localhost:8080'));
+}).listen(8888, () => console.log('Server running on http://localhost:8888'));
