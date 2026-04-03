@@ -89,8 +89,9 @@ function processPinBlock() {
         updatePinDots();
     } else if (pinSetupStep === 2) {
         if (currentPinInput === tempPin) {
-            appPin = btoa(currentPinInput); // simple obfuscation
+            appPin = btoa(currentPinInput);
             localStorage.setItem('app_pin', appPin);
+            currentPinInput = ''; // Clear immediately
             unlockApp();
             showToast('Đã thiết lập mã PIN!', 'success');
         } else {
@@ -108,9 +109,10 @@ function processPinBlock() {
             }, 600);
         }
     } else {
-        // Unlock Mode
-        let attemptClear = btoa(currentPinInput);
-        if (attemptClear === appPin || currentPinInput === atob(appPin)) {
+        // Unlock Mode - Compare simply using Base64
+        const attempt = btoa(currentPinInput);
+        if (attempt === appPin) {
+            currentPinInput = ''; // Clear immediately
             unlockApp();
         } else {
             dotsContainer.classList.add('shake');
