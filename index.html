@@ -198,10 +198,13 @@
             <section class="budget-section panel" aria-label="Bảng ngân sách 12 tháng">
                 <div class="panel-header">
                     <h2 class="panel-title"><span class="icon">📅</span> Ngân Sách 12 Tháng</h2>
-                    <div class="year-selector">
-                        <button onclick="changeYear(-1)">◀</button>
-                        <span class="year-label" id="yearLabel">2026</span>
-                        <button onclick="changeYear(1)">▶</button>
+                    <div class="panel-header-actions" style="display: flex; gap: 10px; align-items: center;">
+                        <button class="action-btn" onclick="exportToCSV()" title="Tải xuống báo cáo Excel">💾 Xuất CSV</button>
+                        <div class="year-selector">
+                            <button onclick="changeYear(-1)">◀</button>
+                            <span class="year-label" id="yearLabel">2026</span>
+                            <button onclick="changeYear(1)">▶</button>
+                        </div>
                     </div>
                 </div>
 
@@ -276,6 +279,23 @@
                             tư 20%</span>
                     </div>
                     <div class="budget-chart-container" id="budgetOverviewChart" onclick="openChartFullscreen()"></div>
+                </div>
+
+                <!-- PIE CHARTS SECTION -->
+                <div class="pie-charts-section" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+                    <h3 class="chart-title">🍕 Phân bổ thực tế (Chi tiêu vs Dự phòng vs Đầu tư)</h3>
+                    <div class="pie-grid">
+                        <div class="pie-card">
+                            <h4 class="pie-card-title">Năm đang chọn (<span id="pieYearLabel">2026</span>)</h4>
+                            <div class="pie-chart-container" id="pieChartYearly"></div>
+                            <div id="pieLegendYearly" class="pie-legend"></div>
+                        </div>
+                        <div class="pie-card">
+                            <h4 class="pie-card-title">Tổng thể (Tất cả các năm)</h4>
+                            <div class="pie-chart-container" id="pieChartAllTime"></div>
+                            <div id="pieLegendAllTime" class="pie-legend"></div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>

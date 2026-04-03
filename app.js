@@ -275,6 +275,7 @@ function renderAll() {
     renderMonthlyBudgetTable();
     renderBudgetDashboard();
     renderBudgetOverviewChart();
+    renderPieCharts();
 }
 
 function renderWithoutTable() {
@@ -283,6 +284,7 @@ function renderWithoutTable() {
     renderSavingsGoals();
     renderBudgetDashboard();
     renderBudgetOverviewChart();
+    renderPieCharts();
 }
 
 // ===== Formatters =====
@@ -787,6 +789,163 @@ function closeChartFullscreen(e) {
     const overlay = document.getElementById('chartFullscreen');
     if (overlay) overlay.classList.remove('active');
     document.body.style.overflow = '';
+}
+
+// ===== Pie Charts =====
+function renderPieCharts() {
+    document.getElementById('pieYearLabel').textContent = budgetYear;
+    
+    // 1. Calculate Yearly Data
+    let yInc = 0, yExp = 0;
+    for (let m = 0; m < 12; m++) {
+        const key = getBudgetKey(budgetYear, m);
+        const data = monthlyBudget[key] || {};
+        yInc += Number(data.income || 0);
+        yExp += Number(data.expense || 0);
+    }
+    const yBal = Math.max(0, yInc - yExp);
+    const yRes = Math.round(yBal * (2/3));
+    const yInv = yBal - yRes;
+    
+    // 2. Calculate All-Time Data
+    let aInc = 0, aExp = 0;
+    Object.values(monthlyBudget).forEach(b => {
+        aInc += Number(b.income || 0);
+        aExp += Number(b.expense || 0);
+    });
+    const aBal = Math.max(0, aInc - aExp);
+    const aRes = Math.round(aBal * (2/3));
+    const aInv = aBal - aRes;
+
+    drawPie('pieChartYearly', [
+        { label: 'Chi tiêu', value: yExp, color: '#e74c3c' },
+        { label: 'Dự phòng', value: yRes, color: '#f39c12' },
+        { label: 'Đầu tư', value: yInv, color: '#00cec9' }
+    ]);
+
+    drawPie('pieChartAllTime', [
+        { label: 'Chi tiêu', value: aExp, color: '#e74c3c' },
+        { label: 'Dự phòng', value: aRes, color: '#f39c12' },
+        { label: 'Đầu tư', value: aInv, color: '#00cec9' }
+    ]);
+    
+    // Add Legend
+    document.getElementById('pieLegendYearly').innerHTML = getPieLegendHTML();
+    document.getElementById('pieLegendAllTime').innerHTML = getPieLegendHTML();
+}
+
+function getPieLegendHTML() {
+    return `
+        <div class="pie-legend-item"><span class="legend-dot" style="background:#e74c3c"></span> Chi tiêu</div>
+        <div class="pie-legend-item"><span class="legend-dot" style="background:#f39c12"></span> Dự phòng</div>
+        <div class="pie-legend-item"><span class="legend-dot" style="background:#00cec9"></span> Đầu tư</div>
+    `;
+}
+
+function drawPie(containerId, data) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    if (total <= 0) {
+        container.innerHTML = '<div class="pie-empty">Chưa có dữ liệu</div>';
+        return;
+    }
+
+    let svg = '<svg viewBox="-1 -1 2 2" class="pie-chart-svg">';
+    let cumulativePercent = 0;
+
+    data.forEach(slice => {
+        const percent = slice.value / total;
+        if (percent === 0) return;
+        
+        // If one slice is 100%, draw a full circle
+        if (percent === 1) {
+            svg += `<circle cx="0" cy="0" r="1" fill="${slice.color}" class="pie-slice"><title>${slice.label}: 100%</title></circle>`;
+            return;
+        }
+
+        const startX = Math.cos(2 * Math.PI * cumulativePercent);
+        const startY = Math.sin(2 * Math.PI * cumulativePercent);
+        
+        cumulativePercent += percent;
+        
+        const endX = Math.cos(2 * Math.PI * cumulativePercent);
+        const endY = Math.sin(2 * Math.PI * cumulativePercent);
+        const largeArcFlag = percent > 0.5 ? 1 : 0;
+        
+        const pathData = [
+            `M ${startX} ${startY}`, // Move to edge
+            `A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY}`, // Draw arc
+            `L 0 0`, // Line to center
+        ].join(' ');
+        
+        svg += `<path d="${pathData}" fill="${slice.color}" class="pie-slice"><title>${slice.label}: ${(percent * 100).toFixed(1)}%</title></path>`;
+    });
+
+    svg += '</svg>';
+    container.innerHTML = svg;
+}
+
+// ===== Export CSV =====
+function exportToCSV() {
+    try {
+        const rows = [
+            ['Năm', 'Tháng', 'Thu Nhập (₩)', 'Sinh hoạt (₩)', 'Dự Phòng Từ Còn Lại (₩)', 'Đầu Tư Từ Còn Lại (₩)', 'Chi Tiêu Thực Tế (₩)', 'Còn Lại (₩)']
+        ];
+
+        // Sort keys chronologically
+        const keys = Object.keys(monthlyBudget).sort();
+        
+        keys.forEach(key => {
+            const [y, mStr] = key.split('-');
+            const m = parseInt(mStr, 10);
+            const data = monthlyBudget[key];
+            const inc = Number(data.income || 0);
+            const exp = Number(data.expense || 0);
+            
+            if (inc === 0 && exp === 0) return; // Skip completely empty months
+            
+            const living = Math.round(inc * 0.40);
+            const balance = inc - exp;
+            const balPositive = Math.max(0, balance);
+            const reserve = Math.round(balPositive * (2/3));
+            const invest = balPositive - reserve;
+            
+            rows.push([
+                y, 
+                `Tháng ${m}`, 
+                inc, 
+                living, 
+                reserve, 
+                invest, 
+                exp, 
+                balance
+            ]);
+        });
+
+        if (rows.length === 1) {
+            showToast('Không có dữ liệu để xuất', 'info');
+            return;
+        }
+
+        // Convert to CSV string, use \ufeff for utf-8 BOM so Excel opens it with correct vietnamese accents
+        const csvContent = "\\ufeff" + rows.map(r => r.join(',')).join('\\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `TaichinhGOZ_Backup_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast('✅ Đã xuất báo cáo CSV thành công!', 'success');
+    } catch (err) {
+        console.error('Export error:', err);
+        showToast('❌ Lỗi xuất file: ' + err.message, 'error');
+    }
 }
 
 // ===== Toast =====
