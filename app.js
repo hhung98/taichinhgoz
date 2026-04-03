@@ -930,8 +930,12 @@ function exportToCSV() {
             return;
         }
 
-        // Convert to CSV string, use \ufeff for utf-8 BOM and sep=, so Excel opens it correctly across all regions
-        const csvContent = "\\ufeffsep=,\\n" + rows.map(r => r.join(',')).join('\\n');
+        // Mẹo cho Excel: Thêm BOM để hiển thị đúng Tiếng Việt, không cần sep=, nếu dùng dấu phẩy mặc định
+        const csvContent = "\uFEFF" + rows.map(r => {
+            // Bao bọc các giá trị trong ngoặc kép để tránh dính lỗi
+            return r.map(cell => `"${cell}"`).join(',');
+        }).join('\n');
+        
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         
