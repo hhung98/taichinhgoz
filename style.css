@@ -2415,3 +2415,28 @@ body {
     border: 1px dashed var(--border);
     border-radius: 50%;
 }
+/* ===== PIN LOCK SCREEN ===== */
+.pin-overlay { position: fixed; inset: 0; z-index: 10000; background: var(--bg-body); display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.pin-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-20px); }
+.pin-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 40px 30px; width: 90%; max-width: 360px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+.pin-lock-icon { font-size: 2.5rem; margin-bottom: 10px; animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.pin-title { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 5px; }
+.pin-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 30px; }
+.pin-dots { display: flex; justify-content: center; gap: 18px; margin-bottom: 40px; }
+.pin-dot { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); transition: all 0.2s ease; }
+.pin-dot.filled { background: var(--text-primary); border-color: var(--text-primary); box-shadow: 0 0 10px rgba(255,255,255,0.3); transform: scale(1.15); }
+.pin-dots.shake { animation: pinShake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+.pin-dots.shake .pin-dot { border-color: var(--accent-red); background: transparent; box-shadow: none; }
+@keyframes pinShake {
+    10%, 90% { transform: translate3d(-3px, 0, 0); }
+    20%, 80% { transform: translate3d(5px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-10px, 0, 0); }
+    40%, 60% { transform: translate3d(10px, 0, 0); }
+}
+.pin-numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px 20px; }
+.pin-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: var(--text-primary); font-size: 1.5rem; font-weight: 500; width: 70px; height: 70px; border-radius: 50%; justify-self: center; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; user-select: none; -webkit-tap-highlight-color: transparent; }
+.pin-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.92); }
+.pin-action-btn { background: transparent; border: none; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); }
+.pin-action-btn:active { background: transparent; color: var(--text-primary); }
+#pinForgotBtn { font-size: 0.8rem; line-height: 1.2; text-decoration: underline; text-underline-offset: 3px; color: var(--text-muted); }
+

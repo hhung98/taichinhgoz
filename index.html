@@ -28,6 +28,35 @@
 </head>
 
 <body>
+    <!-- PIN LOCK SCREEN -->
+    <div class="pin-overlay" id="pinOverlay">
+        <div class="pin-card">
+            <div class="pin-lock-icon">🔒</div>
+            <h2 class="pin-title" id="pinTitle">Nhập mã PIN</h2>
+            <p class="pin-subtitle" id="pinSubtitle">Bảo mật sổ cái tài chính của bạn</p>
+            <div class="pin-dots" id="pinDots">
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+            </div>
+            <div class="pin-numpad">
+                <button class="pin-btn" onclick="handlePinKey('1')">1</button>
+                <button class="pin-btn" onclick="handlePinKey('2')">2</button>
+                <button class="pin-btn" onclick="handlePinKey('3')">3</button>
+                <button class="pin-btn" onclick="handlePinKey('4')">4</button>
+                <button class="pin-btn" onclick="handlePinKey('5')">5</button>
+                <button class="pin-btn" onclick="handlePinKey('6')">6</button>
+                <button class="pin-btn" onclick="handlePinKey('7')">7</button>
+                <button class="pin-btn" onclick="handlePinKey('8')">8</button>
+                <button class="pin-btn" onclick="handlePinKey('9')">9</button>
+                <button class="pin-btn pin-action-btn" onclick="forgotPin()" id="pinForgotBtn" title="Đăng xuất để đặt lại PIN mới">Quên<br>PIN?</button>
+                <button class="pin-btn" onclick="handlePinKey('0')">0</button>
+                <button class="pin-btn pin-action-btn" onclick="handlePinKey('backspace')">⌫</button>
+            </div>
+        </div>
+    </div>
+
     <!-- AUTH OVERLAY -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-card">
