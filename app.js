@@ -817,29 +817,30 @@ function renderPieCharts() {
     const aRes = Math.round(aBal * (2/3));
     const aInv = aBal - aRes;
 
-    drawPie('pieChartYearly', [
+    const yearlyData = [
         { label: 'Chi tiêu', value: yExp, color: '#e74c3c' },
         { label: 'Dự phòng', value: yRes, color: '#f39c12' },
         { label: 'Đầu tư', value: yInv, color: '#00cec9' }
-    ]);
+    ];
+    drawPie('pieChartYearly', yearlyData);
+    document.getElementById('pieLegendYearly').innerHTML = getPieLegendHTML(yearlyData);
 
-    drawPie('pieChartAllTime', [
+    const allTimeData = [
         { label: 'Chi tiêu', value: aExp, color: '#e74c3c' },
         { label: 'Dự phòng', value: aRes, color: '#f39c12' },
         { label: 'Đầu tư', value: aInv, color: '#00cec9' }
-    ]);
-    
-    // Add Legend
-    document.getElementById('pieLegendYearly').innerHTML = getPieLegendHTML();
-    document.getElementById('pieLegendAllTime').innerHTML = getPieLegendHTML();
+    ];
+    drawPie('pieChartAllTime', allTimeData);
+    document.getElementById('pieLegendAllTime').innerHTML = getPieLegendHTML(allTimeData);
 }
 
-function getPieLegendHTML() {
-    return `
-        <div class="pie-legend-item"><span class="legend-dot" style="background:#e74c3c"></span> Chi tiêu</div>
-        <div class="pie-legend-item"><span class="legend-dot" style="background:#f39c12"></span> Dự phòng</div>
-        <div class="pie-legend-item"><span class="legend-dot" style="background:#00cec9"></span> Đầu tư</div>
-    `;
+function getPieLegendHTML(data) {
+    return data.map(item => `
+        <div class="pie-legend-item">
+            <span class="legend-dot" style="background:${item.color}"></span> 
+            ${item.label}: <strong>${fmtFull(item.value)} ₩</strong>
+        </div>
+    `).join('');
 }
 
 function drawPie(containerId, data) {
@@ -929,8 +930,8 @@ function exportToCSV() {
             return;
         }
 
-        // Convert to CSV string, use \ufeff for utf-8 BOM so Excel opens it with correct vietnamese accents
-        const csvContent = "\\ufeff" + rows.map(r => r.join(',')).join('\\n');
+        // Convert to CSV string, use \ufeff for utf-8 BOM and sep=, so Excel opens it correctly across all regions
+        const csvContent = "\\ufeffsep=,\\n" + rows.map(r => r.join(',')).join('\\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         
