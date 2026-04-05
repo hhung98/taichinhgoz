@@ -1075,6 +1075,8 @@ function exportToCSV() {
             ['Năm', 'Tháng', 'Thu Nhập (₩)', 'Sinh hoạt (₩)', 'Dự Phòng Từ Còn Lại (₩)', 'Đầu Tư Từ Còn Lại (₩)', 'Chi Tiêu Thực Tế (₩)', 'Còn Lại (₩)']
         ];
 
+        let totalInc = 0, totalLiving = 0, totalReserve = 0, totalInvest = 0, totalExp = 0, totalBalance = 0;
+
         // Sort keys chronologically
         const keys = Object.keys(monthlyBudget).sort();
         
@@ -1093,17 +1095,42 @@ function exportToCSV() {
             const reserve = Math.round(balPositive * (2/3));
             const invest = balPositive - reserve;
             
+            // Accumulate totals
+            totalInc += inc;
+            totalLiving += living;
+            totalReserve += reserve;
+            totalInvest += invest;
+            totalExp += exp;
+            totalBalance += balance;
+            
             rows.push([
                 y, 
                 `Tháng ${m}`, 
-                inc, 
-                living, 
-                reserve, 
-                invest, 
-                exp, 
-                balance
+                inc.toLocaleString('vi-VN'), 
+                living.toLocaleString('vi-VN'), 
+                reserve.toLocaleString('vi-VN'), 
+                invest.toLocaleString('vi-VN'), 
+                exp.toLocaleString('vi-VN'), 
+                balance.toLocaleString('vi-VN')
             ]);
         });
+
+        if (rows.length === 1) {
+            showToast('Không có dữ liệu để xuất', 'info');
+            return;
+        }
+
+        // Add TOTAL row
+        rows.push([
+            'TỔNG CỘNG',
+            '',
+            totalInc.toLocaleString('vi-VN'),
+            totalLiving.toLocaleString('vi-VN'),
+            totalReserve.toLocaleString('vi-VN'),
+            totalInvest.toLocaleString('vi-VN'),
+            totalExp.toLocaleString('vi-VN'),
+            totalBalance.toLocaleString('vi-VN')
+        ]);
 
         if (rows.length === 1) {
             showToast('Không có dữ liệu để xuất', 'info');
