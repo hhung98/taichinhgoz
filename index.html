@@ -25,6 +25,31 @@
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
     </script>
+    <style>
+        /* Force 3 columns and 2 rows for Summary Cards */
+        .summary-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            grid-auto-rows: min-content !important;
+            gap: 14px !important;
+        }
+        .summary-card:nth-child(5) {
+            grid-column: auto !important; 
+        }
+        /* Style for the new Reserve card */
+        .summary-card.reserve::after {
+            background: linear-gradient(90deg, #fdcb6e, #f1c40f) !important;
+        }
+        .summary-card.reserve .card-value {
+            color: var(--accent-orange) !important;
+        }
+        @media (max-width: 900px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: 1fr !important; }
+        }
+    </style>
 </head>
 
 <body>
@@ -204,6 +229,12 @@
                         <div class="card-label">Sức khỏe tài chính</div>
                         <div class="card-value health-score" id="healthScore">--</div>
                         <div class="card-sub" id="healthLabel">Chưa có dữ liệu</div>
+                    </article>
+                    <article class="summary-card reserve" id="reserveCard">
+                        <div class="card-icon">🛡️</div>
+                        <div class="card-label">Quỹ dự phòng</div>
+                        <div class="card-value" id="reserveTotal">0 ₩</div>
+                        <div class="card-sub" id="survivalMonths">An toàn: -- tháng</div>
                     </article>
                 </div>
             </section>

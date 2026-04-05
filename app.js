@@ -496,27 +496,45 @@ function getBudgetTotals(year) {
 }
 
 function getAllTimeTotals() {
-    let incKRW = 0, expKRW = 0;
-    Object.values(monthlyBudget).forEach(b => {
-        incKRW += Number(b.income || 0);
-        expKRW += Number(b.expense || 0);
-    });
-    return { incKRW, expKRW, balanceKRW: incKRW - expKRW };
+    let incKRW = 0, expKRW = 0, count = 0;
+    for (const key in monthlyBudget) {
+        const b = monthlyBudget[key];
+        if (b && (Number(b.income) > 0 || Number(b.expense) > 0)) {
+            incKRW += Number(b.income || 0);
+            expKRW += Number(b.expense || 0);
+            count++;
+        }
+    }
+    const balanceKRW = incKRW - expKRW;
+    const reserveSum = balanceKRW > 0 ? Math.round(balanceKRW * (2/3)) : 0;
+    const avgExp = count > 0 ? expKRW / count : 0;
+    return { incKRW, expKRW, balanceKRW, reserveSum, avgExp };
 }
 
 // ===== Summary (VND cards at top) =====
 function renderSummary() {
     const r = exchangeRate || 18.5;
     const u = usdRate || 25500;
-    const { incKRW, expKRW, balanceKRW } = getAllTimeTotals();
+    const { incKRW, expKRW, balanceKRW, reserveSum, avgExp } = getAllTimeTotals();
     const income = Math.round(incKRW * r);
     const expense = Math.round(expKRW * r);
     const balance = income - expense;
     const rate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
+    
     animateVal('totalBalance', fmtVND(balance));
     animateVal('totalIncome', fmtVND(income));
     animateVal('totalExpense', fmtVND(expense));
     animateVal('savingsRate', Math.max(0, rate) + '%');
+    
+    // Update Reserve/Emergency Fund Card with animation
+    const resTotal = document.getElementById('reserveTotal');
+    const survMonths = document.getElementById('survivalMonths');
+    if (resTotal) resTotal.textContent = fmtKRW(reserveSum);
+    if (survMonths) {
+        const months = avgExp > 0 ? (reserveSum / avgExp).toFixed(1) : '--';
+        survMonths.textContent = avgExp > 0 ? `An toàn: ${months} tháng` : 'An toàn: -- tháng';
+    }
+
     const balKRW = document.getElementById('balanceKRW');
     const incKRWEl = document.getElementById('incomeKRW');
     const expKRWEl = document.getElementById('expenseKRW');
