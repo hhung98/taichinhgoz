@@ -496,17 +496,24 @@ function getBudgetTotals(year) {
 }
 
 function getAllTimeTotals() {
-    let incKRW = 0, expKRW = 0, count = 0;
+    let incKRW = 0, expKRW = 0, count = 0, reserveSum = 0;
     for (const key in monthlyBudget) {
         const b = monthlyBudget[key];
-        if (b && (Number(b.income) > 0 || Number(b.expense) > 0)) {
-            incKRW += Number(b.income || 0);
-            expKRW += Number(b.expense || 0);
+        const income = Number(b.income || 0);
+        const expense = Number(b.expense || 0);
+        if (income > 0 || expense > 0) {
+            incKRW += income;
+            expKRW += expense;
+            // Accumulate reserve from each month's surplus
+            const balance = income - expense;
+            if (balance > 0) {
+                // Following the 2/3 of balance strategy for Emergency Fund
+                reserveSum += Math.round(balance * (2/3));
+            }
             count++;
         }
     }
     const balanceKRW = incKRW - expKRW;
-    const reserveSum = balanceKRW > 0 ? Math.round(balanceKRW * (2/3)) : 0;
     const avgExp = count > 0 ? expKRW / count : 0;
     return { incKRW, expKRW, balanceKRW, reserveSum, avgExp };
 }
