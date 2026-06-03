@@ -9,6 +9,54 @@ let isDark = localStorage.getItem('theme') !== 'light';
 let isSignUpMode = false;
 let saveTimeout = null;
 
+function iconMarkup(name, extraClass = '') {
+    return `<i class="icon-svg ${extraClass}" data-lucide="${name}"></i>`;
+}
+
+function refreshIcons() {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons({ attrs: { 'stroke-width': 1.8 } });
+    }
+}
+
+function initScrollReveal() {
+    const targets = document.querySelectorAll(
+        '.exchange-shell, .summary-card, .financial-insight-card, .panel, .budget-dash-item, .pie-card, .goal-item'
+    );
+
+    targets.forEach((el, index) => {
+        el.classList.add('reveal-box', 'premium-card-hover');
+        if (!el.dataset.revealDelay) {
+            el.style.transitionDelay = `${index * 80}ms`;
+            el.dataset.revealDelay = String(index * 80);
+        }
+    });
+
+    const pending = Array.from(targets).filter(el => !el.dataset.revealBound);
+    if (!pending.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+        pending.forEach(el => {
+            el.classList.add('is-visible');
+            el.dataset.revealBound = 'true';
+        });
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+        });
+    }, { threshold: 0.15, rootMargin: '0px 0px -12% 0px' });
+
+    pending.forEach(el => {
+        el.dataset.revealBound = 'true';
+        observer.observe(el);
+    });
+}
+
 const MONTHS = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
     'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
 
@@ -146,7 +194,7 @@ function togglePinSetting() {
             localStorage.removeItem('app_pin');
             appPin = null;
             updatePinToggleUI();
-            showToast('🔓 Đã tắt khóa PIN', 'info');
+            showToast('Đã tắt khóa PIN', 'info');
         }
     } else {
         pinEnabled = true;
@@ -157,7 +205,7 @@ function togglePinSetting() {
         updatePinToggleUI();
         // Immediately show PIN creation screen
         checkPinState();
-        showToast('🔒 Hãy tạo mã PIN mới', 'info');
+        showToast('Hãy tạo mã PIN mới', 'info');
     }
 }
 
@@ -264,7 +312,7 @@ async function handleAuth(e) {
             const data = await signUpWithEmail(email, password, fullName);
             if (data.user && !data.session) {
                 errorEl.style.color = 'var(--accent-green)';
-                errorEl.textContent = '✅ Đăng ký thành công! Kiểm tra email để xác nhận.';
+                errorEl.textContent = 'Đăng ký thành công! Kiểm tra email để xác nhận.';
             }
         } else {
             await signInWithEmail(email, password);
@@ -272,17 +320,18 @@ async function handleAuth(e) {
     } catch (err) {
         errorEl.style.color = 'var(--accent-red)';
         if (err.message.includes('Invalid login credentials')) {
-            errorEl.textContent = '❌ Email hoặc mật khẩu không đúng.';
+            errorEl.textContent = 'Email hoặc mật khẩu không đúng.';
         } else if (err.message.includes('User already registered')) {
-            errorEl.textContent = '❌ Email đã được đăng ký. Hãy đăng nhập.';
+            errorEl.textContent = 'Email đã được đăng ký. Hãy đăng nhập.';
         } else if (err.message.includes('Email not confirmed')) {
-            errorEl.textContent = '⚠️ Vui lòng xác nhận email trước khi đăng nhập.';
+            errorEl.textContent = 'Vui lòng xác nhận email trước khi đăng nhập.';
         } else {
-            errorEl.textContent = '❌ ' + err.message;
+            errorEl.textContent = err.message;
         }
     } finally {
         btn.disabled = false;
-        btn.textContent = isSignUpMode ? '📝 Đăng ký' : '🔑 Đăng nhập';
+        btn.innerHTML = `${iconMarkup(isSignUpMode ? 'user-plus' : 'key-round')} ${isSignUpMode ? 'Đăng ký' : 'Đăng nhập'}`;
+        refreshIcons();
     }
 }
 
@@ -290,7 +339,7 @@ async function handleGoogleLogin() {
     try {
         await signInWithGoogle();
     } catch (err) {
-        document.getElementById('authError').textContent = '❌ ' + err.message;
+        document.getElementById('authError').textContent = err.message;
     }
 }
 
@@ -300,7 +349,7 @@ async function handleLogout() {
         monthlyBudget = {};
         savingsGoals = [];
         showAuth();
-        showToast('👋 Đã đăng xuất', 'info');
+        showToast('Đã đăng xuất', 'info');
     } catch (err) {
         showToast('Lỗi đăng xuất: ' + err.message, 'error');
     }
@@ -309,7 +358,8 @@ async function handleLogout() {
 function toggleAuthMode() {
     isSignUpMode = !isSignUpMode;
     document.getElementById('nameField').style.display = isSignUpMode ? 'block' : 'none';
-    document.getElementById('authSubmitBtn').textContent = isSignUpMode ? '📝 Đăng ký' : '🔑 Đăng nhập';
+    document.getElementById('authSubmitBtn').innerHTML = `${iconMarkup(isSignUpMode ? 'user-plus' : 'key-round')} ${isSignUpMode ? 'Đăng ký' : 'Đăng nhập'}`;
+    refreshIcons();
     document.getElementById('authToggleText').textContent = isSignUpMode ? 'Đã có tài khoản?' : 'Chưa có tài khoản?';
     document.getElementById('authToggleBtn').textContent = isSignUpMode ? 'Đăng nhập' : 'Đăng ký';
     document.getElementById('authError').textContent = '';
@@ -319,9 +369,12 @@ function toggleAuthMode() {
 function applyTheme() {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     const btn = document.querySelector('.theme-toggle');
-    if (btn) btn.textContent = isDark ? '🌙' : '☀️';
+    if (btn) {
+        btn.innerHTML = iconMarkup(isDark ? 'moon' : 'sun');
+        refreshIcons();
+    }
     const meta = document.getElementById('metaThemeColor');
-    if (meta) meta.content = isDark ? '#0f0f1a' : '#f0f2f5';
+    if (meta) meta.content = isDark ? '#08090d' : '#eef2f3';
 }
 
 function toggleTheme() {
@@ -332,7 +385,7 @@ function toggleTheme() {
 
 function setDefaultDate() {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('currentDate').textContent = '📅 ' + new Date().toLocaleDateString('vi-VN', options);
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('vi-VN', options);
 }
 
 // ===== Exchange Rate =====
@@ -396,7 +449,7 @@ async function fetchExchangeRate() {
     if (!exchangeRate) { exchangeRate = 18.5; widget.textContent = '18.50 ₫'; document.getElementById('exchangeSubtext').textContent = '1 KRW ≈ 18.50 VND'; }
     if (!usdRate && usdWidget) { usdRate = 25500; usdWidget.textContent = '25.500 ₫'; if (usdSubtext) usdSubtext.textContent = '1 USD ≈ 25.500 VND'; }
     exchangeStatus = 'offline';
-    statusEl.innerHTML = '⚡ Offline'; statusEl.className = 'exchange-status offline';
+    statusEl.textContent = 'Offline'; statusEl.className = 'exchange-status offline';
 }
 
 function convertFromKRW() {
@@ -407,7 +460,7 @@ function convertFromKRW() {
     if (!krw) { document.getElementById('converterResult').textContent = 'Nhập số tiền để quy đổi'; return; }
     const vnd = Math.round(krw * r);
     const usd = (krw * r / u).toFixed(2);
-    document.getElementById('converterResult').innerHTML = '🇻🇳 ' + fmtVND(vnd) + '&nbsp;&nbsp;|&nbsp;&nbsp;🇺🇸 $' + fmtFull(parseFloat(usd));
+    document.getElementById('converterResult').innerHTML = 'VND ' + fmtVND(vnd) + '&nbsp;&nbsp;|&nbsp;&nbsp;USD $' + fmtFull(parseFloat(usd));
 }
 function convertFromVND() {
     const r = exchangeRate || 18.5, u = usdRate || 25500;
@@ -417,7 +470,7 @@ function convertFromVND() {
     if (!vnd) { document.getElementById('converterResult').textContent = 'Nhập số tiền để quy đổi'; return; }
     const krw = Math.round(vnd / r);
     const usd = (vnd / u).toFixed(2);
-    document.getElementById('converterResult').innerHTML = '🇰🇷 ' + fmtKRW(krw) + '&nbsp;&nbsp;|&nbsp;&nbsp;🇺🇸 $' + fmtFull(parseFloat(usd));
+    document.getElementById('converterResult').innerHTML = 'KRW ' + fmtKRW(krw) + '&nbsp;&nbsp;|&nbsp;&nbsp;USD $' + fmtFull(parseFloat(usd));
 }
 function convertFromUSD() {
     const r = exchangeRate || 18.5, u = usdRate || 25500;
@@ -427,26 +480,32 @@ function convertFromUSD() {
     if (!usd) { document.getElementById('converterResult').textContent = 'Nhập số tiền để quy đổi'; return; }
     const vnd = Math.round(usd * u);
     const krw = Math.round(usd * u / r);
-    document.getElementById('converterResult').innerHTML = '🇰🇷 ' + fmtKRW(krw) + '&nbsp;&nbsp;|&nbsp;&nbsp;🇻🇳 ' + fmtVND(vnd);
+    document.getElementById('converterResult').innerHTML = 'KRW ' + fmtKRW(krw) + '&nbsp;&nbsp;|&nbsp;&nbsp;VND ' + fmtVND(vnd);
 }
 
 function renderAll() {
     renderSummary();
+    renderFinancialInsight();
     renderBudgetHealth();
     renderSavingsGoals();
     renderMonthlyBudgetTable();
     renderBudgetDashboard();
     renderBudgetOverviewChart();
     renderPieCharts();
+    refreshIcons();
+    initScrollReveal();
 }
 
 function renderWithoutTable() {
     renderSummary();
+    renderFinancialInsight();
     renderBudgetHealth();
     renderSavingsGoals();
     renderBudgetDashboard();
     renderBudgetOverviewChart();
     renderPieCharts();
+    refreshIcons();
+    initScrollReveal();
 }
 
 // ===== Formatters =====
@@ -458,6 +517,17 @@ function fmtCompact(v) {
     if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
     if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
     return v.toLocaleString('vi-VN');
+}
+
+function makeSmoothPath(points) {
+    if (!points.length) return '';
+    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+    return points.reduce((path, point, index) => {
+        if (index === 0) return `M ${point.x} ${point.y}`;
+        const prev = points[index - 1];
+        const controlX = prev.x + (point.x - prev.x) / 2;
+        return `${path} C ${controlX} ${prev.y}, ${controlX} ${point.y}, ${point.x} ${point.y}`;
+    }, '');
 }
 
 // Extract raw integer from formatted string
@@ -549,8 +619,8 @@ function renderSummary() {
     if (incKRWEl) incKRWEl.innerHTML = '≈ ' + fmtKRW(incKRW) + '<br><span class="sub-currency">≈ $' + fmtFull(Math.round(incKRW * r / u)) + '</span>';
     if (expKRWEl) expKRWEl.innerHTML = '≈ ' + fmtKRW(expKRW) + '<br><span class="sub-currency">≈ $' + fmtFull(Math.round(expKRW * r / u)) + '</span>';
     const sl = document.getElementById('savingsLabel');
-    if (rate >= 50) sl.textContent = '🌟 Xuất sắc!'; else if (rate >= 30) sl.textContent = '👍 Tốt';
-    else if (rate >= 10) sl.textContent = '⚠️ Cần cải thiện'; else if (income > 0) sl.textContent = '🚨 Rất ít';
+    if (rate >= 50) sl.textContent = 'Xuất sắc'; else if (rate >= 30) sl.textContent = 'Tốt';
+    else if (rate >= 10) sl.textContent = 'Cần cải thiện'; else if (income > 0) sl.textContent = 'Rất ít';
     else sl.textContent = '--';
 }
 
@@ -563,6 +633,91 @@ function animateVal(id, val) {
     requestAnimationFrame(() => {
         el.style.transform = 'scale(1)';
     });
+}
+
+function renderFinancialInsight() {
+    const card = document.getElementById('financialInsightCard');
+    const titleEl = document.getElementById('financialInsightTitle');
+    const textEl = document.getElementById('financialInsightText');
+    const scoreEl = document.getElementById('financialInsightScore');
+    if (!card || !titleEl || !textEl || !scoreEl) return;
+
+    const { incKRW, expKRW, balanceKRW, reserveSum, avgExp } = getAllTimeTotals();
+    const income = incKRW;
+    const expense = expKRW;
+    const balance = balanceKRW;
+
+    card.classList.remove('is-strong', 'is-warning', 'is-danger');
+
+    if (!income && !expense) {
+        titleEl.textContent = 'Chưa có dữ liệu';
+        textEl.textContent = 'Nhập thu nhập và chi tiêu để nhận phân tích tự động.';
+        scoreEl.textContent = '--';
+        return;
+    }
+
+    const savingsRate = income > 0 ? Math.round((balance / income) * 100) : 0;
+    const survivalMonths = avgExp > 0 ? reserveSum / avgExp : 0;
+    const currentMonthKey = getBudgetKey(new Date().getFullYear(), new Date().getMonth());
+    const currentMonth = monthlyBudget[currentMonthKey] || {};
+    const currentIncome = Number(currentMonth.income || 0);
+    const currentExpense = Number(currentMonth.expense || 0);
+    const livingBudget = Math.round(currentIncome * 0.40);
+    const livingDelta = livingBudget - currentExpense;
+
+    let title = 'Dòng tiền cần theo dõi';
+    let text = 'Chi tiêu đang cao hơn phần còn lại. Hãy rà lại tháng có chi tiêu lớn nhất.';
+    let tone = 'is-warning';
+
+    if (savingsRate >= 50 && balance > 0) {
+        title = 'Dòng tiền rất khỏe';
+        text = `Tỷ lệ tiết kiệm đạt ${savingsRate}%. Quỹ dự phòng hiện đủ khoảng ${survivalMonths ? survivalMonths.toFixed(1) : '--'} tháng.`;
+        tone = 'is-strong';
+    } else if (savingsRate >= 25 && balance > 0) {
+        title = 'Tài chính đang ổn định';
+        text = `Bạn đang giữ lại ${fmtKRW(balance)} sau chi tiêu. Tiếp tục duy trì nhịp tiết kiệm hiện tại.`;
+        tone = 'is-strong';
+    } else if (balance < 0) {
+        title = 'Chi tiêu đang vượt thu nhập';
+        text = `Dòng tiền âm ${fmtKRW(Math.abs(balance))}. Nên giảm các khoản không thiết yếu trong tháng tới.`;
+        tone = 'is-danger';
+    } else if (currentIncome && livingDelta < 0) {
+        title = 'Sinh hoạt vượt mức 40%';
+        text = `Tháng này chi tiêu sinh hoạt vượt ${fmtKRW(Math.abs(livingDelta))} so với ngưỡng 40%.`;
+        tone = 'is-warning';
+    }
+
+    card.classList.add(tone);
+    titleEl.textContent = title;
+    textEl.textContent = text;
+    scoreEl.textContent = `${Math.max(0, savingsRate)}%`;
+}
+
+function showBudgetTooltip(event, monthIndex, income, expense, balance) {
+    const tooltip = document.getElementById('budgetChartTooltip');
+    if (!tooltip) return;
+
+    const savingsRate = income > 0 ? Math.round((balance / income) * 100) : 0;
+    tooltip.innerHTML = `
+        <div class="budget-chart-tooltip-title">Tháng ${monthIndex + 1}</div>
+        <div><span>Thu nhập</span><strong>${fmtKRW(income)}</strong></div>
+        <div><span>Chi tiêu</span><strong>${fmtKRW(expense)}</strong></div>
+        <div><span>Còn lại</span><strong>${fmtKRW(balance)}</strong></div>
+        <div><span>Tỷ lệ tiết kiệm</span><strong>${Math.max(0, savingsRate)}%</strong></div>
+    `;
+
+    const margin = 16;
+    const width = 218;
+    const left = Math.min(window.innerWidth - width - margin, event.clientX + 14);
+    const top = Math.max(margin, event.clientY - 18);
+    tooltip.style.left = `${Math.max(margin, left)}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.classList.add('visible');
+}
+
+function hideBudgetTooltip() {
+    const tooltip = document.getElementById('budgetChartTooltip');
+    if (tooltip) tooltip.classList.remove('visible');
 }
 
 // ===== Budget KRW Dashboard (above table) =====
@@ -589,23 +744,28 @@ function renderBudgetHealth() {
     const { incKRW, expKRW } = getBudgetTotals();
     const income = Math.round(incKRW * r);
     const expense = Math.round(expKRW * r);
-    if (!income && !expense) { scoreEl.textContent = '--'; labelEl.textContent = 'Chưa có dữ liệu'; iconEl.textContent = '🏥'; return; }
+    if (!income && !expense) {
+        scoreEl.textContent = '--';
+        labelEl.textContent = 'Chưa có dữ liệu';
+        if (iconEl?.parentElement) iconEl.parentElement.innerHTML = iconMarkup('activity', 'health-icon');
+        return;
+    }
     const sr = income > 0 ? (income - expense) / income : 0;
     const now = new Date(), ck = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const cb = monthlyBudget[ck] || {}, cl = Math.round(Number(cb.income || 0) * 0.40), ce = Number(cb.expense || 0);
     const ba = cl > 0 ? Math.max(0, 1 - (ce / cl - 1)) : 1;
     let score = Math.max(0, Math.min(100, Math.round(sr * 60 + ba * 40)));
     let grade, label, icon, color;
-    if (score >= 85) { grade = 'A+'; label = 'Xuất sắc!'; icon = '🏆'; color = '#00b894'; }
-    else if (score >= 70) { grade = 'A'; label = 'Rất tốt'; icon = '🌟'; color = '#55efc4'; }
-    else if (score >= 55) { grade = 'B'; label = 'Khá tốt'; icon = '👍'; color = '#ffd93d'; }
-    else if (score >= 40) { grade = 'C'; label = 'Trung bình'; icon = '⚡'; color = '#ffa502'; }
-    else if (score >= 25) { grade = 'D'; label = 'Cần cải thiện'; icon = '⚠️'; color = '#ff6b6b'; }
-    else { grade = 'F'; label = 'Nguy hiểm!'; icon = '🚨'; color = '#d63031'; }
+    if (score >= 85) { grade = 'A+'; label = 'Xuất sắc'; icon = 'award'; color = '#2dd4bf'; }
+    else if (score >= 70) { grade = 'A'; label = 'Rất tốt'; icon = 'sparkles'; color = '#5eead4'; }
+    else if (score >= 55) { grade = 'B'; label = 'Khá tốt'; icon = 'thumbs-up'; color = '#facc15'; }
+    else if (score >= 40) { grade = 'C'; label = 'Trung bình'; icon = 'zap'; color = '#fb923c'; }
+    else if (score >= 25) { grade = 'D'; label = 'Cần cải thiện'; icon = 'triangle-alert'; color = '#fb7185'; }
+    else { grade = 'F'; label = 'Rủi ro cao'; icon = 'siren'; color = '#ef4444'; }
     scoreEl.textContent = grade;
     scoreEl.style.color = color;
-    labelEl.textContent = `${icon} ${label} (${score}/100)`;
-    if (iconEl) iconEl.textContent = icon;
+    labelEl.textContent = `${label} (${score}/100)`;
+    if (iconEl?.parentElement) iconEl.parentElement.innerHTML = iconMarkup(icon, 'health-icon');
 }
 
 // ===== Savings Goals =====
@@ -632,7 +792,7 @@ async function addSavingsGoal() {
         const preview = document.getElementById('goalVndPreview');
         if (preview) preview.textContent = '';
         renderSavingsGoals();
-        showToast(`🎯 Mục tiêu "${name}" đã thêm!`, 'success');
+        showToast(`Mục tiêu "${name}" đã thêm!`, 'success');
     } catch (err) {
         showToast('Lỗi lưu mục tiêu: ' + err.message, 'error');
     }
@@ -643,7 +803,7 @@ async function deleteSavingsGoal(id) {
         await deleteGoalFromDB(id);
         savingsGoals = savingsGoals.filter(g => g.id !== id);
         renderSavingsGoals();
-        showToast('🗑️ Đã xóa mục tiêu', 'info');
+        showToast('Đã xóa mục tiêu', 'info');
     } catch (err) {
         showToast('Lỗi xóa: ' + err.message, 'error');
     }
@@ -663,16 +823,16 @@ function renderSavingsGoals() {
         const monthlyNeeded = Math.round(g.amountKRW / g.months);
         return `<div class="goal-item">
             <div class="goal-info">
-                <div class="goal-name">🎯 ${escapeHtml(g.name)}</div>
+                <div class="goal-name">${iconMarkup('target')} ${escapeHtml(g.name)}</div>
                 <div class="goal-details">
-                    <span>💰 ${fmtKRW(g.amountKRW)} (${fmtVND(targetVND)})</span>
-                    <span>📅 ${g.months} tháng</span>
-                    <span>💵 ${fmtKRW(monthlyNeeded)}/tháng</span>
+                    <span class="goal-meta">${iconMarkup('banknote')} ${fmtKRW(g.amountKRW)} (${fmtVND(targetVND)})</span>
+                    <span class="goal-meta">${iconMarkup('calendar-clock')} ${g.months} tháng</span>
+                    <span class="goal-meta">${iconMarkup('circle-dollar-sign')} ${fmtKRW(monthlyNeeded)}/tháng</span>
                 </div>
-                <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%;${pct >= 100 ? 'background:linear-gradient(90deg,#00b894,#55efc4);' : ''}"></div></div>
+                <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%;${pct >= 100 ? 'background:linear-gradient(90deg,#2dd4bf,#5eead4);' : ''}"></div></div>
             </div>
             <div class="goal-pct">${pct}%</div>
-            <button class="goal-delete" onclick="deleteSavingsGoal('${g.id}')" title="Xóa">🗑️</button>
+            <button class="goal-delete" onclick="deleteSavingsGoal('${g.id}')" title="Xóa">${iconMarkup('trash-2')}</button>
         </div>`;
     }).join('');
 }
@@ -842,7 +1002,7 @@ function renderMonthlyBudgetTable() {
 }
 
 // ===== Budget Overview Line Chart =====
-function renderBudgetOverviewChart() {
+function legacyRenderBudgetOverviewChart() {
     const container = document.getElementById('budgetOverviewChart');
     if (!container) return;
     const labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
@@ -864,7 +1024,8 @@ function renderBudgetOverviewChart() {
         series.invest.push(invest);
     }
     if (!hasData) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>Nhập dữ liệu để xem biểu đồ</p></div>';
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">${iconMarkup('chart-no-axes-combined')}</div><p>Nhập dữ liệu để xem biểu đồ</p></div>`;
+        refreshIcons();
         return;
     }
 
@@ -976,15 +1137,343 @@ function renderBudgetOverviewChart() {
     </svg>`;
 }
 
+function renderBudgetOverviewChart() {
+    const container = document.getElementById('budgetOverviewChart');
+    if (!container) return;
+
+    const labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+    const series = { income: [], expense: [], balance: [] };
+    const allocations = { living: 0, reserve: 0, invest: 0 };
+    let hasData = false;
+
+    for (let m = 0; m < 12; m++) {
+        const key = getBudgetKey(budgetYear, m);
+        const bd = monthlyBudget[key] || {};
+        const inc = Number(bd.income || 0);
+        const exp = Number(bd.expense || 0);
+        const balance = inc - exp;
+
+        if (inc || exp) hasData = true;
+        allocations.living += Math.round(inc * 0.40);
+        allocations.reserve += Math.round(inc * 0.40);
+        allocations.invest += Math.round(inc * 0.20);
+        series.income.push(inc);
+        series.expense.push(exp);
+        series.balance.push(balance);
+    }
+
+    if (!hasData) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">${iconMarkup('chart-no-axes-combined')}</div><p>Nhập dữ liệu để xem biểu đồ</p></div>`;
+        refreshIcons();
+        return;
+    }
+
+    const W = 920;
+    const H = 315;
+    const pad = { top: 22, right: 24, bottom: 38, left: 60 };
+    const cW = W - pad.left - pad.right;
+    const cH = H - pad.top - pad.bottom;
+
+    function getNiceMax(v) {
+        if (v <= 0) return 100;
+        const mag = Math.pow(10, Math.floor(Math.log10(v)));
+        const norm = v / mag;
+        if (norm <= 1.5) return 1.5 * mag;
+        if (norm <= 2) return 2 * mag;
+        if (norm <= 3) return 3 * mag;
+        if (norm <= 5) return 5 * mag;
+        if (norm <= 7.5) return 7.5 * mag;
+        return 10 * mag;
+    }
+
+    function getNiceMin(v) {
+        if (v >= 0) return 0;
+        return -getNiceMax(Math.abs(v));
+    }
+
+    const allVals = [...series.income, ...series.expense, ...series.balance];
+    const niceMax = getNiceMax(Math.max(...allVals, 1));
+    const niceMin = getNiceMin(Math.min(...allVals, 0));
+    const range = Math.max(1, niceMax - niceMin);
+    const zeroY = yPos(0);
+
+    function xPos(i) {
+        return pad.left + (i / 11) * cW;
+    }
+
+    function yPos(v) {
+        return pad.top + cH - ((v - niceMin) / range) * cH;
+    }
+
+    function pointFor(v, i) {
+        return { x: Number(xPos(i).toFixed(1)), y: Number(yPos(v).toFixed(1)) };
+    }
+
+    function areaPath(points) {
+        if (!points.length) return '';
+        const line = makeSmoothPath(points);
+        return `${line} L ${points[points.length - 1].x} ${zeroY.toFixed(1)} L ${points[0].x} ${zeroY.toFixed(1)} Z`;
+    }
+
+    let gridSvg = '';
+    for (let i = 0; i <= 5; i++) {
+        const val = Math.round(niceMin + (range / 5) * i);
+        const y = yPos(val);
+        const isZero = Math.abs(val) < range / 100;
+        gridSvg += `<line x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}" class="${isZero ? 'budget-flow-zero' : 'budget-flow-grid'}"/>`;
+        gridSvg += `<text x="${pad.left - 10}" y="${y + 4}" text-anchor="end" class="budget-flow-y-label">${fmtCompact(val)}</text>`;
+    }
+
+    const xLabels = labels.map((label, i) => (
+        `<text x="${xPos(i)}" y="${H - 10}" text-anchor="middle" class="budget-flow-x-label">${label}</text>`
+    )).join('');
+
+    const flowSeries = [
+        { key: 'income', cls: 'income', data: series.income },
+        { key: 'expense', cls: 'expense', data: series.expense },
+        { key: 'balance', cls: 'balance', data: series.balance },
+    ];
+
+    let shapesSvg = '';
+    let dotsSvg = '';
+    let labelsSvg = '';
+    let hitSvg = '';
+
+    flowSeries.forEach(cfg => {
+        const vals = cfg.data;
+        const points = vals.map((value, index) => pointFor(value, index));
+        const pathD = makeSmoothPath(points);
+
+        if (cfg.key !== 'balance') {
+            shapesSvg += `<path class="budget-flow-area budget-flow-area-${cfg.cls}" d="${areaPath(points)}"/>`;
+        }
+        shapesSvg += `<path class="budget-flow-line budget-flow-line-${cfg.cls}" d="${pathD}"/>`;
+
+        const nonZeroIndexes = vals.map((value, index) => value !== 0 ? index : -1).filter(index => index >= 0);
+        const latestIndex = nonZeroIndexes.length ? nonZeroIndexes[nonZeroIndexes.length - 1] : -1;
+        const peakIndex = vals.indexOf(Math.max(...vals));
+
+        for (let i = 0; i < vals.length; i++) {
+            if (vals[i] === 0 && !series.income[i] && !series.expense[i]) continue;
+            const point = points[i];
+            const isKeyPoint = i === latestIndex || (cfg.key === 'income' && i === peakIndex);
+            dotsSvg += `<circle cx="${point.x}" cy="${point.y}" r="${isKeyPoint ? 4.6 : 3}" class="budget-flow-dot budget-flow-dot-${cfg.cls}"/>`;
+            if (isKeyPoint && vals[i] !== 0) {
+                const labelY = cfg.key === 'balance' ? point.y + 17 : point.y - 12;
+                labelsSvg += `<text x="${Math.min(W - 34, Math.max(34, point.x))}" y="${Math.max(16, Math.min(H - 24, labelY))}" text-anchor="middle" class="budget-flow-value budget-flow-value-${cfg.cls}">${fmtCompact(vals[i])}</text>`;
+            }
+        }
+    });
+
+    let curMonthSvg = '';
+    if (budgetYear === new Date().getFullYear()) {
+        const cx = xPos(new Date().getMonth());
+        curMonthSvg = `<line x1="${cx}" y1="${pad.top}" x2="${cx}" y2="${pad.top + cH}" class="budget-flow-current"/>`;
+    }
+
+    for (let index = 0; index < labels.length; index++) {
+        if (!series.income[index] && !series.expense[index]) continue;
+        const x = xPos(index);
+        hitSvg += `<circle cx="${x}" cy="${pad.top + cH / 2}" r="24" class="budget-flow-hit"
+            onmousemove="showBudgetTooltip(event, ${index}, ${series.income[index]}, ${series.expense[index]}, ${series.balance[index]})"
+            onmouseleave="hideBudgetTooltip()"></circle>`;
+    }
+
+    container.innerHTML = `<div class="budget-flow-chart">
+        <div class="budget-flow-legend">
+            <span class="income">Thu nhập</span>
+            <span class="expense">Chi tiêu</span>
+            <span class="balance">Còn lại</span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" class="line-chart-svg budget-flow-svg" role="img" aria-label="Biểu đồ thu nhập, chi tiêu và còn lại theo tháng">
+            ${gridSvg}
+            ${xLabels}
+            ${curMonthSvg}
+            ${shapesSvg}
+            ${dotsSvg}
+            ${labelsSvg}
+            ${hitSvg}
+        </svg>
+        <div class="budget-chart-tooltip" id="budgetChartTooltip"></div>
+        <div class="budget-flow-allocation">
+            <span>Sinh hoạt 40% <strong>${fmtCompact(allocations.living)}</strong></span>
+            <span>Dự phòng 40% <strong>${fmtCompact(allocations.reserve)}</strong></span>
+            <span>Đầu tư 20% <strong>${fmtCompact(allocations.invest)}</strong></span>
+        </div>
+    </div>`;
+}
+
+renderBudgetOverviewChart = function() {
+    const container = document.getElementById('budgetOverviewChart');
+    if (!container) return;
+
+    const labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+    const series = { income: [], expense: [], balance: [] };
+    const allocations = { living: 0, reserve: 0, invest: 0 };
+    let hasData = false;
+
+    for (let m = 0; m < 12; m++) {
+        const key = getBudgetKey(budgetYear, m);
+        const bd = monthlyBudget[key] || {};
+        const income = Number(bd.income || 0);
+        const expense = Number(bd.expense || 0);
+        const balance = income - expense;
+
+        if (income || expense) hasData = true;
+        allocations.living += Math.round(income * 0.40);
+        allocations.reserve += Math.round(income * 0.40);
+        allocations.invest += Math.round(income * 0.20);
+        series.income.push(income);
+        series.expense.push(expense);
+        series.balance.push(balance);
+    }
+
+    if (!hasData) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">${iconMarkup('chart-no-axes-combined')}</div><p>Nhập dữ liệu để xem biểu đồ</p></div>`;
+        refreshIcons();
+        return;
+    }
+
+    const W = 920;
+    const H = 315;
+    const pad = { top: 24, right: 24, bottom: 38, left: 60 };
+    const cW = W - pad.left - pad.right;
+    const cH = H - pad.top - pad.bottom;
+
+    function getNiceMax(v) {
+        if (v <= 0) return 100;
+        const mag = Math.pow(10, Math.floor(Math.log10(v)));
+        const norm = v / mag;
+        if (norm <= 1.5) return 1.5 * mag;
+        if (norm <= 2) return 2 * mag;
+        if (norm <= 3) return 3 * mag;
+        if (norm <= 5) return 5 * mag;
+        if (norm <= 7.5) return 7.5 * mag;
+        return 10 * mag;
+    }
+
+    const allValues = [...series.income, ...series.expense, ...series.balance];
+    const niceMax = getNiceMax(Math.max(...allValues, 1));
+    const niceMin = Math.min(...allValues) < 0 ? -getNiceMax(Math.abs(Math.min(...allValues))) : 0;
+    const range = Math.max(1, niceMax - niceMin);
+    const zeroY = yPos(0);
+
+    function xPos(index) {
+        return pad.left + (index / 11) * cW;
+    }
+
+    function yPos(value) {
+        return pad.top + cH - ((value - niceMin) / range) * cH;
+    }
+
+    function pointFor(value, index) {
+        return { x: Number(xPos(index).toFixed(1)), y: Number(yPos(value).toFixed(1)) };
+    }
+
+    function budgetFlowPath(points) {
+        return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+    }
+
+    function areaPath(points) {
+        if (!points.length) return '';
+        return `${budgetFlowPath(points)} L ${points[points.length - 1].x} ${zeroY.toFixed(1)} L ${points[0].x} ${zeroY.toFixed(1)} Z`;
+    }
+
+    let gridSvg = '';
+    for (let i = 0; i <= 5; i++) {
+        const value = Math.round(niceMin + (range / 5) * i);
+        const y = yPos(value);
+        const isZero = Math.abs(value) < range / 100;
+        gridSvg += `<line x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}" class="${isZero ? 'budget-flow-zero' : 'budget-flow-grid'}"/>`;
+        gridSvg += `<text x="${pad.left - 10}" y="${y + 4}" text-anchor="end" class="budget-flow-y-label">${fmtCompact(value)}</text>`;
+    }
+
+    const xLabels = labels.map((label, index) => (
+        `<text x="${xPos(index)}" y="${H - 10}" text-anchor="middle" class="budget-flow-x-label">${label}</text>`
+    )).join('');
+
+    const chartSeries = [
+        { key: 'income', cls: 'income', label: 'Thu nhập', data: series.income },
+        { key: 'expense', cls: 'expense', label: 'Chi tiêu', data: series.expense },
+        { key: 'balance', cls: 'balance', label: 'Còn lại', data: series.balance },
+    ];
+
+    let shapesSvg = '';
+    let dotsSvg = '';
+    let labelsSvg = '';
+    let hitSvg = '';
+
+    chartSeries.forEach(cfg => {
+        const points = cfg.data.map((value, index) => pointFor(value, index));
+        const pathD = budgetFlowPath(points);
+
+        if (cfg.key !== 'balance') {
+            shapesSvg += `<path class="budget-flow-area budget-flow-area-${cfg.cls}" d="${areaPath(points)}"/>`;
+        }
+        shapesSvg += `<path class="budget-flow-line budget-flow-line-${cfg.cls}" d="${pathD}"/>`;
+
+        const nonZeroIndexes = cfg.data.map((value, index) => value !== 0 ? index : -1).filter(index => index >= 0);
+        const latestIndex = nonZeroIndexes.length ? nonZeroIndexes[nonZeroIndexes.length - 1] : -1;
+        const peakIndex = cfg.data.indexOf(Math.max(...cfg.data));
+
+        cfg.data.forEach((value, index) => {
+            if (value === 0 && !series.income[index] && !series.expense[index]) return;
+            const point = points[index];
+            const isKeyPoint = index === latestIndex || (cfg.key === 'income' && index === peakIndex);
+            dotsSvg += `<circle cx="${point.x}" cy="${point.y}" r="${isKeyPoint ? 4.6 : 3}" class="budget-flow-dot budget-flow-dot-${cfg.cls}"><title>${cfg.label}: ${fmtFull(value)} KRW</title></circle>`;
+            if (isKeyPoint && value !== 0) {
+                const labelY = cfg.key === 'balance' ? point.y + 17 : point.y - 12;
+                labelsSvg += `<text x="${Math.min(W - 34, Math.max(34, point.x))}" y="${Math.max(16, Math.min(H - 24, labelY))}" text-anchor="middle" class="budget-flow-value budget-flow-value-${cfg.cls}">${fmtCompact(value)}</text>`;
+            }
+        });
+    });
+
+    let curMonthSvg = '';
+    if (budgetYear === new Date().getFullYear()) {
+        const cx = xPos(new Date().getMonth());
+        curMonthSvg = `<line x1="${cx}" y1="${pad.top}" x2="${cx}" y2="${pad.top + cH}" class="budget-flow-current"/>`;
+    }
+
+    for (let index = 0; index < labels.length; index++) {
+        if (!series.income[index] && !series.expense[index]) continue;
+        const x = xPos(index);
+        hitSvg += `<circle cx="${x}" cy="${pad.top + cH / 2}" r="24" class="budget-flow-hit"
+            onmousemove="showBudgetTooltip(event, ${index}, ${series.income[index]}, ${series.expense[index]}, ${series.balance[index]})"
+            onmouseleave="hideBudgetTooltip()"></circle>`;
+    }
+
+    container.innerHTML = `<div class="budget-flow-chart">
+        <div class="budget-flow-legend">
+            <span class="income">Thu nhập</span>
+            <span class="expense">Chi tiêu</span>
+            <span class="balance">Còn lại</span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" class="line-chart-svg budget-flow-svg" role="img" aria-label="Biểu đồ thu nhập, chi tiêu và còn lại theo tháng">
+            ${gridSvg}
+            ${xLabels}
+            ${curMonthSvg}
+            ${shapesSvg}
+            ${dotsSvg}
+            ${labelsSvg}
+            ${hitSvg}
+        </svg>
+        <div class="budget-chart-tooltip" id="budgetChartTooltip"></div>
+        <div class="budget-flow-allocation">
+            <span>Sinh hoạt 40% <strong>${fmtCompact(allocations.living)}</strong></span>
+            <span>Dự phòng 40% <strong>${fmtCompact(allocations.reserve)}</strong></span>
+            <span>Đầu tư 20% <strong>${fmtCompact(allocations.invest)}</strong></span>
+        </div>
+    </div>`;
+};
+
 // ===== Chart Fullscreen =====
 function openChartFullscreen() {
     const chart = document.getElementById('budgetOverviewChart');
     const overlay = document.getElementById('chartFullscreen');
     const content = document.getElementById('chartFullscreenContent');
     if (!chart || !overlay || !content) return;
-    const svg = chart.querySelector('svg');
-    if (!svg) { showToast('Chưa có biểu đồ để phóng to', 'info'); return; }
-    content.innerHTML = svg.outerHTML;
+    if (!chart.innerHTML.trim()) { showToast('Chưa có biểu đồ để phóng to', 'info'); return; }
+    content.innerHTML = chart.innerHTML;
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -1093,6 +1582,91 @@ function drawPie(containerId, data) {
     container.innerHTML = svg;
 }
 
+function getAllocationLegendHTML(data) {
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    return data.map(item => {
+        const percent = total > 0 ? Math.round((item.value / total) * 100) : 0;
+        return `<div class="pie-legend-item allocation-legend-item">
+            <span class="legend-dot" style="background:${item.color}"></span>
+            ${item.label}: <strong>${percent}%</strong>
+        </div>`;
+    }).join('');
+}
+
+function drawAllocationBars(containerId, data) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    if (total <= 0) {
+        container.innerHTML = '<div class="pie-empty allocation-empty">Chưa có dữ liệu</div>';
+        return;
+    }
+
+    const rows = data.map(item => {
+        const percent = Math.round((item.value / total) * 100);
+        return `<div class="allocation-bar-row">
+            <div class="allocation-bar-heading">
+                <span><i style="background:${item.color}"></i>${item.label}</span>
+                <strong>${percent}%</strong>
+            </div>
+            <div class="allocation-bar-track">
+                <div class="allocation-bar-fill" style="--bar-width:${percent}%; --bar-color:${item.color}"></div>
+            </div>
+            <div class="allocation-bar-value">${fmtFull(item.value)} KRW</div>
+        </div>`;
+    }).join('');
+
+    container.innerHTML = `<div class="allocation-bar-chart">${rows}</div>`;
+}
+
+renderPieCharts = function() {
+    const yearLabel = document.getElementById('pieYearLabel');
+    if (yearLabel) yearLabel.textContent = budgetYear;
+
+    let yearlyIncome = 0;
+    let yearlyExpense = 0;
+    for (let m = 0; m < 12; m++) {
+        const key = getBudgetKey(budgetYear, m);
+        const data = monthlyBudget[key] || {};
+        yearlyIncome += Number(data.income || 0);
+        yearlyExpense += Number(data.expense || 0);
+    }
+
+    let allIncome = 0;
+    let allExpense = 0;
+    Object.values(monthlyBudget).forEach(data => {
+        allIncome += Number(data.income || 0);
+        allExpense += Number(data.expense || 0);
+    });
+
+    const yearlyBalance = Math.max(0, yearlyIncome - yearlyExpense);
+    const yearlyReserve = Math.round(yearlyBalance * (2 / 3));
+    const yearlyInvest = yearlyBalance - yearlyReserve;
+    const allBalance = Math.max(0, allIncome - allExpense);
+    const allReserve = Math.round(allBalance * (2 / 3));
+    const allInvest = allBalance - allReserve;
+
+    const yearlyData = [
+        { label: 'Chi tiêu', value: yearlyExpense, color: '#fb7185' },
+        { label: 'Dự phòng', value: yearlyReserve, color: '#fbbf24' },
+        { label: 'Đầu tư', value: yearlyInvest, color: '#2dd4bf' }
+    ];
+    const allTimeData = [
+        { label: 'Chi tiêu', value: allExpense, color: '#fb7185' },
+        { label: 'Dự phòng', value: allReserve, color: '#fbbf24' },
+        { label: 'Đầu tư', value: allInvest, color: '#2dd4bf' }
+    ];
+
+    drawAllocationBars('pieChartYearly', yearlyData);
+    drawAllocationBars('pieChartAllTime', allTimeData);
+
+    const yearlyLegend = document.getElementById('pieLegendYearly');
+    const allTimeLegend = document.getElementById('pieLegendAllTime');
+    if (yearlyLegend) yearlyLegend.innerHTML = getAllocationLegendHTML(yearlyData);
+    if (allTimeLegend) allTimeLegend.innerHTML = getAllocationLegendHTML(allTimeData);
+};
+
 // ===== Export CSV =====
 function exportToCSV() {
     try {
@@ -1178,10 +1752,10 @@ function exportToCSV() {
         link.click();
         document.body.removeChild(link);
         
-        showToast('✅ Đã xuất báo cáo CSV thành công!', 'success');
+        showToast('Đã xuất báo cáo CSV thành công!', 'success');
     } catch (err) {
         console.error('Export error:', err);
-        showToast('❌ Lỗi xuất file: ' + err.message, 'error');
+        showToast('Lỗi xuất file: ' + err.message, 'error');
     }
 }
 
