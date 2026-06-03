@@ -9,6 +9,29 @@ let isDark = localStorage.getItem('theme') !== 'light';
 let isSignUpMode = false;
 let saveTimeout = null;
 
+const DEMO_MONTHLY_BUDGET = [
+    { month: 1, income: 2300000, expense: 2100000 },
+    { month: 2, income: 2300000, expense: 1600000 },
+    { month: 3, income: 2400000, expense: 1000000 },
+    { month: 4, income: 2300000, expense: 1500000 },
+    { month: 5, income: 232300, expense: 323 },
+];
+
+function getDemoBudgetData(year = budgetYear) {
+    return DEMO_MONTHLY_BUDGET.reduce((acc, item) => {
+        acc[getBudgetKey(year, item.month - 1)] = {
+            income: item.income,
+            expense: item.expense
+        };
+        return acc;
+    }, {});
+}
+
+function applyDemoBudgetIfEmpty(data) {
+    if (data && Object.keys(data).length) return data;
+    return localStorage.getItem('goz_demo_data') === 'true' ? getDemoBudgetData() : data;
+}
+
 function iconMarkup(name, extraClass = '') {
     return `<i class="icon-svg ${extraClass}" data-lucide="${name}"></i>`;
 }
@@ -20,16 +43,18 @@ function refreshIcons() {
 }
 
 function initScrollReveal() {
+    const REVEAL_STAGGER = 35;
+    const REVEAL_MAX_DELAY = 120;
     const targets = document.querySelectorAll(
         '.exchange-shell, .summary-card, .financial-insight-card, .panel, .budget-dash-item, .pie-card, .goal-item'
     );
 
     targets.forEach((el, index) => {
         el.classList.add('reveal-box', 'premium-card-hover');
-        if (!el.dataset.revealDelay) {
-            el.style.transitionDelay = `${index * 80}ms`;
-            el.dataset.revealDelay = String(index * 80);
-        }
+        const groupIndex = index % 4;
+        const delay = Math.min(groupIndex * REVEAL_STAGGER, REVEAL_MAX_DELAY);
+        el.style.transitionDelay = `${delay}ms`;
+        el.dataset.revealDelay = String(delay);
     });
 
     const pending = Array.from(targets).filter(el => !el.dataset.revealBound);
@@ -49,7 +74,7 @@ function initScrollReveal() {
             entry.target.classList.add('is-visible');
             observer.unobserve(entry.target);
         });
-    }, { threshold: 0.15, rootMargin: '0px 0px -12% 0px' });
+    }, { threshold: 0.08, rootMargin: '0px 0px 8% 0px' });
 
     pending.forEach(el => {
         el.dataset.revealBound = 'true';
@@ -269,7 +294,7 @@ async function showApp() {
 
     // Load data from Supabase
     try {
-        monthlyBudget = await loadBudgets();
+        monthlyBudget = applyDemoBudgetIfEmpty(await loadBudgets());
         savingsGoals = await loadGoals();
     } catch (e) {
         console.error('Load data error:', e);
@@ -653,6 +678,9 @@ function renderFinancialInsight() {
         titleEl.textContent = 'Chưa có dữ liệu';
         textEl.textContent = 'Nhập thu nhập và chi tiêu để nhận phân tích tự động.';
         scoreEl.textContent = '--';
+        scoreEl.classList.add('health-score-ring');
+        scoreEl.style.setProperty('--health-progress', '0%');
+        scoreEl.style.setProperty('--health-color', 'var(--text-muted)');
         return;
     }
 
@@ -764,6 +792,9 @@ function renderBudgetHealth() {
     else { grade = 'F'; label = 'Rủi ro cao'; icon = 'siren'; color = '#ef4444'; }
     scoreEl.textContent = grade;
     scoreEl.style.color = color;
+    scoreEl.classList.add('health-score-ring');
+    scoreEl.style.setProperty('--health-progress', `${score}%`);
+    scoreEl.style.setProperty('--health-color', color);
     labelEl.textContent = `${label} (${score}/100)`;
     if (iconEl?.parentElement) iconEl.parentElement.innerHTML = iconMarkup(icon, 'health-icon');
 }

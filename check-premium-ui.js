@@ -100,14 +100,16 @@ const checks = [
   {
     name: 'scroll reveal and premium card hover are configured',
     pass: app.includes('function initScrollReveal') &&
-      app.includes('threshold: 0.15') &&
-      app.includes("rootMargin: '0px 0px -12% 0px'") &&
-      app.includes('index * 80') &&
+      app.includes('const REVEAL_MAX_DELAY = 120') &&
+      app.includes('const REVEAL_STAGGER = 35') &&
+      app.includes('threshold: 0.08') &&
+      app.includes("rootMargin: '0px 0px 8% 0px'") &&
+      !app.includes('index * 80') &&
       css.includes('.reveal-box') &&
-      css.includes('transition-duration: 0.35s') &&
-      css.includes('translateY(12px)') &&
+      css.includes('transition-duration: 0.28s') &&
+      css.includes('translateY(8px)') &&
       css.includes('cubic-bezier(0.16, 1, 0.3, 1)') &&
-      css.includes('transition-duration: 0.7s !important') &&
+      css.includes('transition-duration: 0.18s !important') &&
       css.includes('.premium-card-hover:hover')
   },
   {
@@ -133,6 +135,37 @@ const checks = [
       html.includes('href="#savingsGoalPanel"') &&
       css.includes('.mobile-bottom-nav') &&
       css.includes('padding-bottom: calc(28px + 74px)')
+  },
+  {
+    name: 'mobile header controls are aligned and compact',
+    pass: css.includes('grid-template-columns: 44px 44px minmax(0, 1fr)') &&
+      css.includes('.user-badge .pin-toggle-wrapper') &&
+      css.includes('margin-left: auto') &&
+      css.includes('.user-badge .user-info-column') &&
+      css.includes('.user-badge .user-name') &&
+      css.includes('display: block') &&
+      css.includes('.user-name:empty::after') &&
+      css.includes('.date-badge span')
+  },
+  {
+    name: 'health card uses circular progress treatment',
+    pass: app.includes('--health-progress') &&
+      app.includes('--health-color') &&
+      css.includes('.health-score-ring') &&
+      css.includes('conic-gradient')
+  },
+  {
+    name: 'budget table uses minimalist SaaS row styling',
+    pass: css.includes('.monthly-table tbody tr:hover') &&
+      css.includes('border-left: 0') &&
+      css.includes('font-variant-numeric: tabular-nums') &&
+      css.includes('.monthly-table td:nth-child(n+2)')
+  },
+  {
+    name: 'demo budget data scaffold is available without overwriting real data',
+    pass: app.includes('DEMO_MONTHLY_BUDGET') &&
+      app.includes('function getDemoBudgetData') &&
+      app.includes('applyDemoBudgetIfEmpty')
   },
   {
     name: 'mobile density has compact KPI grid and chart sizing',

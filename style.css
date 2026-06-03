@@ -3815,9 +3815,9 @@ html[data-theme="light"] body {
 /* ===== Premium Motion + Layout Fixes ===== */
 .reveal-box {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
     transition-property: opacity, transform;
-    transition-duration: 0.35s;
+    transition-duration: 0.28s;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity, transform;
 }
@@ -3829,7 +3829,7 @@ html[data-theme="light"] body {
 
 @media (prefers-reduced-motion: reduce) {
     .reveal-box {
-        transition-duration: 0.7s !important;
+        transition-duration: 0.18s !important;
     }
 }
 
@@ -3840,6 +3840,15 @@ html[data-theme="light"] body {
         box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
         background 0.22s cubic-bezier(0.16, 1, 0.3, 1),
         opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-box.premium-card-hover {
+    transition:
+        opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+        background 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .premium-card-hover:hover {
@@ -4342,6 +4351,177 @@ html[data-theme="light"] body {
         background: rgba(255, 255, 255, 0.9);
         border-color: rgba(15, 23, 42, 0.1);
         box-shadow: 0 20px 50px rgba(15, 23, 42, 0.14);
+    }
+}
+
+/* ===== Spec Refinements: Ring + Minimal Table ===== */
+.health-score-ring {
+    width: 58px;
+    height: 58px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    color: var(--health-color);
+    background:
+        radial-gradient(circle at center, var(--surface-panel) 58%, transparent 59%),
+        conic-gradient(var(--health-color) var(--health-progress), rgba(148, 163, 184, 0.16) 0);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 10px 28px rgba(0, 0, 0, 0.18);
+    font-size: 1.12rem;
+    line-height: 1;
+}
+
+.monthly-table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.monthly-table th,
+.monthly-table td {
+    border-left: 0;
+    border-right: 0;
+}
+
+.monthly-table tbody tr {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.monthly-table tbody tr:hover {
+    background: rgba(45, 212, 191, 0.055);
+    transform: translateY(-1px);
+}
+
+.monthly-table td:nth-child(n+2),
+.monthly-table th:nth-child(n+2) {
+    text-align: right;
+}
+
+.monthly-table td:first-child,
+.monthly-table th:first-child {
+    text-align: left;
+}
+
+.monthly-table .income-input,
+.monthly-table .expense-input {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+[data-theme="light"] .health-score-ring {
+    background:
+        radial-gradient(circle at center, #ffffff 58%, transparent 59%),
+        conic-gradient(var(--health-color) var(--health-progress), rgba(100, 116, 139, 0.14) 0);
+}
+
+/* ===== Mobile Header Repair ===== */
+@media(max-width:720px) {
+    .header {
+        padding: 14px 0 12px;
+    }
+
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .header-left {
+        width: 100%;
+        min-width: 0;
+        padding: 0 2px;
+    }
+
+    .header-actions {
+        display: grid;
+        grid-template-columns: 44px 44px minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .user-badge {
+        grid-column: 1 / -1;
+        width: 100%;
+        height: 46px;
+        min-width: 0;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 10px;
+    }
+
+    .user-badge .user-avatar {
+        order: 1;
+        flex: 0 0 32px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .user-badge .user-info-column {
+        order: 2;
+        min-width: 0;
+        flex: 1 1 auto;
+        display: flex;
+    }
+
+    .user-badge .user-name {
+        display: block;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .user-badge .user-name:empty::after {
+        content: 'GOZ';
+        color: var(--text-secondary);
+        font-weight: 800;
+    }
+
+    .user-badge .pin-toggle-wrapper {
+        order: 3;
+        flex: 0 0 auto;
+        margin-left: auto;
+    }
+
+    .logout-btn {
+        grid-column: 1;
+        width: 44px;
+        height: 44px;
+        min-height: 44px;
+        padding: 0;
+    }
+
+    .theme-toggle {
+        grid-column: 2;
+        width: 44px;
+        height: 44px;
+        min-height: 44px;
+    }
+
+    .date-badge {
+        grid-column: 3;
+        width: 100%;
+        height: 44px;
+        min-width: 0;
+        justify-content: center;
+        gap: 6px;
+        padding: 0 10px;
+        font-size: 0.68rem;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .date-badge span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .exchange-shell {
+        margin-top: 0;
     }
 }
 
