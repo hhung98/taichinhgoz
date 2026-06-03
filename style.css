@@ -4414,6 +4414,165 @@ html[data-theme="light"] body {
         conic-gradient(var(--health-color) var(--health-progress), rgba(100, 116, 139, 0.14) 0);
 }
 
+/* ===== Custom Confirm Modal + User Badge Repair ===== */
+.user-badge {
+    min-width: 0;
+    max-width: min(340px, 100%);
+}
+
+.user-badge .user-avatar {
+    order: 1;
+    flex: 0 0 auto;
+}
+
+.user-badge .user-info-column {
+    order: 2;
+    min-width: 0;
+    flex: 1 1 0;
+}
+
+.user-badge .pin-toggle-wrapper {
+    order: 3;
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+.user-badge .user-name {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.goz-confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(2, 6, 23, 0.58);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(16px);
+}
+
+.goz-confirm-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.goz-confirm-modal {
+    width: min(420px, 100%);
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 14px;
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(45, 212, 191, 0.16);
+    background:
+        radial-gradient(circle at 0 0, rgba(45, 212, 191, 0.12), transparent 38%),
+        var(--surface-panel);
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+    transform: translateY(10px) scale(0.98);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.goz-confirm-backdrop.active .goz-confirm-modal {
+    transform: translateY(0) scale(1);
+}
+
+.goz-confirm-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    color: var(--accent-money);
+    background: rgba(45, 212, 191, 0.1);
+    border: 1px solid rgba(45, 212, 191, 0.16);
+}
+
+.goz-confirm-copy {
+    min-width: 0;
+}
+
+.goz-confirm-kicker {
+    margin: 0 0 4px;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.goz-confirm-copy h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.12rem;
+    letter-spacing: 0;
+}
+
+.goz-confirm-copy p:not(.goz-confirm-kicker) {
+    margin: 8px 0 0;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.goz-confirm-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 4px;
+}
+
+.goz-confirm-btn {
+    min-width: 88px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.goz-confirm-btn:hover {
+    transform: translateY(-1px);
+}
+
+.goz-confirm-btn.secondary {
+    color: var(--text-secondary);
+    background: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.12);
+}
+
+.goz-confirm-btn.primary {
+    color: #04110f;
+    background: var(--accent-money);
+    box-shadow: 0 14px 32px rgba(45, 212, 191, 0.2);
+}
+
+.goz-confirm-btn.primary.danger {
+    color: #fff;
+    background: var(--accent-red);
+    box-shadow: 0 14px 32px rgba(251, 113, 133, 0.2);
+}
+
+[data-theme="light"] .goz-confirm-backdrop {
+    background: rgba(15, 23, 42, 0.28);
+}
+
+[data-theme="light"] .goz-confirm-modal {
+    background:
+        radial-gradient(circle at 0 0, rgba(13, 148, 136, 0.1), transparent 38%),
+        #ffffff;
+    border-color: rgba(15, 23, 42, 0.1);
+    box-shadow: 0 28px 90px rgba(15, 23, 42, 0.22);
+}
+
 /* ===== Mobile Header Repair ===== */
 @media(max-width:720px) {
     .header {

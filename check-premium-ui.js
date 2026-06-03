@@ -148,6 +148,24 @@ const checks = [
       css.includes('.date-badge span')
   },
   {
+    name: 'PIN confirm uses custom styled modal instead of browser confirm',
+    pass: !app.includes('confirm(') &&
+      app.includes('function gozConfirm') &&
+      app.includes('showPinDisableConfirm') &&
+      html.includes('gozConfirmModal') &&
+      css.includes('.goz-confirm-modal') &&
+      css.includes('.goz-confirm-backdrop')
+  },
+  {
+    name: 'desktop user badge prevents PIN/name overlap',
+    pass: css.includes('.user-badge {') &&
+      css.includes('min-width: 0') &&
+      css.includes('.user-badge .user-info-column') &&
+      css.includes('minmax(0') &&
+      css.includes('.user-badge .pin-toggle-wrapper') &&
+      css.includes('flex: 0 0 auto')
+  },
+  {
     name: 'health card uses circular progress treatment',
     pass: app.includes('--health-progress') &&
       app.includes('--health-color') &&

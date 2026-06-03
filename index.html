@@ -388,6 +388,21 @@
         <div class="chart-fs-content" id="chartFullscreenContent"></div>
     </div>
 
+    <div class="goz-confirm-backdrop" id="gozConfirmModal" aria-hidden="true">
+        <section class="goz-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="gozConfirmTitle">
+            <div class="goz-confirm-icon"><i class="icon-svg" data-lucide="shield-alert"></i></div>
+            <div class="goz-confirm-copy">
+                <p class="goz-confirm-kicker">GOZ Finance</p>
+                <h2 id="gozConfirmTitle">Xác nhận thao tác</h2>
+                <p id="gozConfirmMessage">Bạn có chắc chắn muốn tiếp tục?</p>
+            </div>
+            <div class="goz-confirm-actions">
+                <button class="goz-confirm-btn secondary" type="button" data-goz-confirm="cancel">Hủy</button>
+                <button class="goz-confirm-btn primary" type="button" data-goz-confirm="ok">Đồng ý</button>
+            </div>
+        </section>
+    </div>
+
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>

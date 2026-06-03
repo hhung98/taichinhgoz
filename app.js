@@ -203,17 +203,77 @@ function unlockApp() {
     document.getElementById('pinOverlay').classList.add('hidden');
 }
 
+function gozConfirm({ title, message, okText = 'Đồng ý', cancelText = 'Hủy', danger = false }) {
+    const modal = document.getElementById('gozConfirmModal');
+    const titleEl = document.getElementById('gozConfirmTitle');
+    const messageEl = document.getElementById('gozConfirmMessage');
+    if (!modal || !titleEl || !messageEl) return Promise.resolve(false);
+
+    const okBtn = modal.querySelector('[data-goz-confirm="ok"]');
+    const cancelBtn = modal.querySelector('[data-goz-confirm="cancel"]');
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    okBtn.textContent = okText;
+    cancelBtn.textContent = cancelText;
+    okBtn.classList.toggle('danger', danger);
+
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    refreshIcons();
+
+    return new Promise(resolve => {
+        const finish = (value) => {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            modal.removeEventListener('click', onBackdrop);
+            window.removeEventListener('keydown', onKey);
+            resolve(value);
+        };
+        const onOk = () => finish(true);
+        const onCancel = () => finish(false);
+        const onBackdrop = (event) => {
+            if (event.target === modal) finish(false);
+        };
+        const onKey = (event) => {
+            if (event.key === 'Escape') finish(false);
+        };
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        modal.addEventListener('click', onBackdrop);
+        window.addEventListener('keydown', onKey);
+        okBtn.focus();
+    });
+}
+
 async function forgotPin() {
-    if (confirm("Lưu ý: Bạn chọn QUÊN MÃ PIN?\n\nỨng dụng sẽ xóa PIN cũ và ĐĂNG XUẤT tài khoản để bảo mật dữ liệu.\nBạn có chắc chắn muốn tiếp tục?")) {
+    const accepted = await gozConfirm({
+        title: 'Quên mã PIN?',
+        message: 'Ứng dụng sẽ xóa PIN cũ và đăng xuất tài khoản để bảo mật dữ liệu.',
+        okText: 'Xóa PIN',
+        cancelText: 'Hủy',
+        danger: true
+    });
+    if (accepted) {
         localStorage.removeItem('app_pin');
         appPin = null;
         await handleLogout();
     }
 }
 
-function togglePinSetting() {
+async function showPinDisableConfirm() {
+    return gozConfirm({
+        title: 'Tắt khóa mã PIN?',
+        message: 'Lần sau mở app sẽ không cần nhập PIN nữa.',
+        okText: 'Tắt PIN',
+        cancelText: 'Hủy'
+    });
+}
+
+async function togglePinSetting() {
     if (pinEnabled) {
-        if (confirm('Tắt khóa mã PIN?\n\nLần sau mở app sẽ không cần nhập PIN nữa.')) {
+        if (await showPinDisableConfirm()) {
             pinEnabled = false;
             localStorage.setItem('pin_enabled', 'false');
             localStorage.removeItem('app_pin');
