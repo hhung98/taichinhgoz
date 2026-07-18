@@ -117,265 +117,348 @@
                         <p class="subtitle">Dashboard thu chi cá nhân</p>
                     </div>
                 </div>
+                
+                <!-- TOP NAV TABS FOR DESKTOP -->
+                <nav class="desktop-header-tabs" aria-label="Điều hướng chính">
+                    <button class="header-tab-btn active" onclick="switchTab('overview')" id="h-nav-overview">
+                        <i class="icon-svg" data-lucide="layout-dashboard"></i> <span>Tổng quan</span>
+                    </button>
+                    <button class="header-tab-btn" onclick="switchTab('exchange')" id="h-nav-exchange">
+                        <i class="icon-svg" data-lucide="trending-up"></i> <span>Tỷ giá</span>
+                    </button>
+                    <button class="header-tab-btn" onclick="switchTab('budget')" id="h-nav-budget">
+                        <i class="icon-svg" data-lucide="calendar-range"></i> <span>Ngân sách 12T</span>
+                    </button>
+                    <button class="header-tab-btn" onclick="switchTab('settings')" id="h-nav-settings">
+                        <i class="icon-svg" data-lucide="settings"></i> <span>Cài đặt</span>
+                    </button>
+                </nav>
+
                 <div class="header-right header-actions">
-                    <div class="user-badge" id="userBadge">
+                    <button class="theme-toggle icon-btn" onclick="toggleTheme()" title="Dark/Light Mode"
+                        aria-label="Chuyển theme"><i class="icon-svg" data-lucide="moon"></i></button>
+                    <div class="date-badge"><i class="icon-svg" data-lucide="calendar-days"></i><span id="currentDate"></span></div>
+                    <div class="user-badge" id="userBadge" onclick="switchTab('settings')" style="cursor: pointer;" title="Xem cài đặt tài khoản">
                         <span class="user-avatar" id="userAvatar" aria-hidden="true"><i class="icon-svg" data-lucide="user-round"></i></span>
-                        <div class="pin-toggle-wrapper" onclick="togglePinSetting(); event.stopPropagation();" title="Bật/tất khóa mã PIN">
-                            <span class="pin-toggle-label"><i class="icon-svg" data-lucide="lock-keyhole"></i> PIN</span>
-                            <div class="pin-toggle-switch" id="pinToggleSwitch"></div>
-                        </div>
                         <div class="user-info-column">
                             <span class="user-name" id="userName"></span>
                         </div>
                     </div>
-                    <button class="logout-btn icon-text-btn" onclick="handleLogout()" title="Đăng xuất">
-                        <i class="icon-svg" data-lucide="log-out"></i> <span>Đăng xuất</span>
-                    </button>
-                    <button class="theme-toggle icon-btn" onclick="toggleTheme()" title="Dark/Light Mode"
-                        aria-label="Chuyển theme"><i class="icon-svg" data-lucide="moon"></i></button>
-                    <div class="date-badge"><i class="icon-svg" data-lucide="calendar-days"></i><span id="currentDate"></span></div>
                 </div>
             </div>
         </header>
 
         <main class="main-content" role="main">
-            <!-- EXCHANGE RATE BAR -->
-            <section class="exchange-shell" aria-label="Tỷ giá hối đoái">
-                <div class="exchange-rates">
-                    <div class="exchange-bar-rate">
-                        <div class="exchange-bar-flag"><i class="icon-svg" data-lucide="refresh-cw"></i> KRW sang VND</div>
-                        <div class="exchange-bar-value" id="exchangeRateValue">Đang tải...</div>
-                        <div class="exchange-bar-sub" id="exchangeSubtext">1 KRW = ... VND</div>
-                        <div class="exchange-status live" id="exchangeStatus"><span class="pulse-dot"></span> Đang kết nối...</div>
-                    </div>
-                    <div class="exchange-bar-rate">
-                        <div class="exchange-bar-flag"><i class="icon-svg" data-lucide="circle-dollar-sign"></i> USD sang VND</div>
-                        <div class="exchange-bar-value" id="usdRateValue">Đang tải...</div>
-                        <div class="exchange-bar-sub" id="usdSubtext">1 USD = ... VND</div>
-                    </div>
-                </div>
-                <div class="exchange-bar-converter converter-card">
-                    <div class="converter-row">
-                        <span class="converter-label">KRW</span>
-                        <input class="converter-input" type="text" inputmode="numeric" id="krwInput" placeholder="Nhập KRW"
-                            oninput="formatInputLive(this); convertFromKRW()">
-                    </div>
-                    <div class="converter-row">
-                        <span class="converter-label">VND</span>
-                        <input class="converter-input" type="text" inputmode="numeric" id="vndInput" placeholder="Nhập VND"
-                            oninput="formatInputLive(this); convertFromVND()">
-                    </div>
-                    <div class="converter-row">
-                        <span class="converter-label">USD</span>
-                        <input class="converter-input" type="text" inputmode="numeric" id="usdInput" placeholder="Nhập USD"
-                            oninput="formatInputLive(this); convertFromUSD()">
-                    </div>
-                    <div class="converter-result" id="converterResult">Nhập số tiền để quy đổi</div>
-                </div>
-            </section>
-
-            <!-- SUMMARY CARDS -->
-            <section class="stats-section" id="overviewSection" aria-label="Tổng quan">
-                <div class="summary-grid">
-                    <article class="summary-card compact-mobile balance">
-                        <div class="card-icon"><i class="icon-svg" data-lucide="landmark"></i></div>
-                        <div class="metric-card-content">
-                            <div class="card-label">Số dư hiện tại</div>
-                            <div class="card-value" id="totalBalance">0 ₫</div>
-                            <div class="card-sub" id="balanceKRW">≈ 0 ₩</div>
+            <!-- TAB 1: TỔNG QUAN -->
+            <div id="tab-overview" class="tab-pane active animate-tab-content">
+                <!-- EXCHANGE RATE BAR -->
+                <section class="exchange-shell" aria-label="Tỷ giá hối đoái">
+                    <div class="exchange-rates">
+                        <div class="exchange-bar-rate">
+                            <div class="exchange-bar-flag"><i class="icon-svg" data-lucide="refresh-cw"></i> KRW sang VND</div>
+                            <div class="exchange-bar-value" id="exchangeRateValue">Đang tải...</div>
+                            <div class="exchange-bar-sub" id="exchangeSubtext">1 KRW = ... VND</div>
+                            <div class="exchange-status live" id="exchangeStatus"><span class="pulse-dot"></span> Đang kết nối...</div>
                         </div>
+                        <div class="exchange-bar-rate">
+                            <div class="exchange-bar-flag"><i class="icon-svg" data-lucide="circle-dollar-sign"></i> USD sang VND</div>
+                            <div class="exchange-bar-value" id="usdRateValue">Đang tải...</div>
+                            <div class="exchange-bar-sub" id="usdSubtext">1 USD = ... VND</div>
+                        </div>
+                    </div>
+                    <div class="exchange-bar-converter converter-card">
+                        <div class="converter-row">
+                            <span class="converter-label">KRW</span>
+                            <input class="converter-input" type="text" inputmode="numeric" id="krwInput" placeholder="Nhập KRW"
+                                oninput="formatInputLive(this); convertFromKRW()">
+                        </div>
+                        <div class="converter-row">
+                            <span class="converter-label">VND</span>
+                            <input class="converter-input" type="text" inputmode="numeric" id="vndInput" placeholder="Nhập VND"
+                                oninput="formatInputLive(this); convertFromVND()">
+                        </div>
+                        <div class="converter-row">
+                            <span class="converter-label">USD</span>
+                            <input class="converter-input" type="text" inputmode="numeric" id="usdInput" placeholder="Nhập USD"
+                                oninput="formatInputLive(this); convertFromUSD()">
+                        </div>
+                        <div class="converter-result" id="converterResult">Nhập số tiền để quy đổi</div>
+                    </div>
+                </section>
+
+                <!-- SUMMARY CARDS -->
+                <section class="stats-section" id="overviewSection" aria-label="Tổng quan">
+                    <div class="summary-grid">
+                        <article class="summary-card compact-mobile balance">
+                            <div class="card-icon"><i class="icon-svg" data-lucide="landmark"></i></div>
+                            <div class="metric-card-content">
+                                <div class="card-label">Số dư hiện tại</div>
+                                <div class="card-value" id="totalBalance">0 ₫</div>
+                                <div class="card-sub" id="balanceKRW">≈ 0 ₩</div>
+                            </div>
+                        </article>
+                        <article class="summary-card compact-mobile income">
+                            <div class="card-icon"><i class="icon-svg" data-lucide="trending-up"></i></div>
+                            <div class="metric-card-content">
+                                <div class="card-label">Tổng thu nhập</div>
+                                <div class="card-value" id="totalIncome">0 ₫</div>
+                                <div class="card-sub" id="incomeKRW">≈ 0 ₩</div>
+                            </div>
+                        </article>
+                        <article class="summary-card compact-mobile expense">
+                            <div class="card-icon"><i class="icon-svg" data-lucide="trending-down"></i></div>
+                            <div class="metric-card-content">
+                                <div class="card-label">Tổng chi tiêu</div>
+                                <div class="card-value" id="totalExpense">0 ₫</div>
+                                <div class="card-sub" id="expenseKRW">≈ 0 ₩</div>
+                            </div>
+                        </article>
+                        <article class="summary-card compact-mobile savings">
+                            <div class="card-icon"><i class="icon-svg" data-lucide="target"></i></div>
+                            <div class="metric-card-content">
+                                <div class="card-label">Tỉ lệ tiết kiệm</div>
+                                <div class="card-value" id="savingsRate">0%</div>
+                                <div class="card-sub" id="savingsLabel">--</div>
+                            </div>
+                        </article>
+                        <article class="summary-card compact-mobile health" id="healthCard">
+                            <div class="card-icon"><i class="icon-svg" id="healthIcon" data-lucide="activity"></i></div>
+                            <div class="metric-card-content">
+                                <div class="card-label">Sức khỏe tài chính</div>
+                                <div class="card-value health-score" id="healthScore">--</div>
+                                <div class="card-sub" id="healthLabel">Chưa có dữ liệu</div>
+                            </div>
+                        </article>
+                        <article class="summary-card compact-mobile reserve" id="reserveCard">
+                            <div class="card-icon"><i class="icon-svg" data-lucide="shield-check"></i></div>
+                            <div class="metric-card-content">
+                                <div class="card-label">Quỹ dự phòng</div>
+                                <div class="card-value" id="reserveTotal">0 ₩</div>
+                                <div class="card-sub" id="survivalMonths">An toàn: -- tháng</div>
+                            </div>
+                        </article>
+                    </div>
+                    <article class="financial-insight-card" id="financialInsightCard" aria-label="Gợi ý tài chính">
+                        <div class="financial-insight-icon"><i class="icon-svg" data-lucide="sparkles"></i></div>
+                        <div class="financial-insight-body">
+                            <div class="financial-insight-kicker">Gợi ý tài chính</div>
+                            <h2 id="financialInsightTitle">Chưa có dữ liệu</h2>
+                            <p id="financialInsightText">Nhập thu nhập và chi tiêu để nhận phân tích tự động.</p>
+                        </div>
+                        <div class="financial-insight-score" id="financialInsightScore">--</div>
                     </article>
-                    <article class="summary-card compact-mobile income">
-                        <div class="card-icon"><i class="icon-svg" data-lucide="trending-up"></i></div>
-                        <div class="metric-card-content">
-                            <div class="card-label">Tổng thu nhập</div>
-                            <div class="card-value" id="totalIncome">0 ₫</div>
-                            <div class="card-sub" id="incomeKRW">≈ 0 ₩</div>
-                        </div>
-                    </article>
-                    <article class="summary-card compact-mobile expense">
-                        <div class="card-icon"><i class="icon-svg" data-lucide="trending-down"></i></div>
-                        <div class="metric-card-content">
-                            <div class="card-label">Tổng chi tiêu</div>
-                            <div class="card-value" id="totalExpense">0 ₫</div>
-                            <div class="card-sub" id="expenseKRW">≈ 0 ₩</div>
-                        </div>
-                    </article>
-                    <article class="summary-card compact-mobile savings">
-                        <div class="card-icon"><i class="icon-svg" data-lucide="target"></i></div>
-                        <div class="metric-card-content">
-                            <div class="card-label">Tỉ lệ tiết kiệm</div>
-                            <div class="card-value" id="savingsRate">0%</div>
-                            <div class="card-sub" id="savingsLabel">--</div>
-                        </div>
-                    </article>
-                    <article class="summary-card compact-mobile health" id="healthCard">
-                        <div class="card-icon"><i class="icon-svg" id="healthIcon" data-lucide="activity"></i></div>
-                        <div class="metric-card-content">
-                            <div class="card-label">Sức khỏe tài chính</div>
-                            <div class="card-value health-score" id="healthScore">--</div>
-                            <div class="card-sub" id="healthLabel">Chưa có dữ liệu</div>
-                        </div>
-                    </article>
-                    <article class="summary-card compact-mobile reserve" id="reserveCard">
-                        <div class="card-icon"><i class="icon-svg" data-lucide="shield-check"></i></div>
-                        <div class="metric-card-content">
-                            <div class="card-label">Quỹ dự phòng</div>
-                            <div class="card-value" id="reserveTotal">0 ₩</div>
-                            <div class="card-sub" id="survivalMonths">An toàn: -- tháng</div>
-                        </div>
-                    </article>
-                </div>
-                <article class="financial-insight-card" id="financialInsightCard" aria-label="Gợi ý tài chính">
-                    <div class="financial-insight-icon"><i class="icon-svg" data-lucide="sparkles"></i></div>
-                    <div class="financial-insight-body">
-                        <div class="financial-insight-kicker">Gợi ý tài chính</div>
-                        <h2 id="financialInsightTitle">Chưa có dữ liệu</h2>
-                        <p id="financialInsightText">Nhập thu nhập và chi tiêu để nhận phân tích tự động.</p>
-                    </div>
-                    <div class="financial-insight-score" id="financialInsightScore">--</div>
-                </article>
-            </section>
+                </section>
 
-            <!-- SAVINGS GOAL -->
-            <section class="panel savings-goal-panel" id="savingsGoalPanel" aria-label="Mục tiêu tiết kiệm">
-                <div class="panel-header">
-                    <h2 class="panel-title"><i class="icon-svg" data-lucide="badge-dollar-sign"></i> Mục tiêu tiết kiệm</h2>
-                </div>
-                <div id="savingsGoalContent">
-                    <div class="goal-form" id="goalForm">
-                        <label class="goal-field">
-                            <span>Tên mục tiêu</span>
-                            <input type="text" id="goalName" placeholder="VD: Mua laptop" class="goal-input">
-                        </label>
-                        <label class="goal-field goal-amount-wrapper">
-                            <span>Số tiền</span>
-                            <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền (₩ KRW)" class="goal-input"
-                                oninput="formatInputLive(this); previewGoalVND()">
-                            <span class="goal-vnd-preview" id="goalVndPreview"></span>
-                        </label>
-                        <label class="goal-field goal-month-field">
-                            <span>Thời hạn</span>
-                            <input type="number" id="goalMonths" placeholder="Số tháng" class="goal-input" min="1"
-                                max="120">
-                        </label>
-                        <button onclick="addSavingsGoal()" class="goal-add-btn"><i class="icon-svg" data-lucide="plus"></i> <span>Thêm</span></button>
+                <!-- SAVINGS GOAL -->
+                <section class="panel savings-goal-panel" id="savingsGoalPanel" aria-label="Mục tiêu tiết kiệm">
+                    <div class="panel-header">
+                        <h2 class="panel-title"><i class="icon-svg" data-lucide="badge-dollar-sign"></i> Mục tiêu tiết kiệm</h2>
                     </div>
-                    <div id="goalsList"></div>
-                </div>
-            </section>
+                    <div id="savingsGoalContent">
+                        <div class="goal-form" id="goalForm">
+                            <label class="goal-field">
+                                <span>Tên mục tiêu</span>
+                                <input type="text" id="goalName" placeholder="VD: Mua laptop" class="goal-input">
+                            </label>
+                            <label class="goal-field goal-amount-wrapper">
+                                <span>Số tiền</span>
+                                <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền (₩ KRW)" class="goal-input"
+                                    oninput="formatInputLive(this); previewGoalVND()">
+                                <span class="goal-vnd-preview" id="goalVndPreview"></span>
+                            </label>
+                            <label class="goal-field goal-month-field">
+                                <span>Thời hạn</span>
+                                <input type="number" id="goalMonths" placeholder="Số tháng" class="goal-input" min="1"
+                                    max="120">
+                            </label>
+                            <button onclick="addSavingsGoal()" class="goal-add-btn"><i class="icon-svg" data-lucide="plus"></i> <span>Thêm</span></button>
+                        </div>
+                        <div id="goalsList"></div>
+                    </div>
+                </section>
 
-            <!-- 12-MONTH BUDGET TABLE -->
-            <section class="budget-section panel" id="budgetSection" aria-label="Bảng ngân sách 12 tháng">
-                <div class="panel-header">
-                    <h2 class="panel-title"><i class="icon-svg" data-lucide="calendar-range"></i> Ngân Sách 12 Tháng</h2>
-                    <div class="panel-header-actions" style="display: flex; gap: 10px; align-items: center;">
-                        <button class="action-btn" onclick="exportToCSV()" title="Tải xuống báo cáo Excel"><i class="icon-svg" data-lucide="download"></i> Xuất CSV</button>
-                        <div class="year-selector">
-                            <button onclick="changeYear(-1)">◀</button>
-                            <span class="year-label" id="yearLabel">2026</span>
-                            <button onclick="changeYear(1)">▶</button>
+                <!-- BENTO GRID SECTION FOR CHARTS -->
+                <section class="overview-charts-grid" aria-label="Biểu đồ phân tích">
+                    <!-- LINE CHART CARD -->
+                    <div class="panel chart-panel line-chart-card">
+                        <div class="panel-header chart-panel-header">
+                            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+                                <h3 class="chart-title"><i class="icon-svg" data-lucide="chart-no-axes-combined"></i> Biểu đồ tổng quan các tháng</h3>
+                                <button class="chart-zoom-btn" onclick="openChartFullscreen()" title="Phóng to"><i class="icon-svg" data-lucide="search"></i></button>
+                            </div>
+                        </div>
+                        <div class="budget-chart-container" id="budgetOverviewChart" onclick="openChartFullscreen()"></div>
+                    </div>
+
+                    <!-- ALLOCATION CHART CARD -->
+                    <div class="panel chart-panel allocation-chart-card">
+                        <div class="panel-header chart-panel-header">
+                            <h3 class="chart-title"><i class="icon-svg" data-lucide="chart-pie"></i> Phân bổ thực tế</h3>
+                        </div>
+                        <div class="pie-charts-section">
+                            <div class="pie-grid">
+                                <div class="pie-card">
+                                    <h4 class="pie-card-title">Năm đang chọn (<span id="pieYearLabel">2026</span>)</h4>
+                                    <div class="pie-chart-container" id="pieChartYearly"></div>
+                                    <div id="pieLegendYearly" class="pie-legend"></div>
+                                </div>
+                                <div class="pie-card">
+                                    <h4 class="pie-card-title">Tổng thể (Tất cả các năm)</h4>
+                                    <div class="pie-chart-container" id="pieChartAllTime"></div>
+                                    <div id="pieLegendAllTime" class="pie-legend"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </section>
+            </div>
 
-                <!-- KRW Dashboard Summary above table -->
-                <div class="budget-dashboard" id="budgetDashboard">
-                    <div class="budget-dash-item income-dash">
-                        <span class="dash-label"><i class="icon-svg" data-lucide="trending-up"></i> Tổng Thu nhập</span>
-                        <span class="dash-value" id="dashTotalIncome">0 ₩</span>
+            <!-- TAB 2: LỊCH SỬ TỶ GIÁ -->
+            <div id="tab-exchange" class="tab-pane animate-tab-content">
+                <section class="panel exchange-chart-panel" aria-label="Lịch sử tỷ giá">
+                    <div class="panel-header">
+                        <h2 class="panel-title"><i class="icon-svg" data-lucide="trending-up"></i> Lịch sử Tỷ giá KRW/VND (15 ngày)</h2>
                     </div>
-                    <div class="budget-dash-item expense-dash">
-                        <span class="dash-label"><i class="icon-svg" data-lucide="trending-down"></i> Tổng Chi tiêu</span>
-                        <span class="dash-value" id="dashTotalExpense">0 ₩</span>
-                    </div>
-                    <div class="budget-dash-item balance-dash">
-                        <span class="dash-label"><i class="icon-svg" data-lucide="wallet-cards"></i> Còn lại</span>
-                        <span class="dash-value" id="dashTotalBalance">0 ₩</span>
-                    </div>
-                    <div class="budget-dash-item savings-dash">
-                        <span class="dash-label"><i class="icon-svg" data-lucide="target"></i> Tỉ lệ tiết kiệm</span>
-                        <span class="dash-value" id="dashSavingsRate">0%</span>
-                    </div>
-                </div>
-
-                <div class="budget-table-container">
-                    <table class="monthly-table">
-                        <thead>
-                            <tr>
-                                <th>Tháng</th>
-                                <th>Thu nhập<br><small class="th-pct green">₩ KRW</small></th>
-                                <th>Sinh hoạt<br><small class="th-pct blue">40%</small></th>
-                                <th>Dự phòng<br><small class="th-pct yellow">40%</small></th>
-                                <th>Đầu tư<br><small class="th-pct purple">20%</small></th>
-                                <th>Chi tiêu<br><small class="th-pct red">₩ KRW</small></th>
-                                <th>Còn lại</th>
-                                <th>Dư/Thiếu<br><small class="th-pct green">SH-CT</small></th>
-                            </tr>
-                        </thead>
-                        <tbody id="budgetTableBody"></tbody>
-                        <tfoot id="budgetTableFoot"></tfoot>
-                    </table>
-                </div>
-                <div class="table-legend">
-                    <div class="table-legend-item">
-                        <div class="table-legend-dot" style="background:#74b9ff"></div> Sinh hoạt 40%
-                    </div>
-                    <div class="table-legend-item">
-                        <div class="table-legend-dot" style="background:#ff9f43"></div> Dự phòng 40%
-                    </div>
-                    <div class="table-legend-item">
-                        <div class="table-legend-dot" style="background:#a29bfe"></div> Đầu tư 20%
-                    </div>
-                </div>
-
-                <!-- BUDGET OVERVIEW CHART -->
-                <div class="budget-chart-section">
-                    <div style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="chart-title"><i class="icon-svg" data-lucide="chart-no-axes-combined"></i> Biểu đồ tổng quan các tháng</h3>
-                        <button class="chart-zoom-btn" onclick="openChartFullscreen()" title="Phóng to"><i class="icon-svg" data-lucide="search"></i></button>
-                    </div>
-                    <div class="budget-chart-legend">
-                        <span class="chart-legend-item"><span class="legend-dot" style="background:#4a90d9"></span> Thu
-                            nhập</span>
-                        <span class="chart-legend-item"><span class="legend-dot" style="background:#e74c3c"></span> Sinh
-                            hoạt 40%</span>
-                        <span class="chart-legend-item"><span class="legend-dot" style="background:#8e44ad"></span> Chi
-                            tiêu</span>
-                        <span class="chart-legend-item"><span class="legend-dot" style="background:#27ae60"></span> Còn
-                            lại</span>
-                        <span class="chart-legend-item"><span class="legend-dot" style="background:#f39c12"></span> Dự
-                            phòng 40%</span>
-                        <span class="chart-legend-item"><span class="legend-dot" style="background:#00cec9"></span> Đầu
-                            tư 20%</span>
-                    </div>
-                    <div class="budget-chart-container" id="budgetOverviewChart" onclick="openChartFullscreen()"></div>
-                </div>
-
-                <!-- PIE CHARTS SECTION -->
-                <div class="pie-charts-section" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
-                    <h3 class="chart-title"><i class="icon-svg" data-lucide="chart-pie"></i> Phân bổ thực tế (Chi tiêu vs Dự phòng vs Đầu tư)</h3>
-                    <div class="pie-grid">
-                        <div class="pie-card">
-                            <h4 class="pie-card-title">Năm đang chọn (<span id="pieYearLabel">2026</span>)</h4>
-                            <div class="pie-chart-container" id="pieChartYearly"></div>
-                            <div id="pieLegendYearly" class="pie-legend"></div>
+                    
+                    <!-- Stats summary cards for historical statistics -->
+                    <div class="exchange-stats-summary">
+                        <div class="exchange-stat-card">
+                            <span class="stat-label">Tỷ giá hiện tại</span>
+                            <span class="stat-value" id="historyCurrentRate">-- ₫</span>
                         </div>
-                        <div class="pie-card">
-                            <h4 class="pie-card-title">Tổng thể (Tất cả các năm)</h4>
-                            <div class="pie-chart-container" id="pieChartAllTime"></div>
-                            <div id="pieLegendAllTime" class="pie-legend"></div>
+                        <div class="exchange-stat-card">
+                            <span class="stat-label">Cao nhất (15 ngày)</span>
+                            <span class="stat-value" id="historyMaxRate" style="color: var(--accent-red)">-- ₫</span>
+                        </div>
+                        <div class="exchange-stat-card">
+                            <span class="stat-label">Thấp nhất (15 ngày)</span>
+                            <span class="stat-value" id="historyMinRate" style="color: var(--accent-green)">-- ₫</span>
                         </div>
                     </div>
-                </div>
-            </section>
+
+                    <!-- History line chart container -->
+                    <div class="exchange-chart-container-large" id="exchangeRateHistoryChart"></div>
+                </section>
+            </div>
+
+            <!-- TAB 3: NGÂN SÁCH 12 THÁNG -->
+            <div id="tab-budget" class="tab-pane animate-tab-content">
+                <section class="budget-section panel" id="budgetSection" aria-label="Bảng ngân sách 12 tháng">
+                    <div class="panel-header">
+                        <h2 class="panel-title"><i class="icon-svg" data-lucide="calendar-range"></i> Ngân Sách 12 Tháng</h2>
+                        <div class="panel-header-actions" style="display: flex; gap: 10px; align-items: center;">
+                            <button class="action-btn" onclick="exportToCSV()" title="Tải xuống báo cáo Excel"><i class="icon-svg" data-lucide="download"></i> Xuất CSV</button>
+                            <div class="year-selector">
+                                <button onclick="changeYear(-1)">◀</button>
+                                <span class="year-label" id="yearLabel">2026</span>
+                                <button onclick="changeYear(1)">▶</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KRW Dashboard Summary above table -->
+                    <div class="budget-dashboard" id="budgetDashboard">
+                        <div class="budget-dash-item income-dash">
+                            <span class="dash-label"><i class="icon-svg" data-lucide="trending-up"></i> Tổng Thu nhập</span>
+                            <span class="dash-value" id="dashTotalIncome">0 ₩</span>
+                        </div>
+                        <div class="budget-dash-item expense-dash">
+                            <span class="dash-label"><i class="icon-svg" data-lucide="trending-down"></i> Tổng Chi tiêu</span>
+                            <span class="dash-value" id="dashTotalExpense">0 ₩</span>
+                        </div>
+                        <div class="budget-dash-item balance-dash">
+                            <span class="dash-label"><i class="icon-svg" data-lucide="wallet-cards"></i> Còn lại</span>
+                            <span class="dash-value" id="dashTotalBalance">0 ₩</span>
+                        </div>
+                        <div class="budget-dash-item savings-dash">
+                            <span class="dash-label"><i class="icon-svg" data-lucide="target"></i> Tỉ lệ tiết kiệm</span>
+                            <span class="dash-value" id="dashSavingsRate">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="budget-table-container">
+                        <table class="monthly-table">
+                            <thead>
+                                <tr>
+                                    <th>Tháng</th>
+                                    <th>Thu nhập<br><small class="th-pct green">₩ KRW</small></th>
+                                    <th>Sinh hoạt<br><small class="th-pct blue">40%</small></th>
+                                    <th>Dự phòng<br><small class="th-pct yellow">40%</small></th>
+                                    <th>Đầu tư<br><small class="th-pct purple">20%</small></th>
+                                    <th>Chi tiêu<br><small class="th-pct red">₩ KRW</small></th>
+                                    <th>Còn lại</th>
+                                    <th>Dư/Thiếu<br><small class="th-pct green">SH-CT</small></th>
+                                </tr>
+                            </thead>
+                            <tbody id="budgetTableBody"></tbody>
+                            <tfoot id="budgetTableFoot"></tfoot>
+                        </table>
+                    </div>
+                    <div class="table-legend">
+                        <div class="table-legend-item">
+                            <div class="table-legend-dot" style="background:#74b9ff"></div> Sinh hoạt 40%
+                        </div>
+                        <div class="table-legend-item">
+                            <div class="table-legend-dot" style="background:#ff9f43"></div> Dự phòng 40%
+                        </div>
+                        <div class="table-legend-item">
+                            <div class="table-legend-dot" style="background:#a29bfe"></div> Đầu tư 20%
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 4: CÀI ĐẶT & BẢO MẬT -->
+            <div id="tab-settings" class="tab-pane animate-tab-content">
+                <section class="panel settings-panel" aria-label="Cài đặt hệ thống">
+                    <div class="panel-header">
+                        <h2 class="panel-title"><i class="icon-svg" data-lucide="settings"></i> Cài đặt & Bảo mật</h2>
+                    </div>
+                    <div class="settings-content">
+                        <!-- security card -->
+                        <div class="settings-card security-card">
+                            <div class="settings-card-body">
+                                <div class="settings-option">
+                                    <div class="settings-option-text">
+                                        <h4>Khóa ứng dụng bằng mã PIN</h4>
+                                        <p>Yêu cầu nhập mã PIN 4 số mỗi khi khởi động ứng dụng để bảo vệ thông tin tài chính.</p>
+                                    </div>
+                                    <div class="settings-option-control">
+                                        <div class="pin-toggle-wrapper" onclick="togglePinSetting(); event.stopPropagation();" title="Bật/tắt khóa mã PIN">
+                                            <span class="pin-toggle-label"><i class="icon-svg" data-lucide="lock-keyhole"></i> PIN</span>
+                                            <div class="pin-toggle-switch" id="pinToggleSwitch"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- logout & account settings -->
+                        <div class="settings-card account-card">
+                            <div class="settings-card-body">
+                                <div class="settings-option logout-option">
+                                    <div class="settings-option-text">
+                                        <h4>Đăng xuất khỏi thiết bị</h4>
+                                        <p>Đăng xuất khỏi tài khoản Supabase trên thiết bị này.</p>
+                                    </div>
+                                    <div class="settings-option-control">
+                                        <button class="logout-btn icon-text-btn danger-btn" onclick="handleLogout()" title="Đăng xuất">
+                                            <i class="icon-svg" data-lucide="log-out"></i> <span>Đăng xuất</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
 
         <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Điều hướng nhanh">
-            <a href="#overviewSection"><i class="icon-svg" data-lucide="layout-dashboard"></i><span>Tổng quan</span></a>
-            <a href="#budgetSection"><i class="icon-svg" data-lucide="chart-no-axes-combined"></i><span>Ngân sách</span></a>
-            <a href="#savingsGoalPanel"><i class="icon-svg" data-lucide="target"></i><span>Mục tiêu</span></a>
-            <a href="#settingsSection"><i class="icon-svg" data-lucide="settings"></i><span>Cài đặt</span></a>
+            <a href="javascript:void(0)" onclick="switchTab('overview')" id="m-nav-overview" class="active"><i class="icon-svg" data-lucide="layout-dashboard"></i><span>Tổng quan</span></a>
+            <a href="javascript:void(0)" onclick="switchTab('exchange')" id="m-nav-exchange"><i class="icon-svg" data-lucide="trending-up"></i><span>Tỷ giá</span></a>
+            <a href="javascript:void(0)" onclick="switchTab('budget')" id="m-nav-budget"><i class="icon-svg" data-lucide="calendar-range"></i><span>Ngân sách</span></a>
+            <a href="javascript:void(0)" onclick="switchTab('settings')" id="m-nav-settings"><i class="icon-svg" data-lucide="settings"></i><span>Cài đặt</span></a>
         </nav>
 
         <footer class="footer" id="settingsSection" role="contentinfo">

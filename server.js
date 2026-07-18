@@ -2,8 +2,12 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const types = {
-    '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript',
-    '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml'
+    '.html': 'text/html; charset=utf-8', 
+    '.css': 'text/css; charset=utf-8', 
+    '.js': 'application/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8', 
+    '.png': 'image/png', 
+    '.svg': 'image/svg+xml; charset=utf-8'
 };
 http.createServer((req, res) => {
     let fp = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
