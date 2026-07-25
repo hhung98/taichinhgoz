@@ -4848,7 +4848,46 @@ body, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
     margin-bottom: 0 !important;
 }
 
-/* Responsive constraints & Mobile Navigation */
+/* ===== TAB STAGGERED WATERFALL ENTRANCE ANIMATION ===== */
+@keyframes tabWaterfallCascade {
+    0% {
+        opacity: 0;
+        transform: translateY(22px) scale(0.985);
+    }
+    60% {
+        opacity: 0.85;
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Sequential stagger for items inside active tab pane */
+.tab-pane.active .exchange-shell,
+.tab-pane.active .stats-section,
+.tab-pane.active .financial-insight-card,
+.tab-pane.active .overview-charts-grid > *,
+.tab-pane.active .budget-dashboard-header,
+.tab-pane.active .budget-dashboard-grid > *,
+.tab-pane.active .exchange-grid > *,
+.tab-pane.active .settings-group,
+.tab-pane.active .settings-card,
+.tab-pane.active .panel {
+    animation: tabWaterfallCascade 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--stagger-index, 0) * 55ms);
+    will-change: transform, opacity;
+}
+
+/* Responsive constraints & Floating Mobile Navigation ("bóng ma") */
 /* Responsive constraints & Floating Mobile Navigation ("bóng ma") */
 .mobile-bottom-nav {
     position: fixed;

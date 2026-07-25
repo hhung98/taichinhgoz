@@ -1731,9 +1731,20 @@ function switchTab(tabId) {
     document.querySelectorAll('.tab-pane').forEach(pane => {
         pane.classList.remove('active');
     });
+    
     const selectedPane = document.getElementById('tab-' + tabId);
     if (selectedPane) {
+        // Trigger DOM reflow to restart CSS keyframe animations
+        void selectedPane.offsetWidth;
         selectedPane.classList.add('active');
+
+        // Assign staggered sequential animation indexes to cards/sections
+        const animElements = selectedPane.querySelectorAll(
+            '.exchange-shell, .stats-section, .financial-insight-card, .chart-panel, .budget-dashboard-header, .budget-dash-item, .exchange-card, .settings-group, .settings-card, .panel'
+        );
+        animElements.forEach((el, index) => {
+            el.style.setProperty('--stagger-index', index);
+        });
     }
     
     // Update desktop header tabs active state
