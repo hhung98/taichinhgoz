@@ -123,11 +123,11 @@
                     <button class="header-tab-btn active" onclick="switchTab('overview')" id="h-nav-overview">
                         <i class="icon-svg" data-lucide="layout-dashboard"></i> <span>Tổng quan</span>
                     </button>
-                    <button class="header-tab-btn" onclick="switchTab('exchange')" id="h-nav-exchange">
-                        <i class="icon-svg" data-lucide="trending-up"></i> <span>Tỷ giá</span>
-                    </button>
                     <button class="header-tab-btn" onclick="switchTab('budget')" id="h-nav-budget">
                         <i class="icon-svg" data-lucide="calendar-range"></i> <span>Ngân sách 12T</span>
+                    </button>
+                    <button class="header-tab-btn" onclick="switchTab('exchange')" id="h-nav-exchange">
+                        <i class="icon-svg" data-lucide="trending-up"></i> <span>Tỷ giá</span>
                     </button>
                     <button class="header-tab-btn" onclick="switchTab('settings')" id="h-nav-settings">
                         <i class="icon-svg" data-lucide="settings"></i> <span>Cài đặt</span>
@@ -456,8 +456,8 @@
 
         <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Điều hướng nhanh">
             <a href="javascript:void(0)" onclick="switchTab('overview')" id="m-nav-overview" class="active"><i class="icon-svg" data-lucide="layout-dashboard"></i><span>Tổng quan</span></a>
+            <a href="javascript:void(0)" onclick="switchTab('budget')" id="m-nav-budget"><i class="icon-svg" data-lucide="calendar-range"></i><span>Ngân sách 12T</span></a>
             <a href="javascript:void(0)" onclick="switchTab('exchange')" id="m-nav-exchange"><i class="icon-svg" data-lucide="trending-up"></i><span>Tỷ giá</span></a>
-            <a href="javascript:void(0)" onclick="switchTab('budget')" id="m-nav-budget"><i class="icon-svg" data-lucide="calendar-range"></i><span>Ngân sách</span></a>
             <a href="javascript:void(0)" onclick="switchTab('settings')" id="m-nav-settings"><i class="icon-svg" data-lucide="settings"></i><span>Cài đặt</span></a>
         </nav>
 

@@ -1354,10 +1354,10 @@ function renderBudgetOverviewChart() {
             if (vals[i] === 0 && !series.income[i] && !series.expense[i]) continue;
             const point = points[i];
             const isKeyPoint = i === latestIndex || (cfg.key === 'income' && i === peakIndex);
-            dotsSvg += `<circle cx="${point.x}" cy="${point.y}" r="${isKeyPoint ? 4.6 : 3}" class="budget-flow-dot budget-flow-dot-${cfg.cls}"/>`;
-            if (isKeyPoint && vals[i] !== 0) {
-                const labelY = cfg.key === 'balance' ? point.y + 17 : point.y - 12;
-                labelsSvg += `<text x="${Math.min(W - 34, Math.max(34, point.x))}" y="${Math.max(16, Math.min(H - 24, labelY))}" text-anchor="middle" class="budget-flow-value budget-flow-value-${cfg.cls}">${fmtCompact(vals[i])}</text>`;
+            dotsSvg += `<circle cx="${point.x}" cy="${point.y}" r="${isKeyPoint ? 4.6 : 3.5}" class="budget-flow-dot budget-flow-dot-${cfg.cls}"/>`;
+            if (vals[i] !== 0) {
+                const labelY = cfg.key === 'balance' ? point.y + 16 : (cfg.key === 'expense' ? point.y - 8 : point.y - 12);
+                labelsSvg += `<text x="${Math.min(W - 34, Math.max(34, point.x))}" y="${Math.max(14, Math.min(H - 14, labelY))}" text-anchor="middle" class="budget-flow-value budget-flow-value-${cfg.cls}">${fmtCompact(vals[i])}</text>`;
             }
         }
     });
@@ -1517,10 +1517,10 @@ renderBudgetOverviewChart = function() {
             if (value === 0 && !series.income[index] && !series.expense[index]) return;
             const point = points[index];
             const isKeyPoint = index === latestIndex || (cfg.key === 'income' && index === peakIndex);
-            dotsSvg += `<circle cx="${point.x}" cy="${point.y}" r="${isKeyPoint ? 4.6 : 3}" class="budget-flow-dot budget-flow-dot-${cfg.cls}"><title>${cfg.label}: ${fmtFull(value)} KRW</title></circle>`;
-            if (isKeyPoint && value !== 0) {
-                const labelY = cfg.key === 'balance' ? point.y + 17 : point.y - 12;
-                labelsSvg += `<text x="${Math.min(W - 34, Math.max(34, point.x))}" y="${Math.max(16, Math.min(H - 24, labelY))}" text-anchor="middle" class="budget-flow-value budget-flow-value-${cfg.cls}">${fmtCompact(value)}</text>`;
+            dotsSvg += `<circle cx="${point.x}" cy="${point.y}" r="${isKeyPoint ? 4.6 : 3.5}" class="budget-flow-dot budget-flow-dot-${cfg.cls}"><title>${cfg.label}: ${fmtFull(value)} KRW</title></circle>`;
+            if (value !== 0) {
+                const labelY = cfg.key === 'balance' ? point.y + 16 : (cfg.key === 'expense' ? point.y - 8 : point.y - 12);
+                labelsSvg += `<text x="${Math.min(W - 34, Math.max(34, point.x))}" y="${Math.max(14, Math.min(H - 14, labelY))}" text-anchor="middle" class="budget-flow-value budget-flow-value-${cfg.cls}">${fmtCompact(value)}</text>`;
             }
         });
     });
@@ -1947,64 +1947,63 @@ function updateExchangeHistoryData(rate) {
 }
 
 function getExchangeHistoryList(currentRate) {
-    let history = [];
+    let historyMap = {};
     try {
         const stored = localStorage.getItem('krw_vnd_history');
         if (stored) {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
-                history = parsed.filter(item => item && typeof item === 'object' && item.date && !isNaN(parseFloat(item.rate)));
+                parsed.forEach(item => {
+                    if (item && item.date && !isNaN(parseFloat(item.rate))) {
+                        historyMap[item.date] = parseFloat(item.rate);
+                    }
+                });
             }
         }
     } catch (e) {
         console.error('Error reading rate history:', e);
     }
     
-    const today = new Date().toISOString().split('T')[0];
-    if (!history.find(item => item.date === today)) {
-        history.push({ date: today, rate: parseFloat(currentRate) || 18.5 });
-    }
+    const baseRate = parseFloat(currentRate) || 18.5;
+    const now = new Date();
+    const result = [];
     
-    history.sort((a, b) => a.date.localeCompare(b.date));
-    
-    if (history.length < 15) {
-        const needed = 15 - history.length;
-        const baseRate = parseFloat(currentRate) || 18.5;
-        const extra = [];
-        const firstDateStr = (history[0] && history[0].date) ? history[0].date : today;
-        let startMs = new Date(firstDateStr).getTime();
-        if (isNaN(startMs)) {
-            startMs = new Date().getTime();
-        }
+    for (let i = 14; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${y}-${m}-${day}`;
         
-        for (let i = 1; i <= needed; i++) {
-            const dateObj = new Date(startMs - i * 24 * 60 * 60 * 1000);
-            let dateStr;
-            try {
-                dateStr = dateObj.toISOString().split('T')[0];
-            } catch (err) {
-                const y = dateObj.getFullYear();
-                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const d = String(dateObj.getDate()).padStart(2, '0');
-                dateStr = `${y}-${m}-${d}`;
-            }
-            const variance = (Math.sin(i * 1.5) * 0.08) + (Math.cos(i * 0.7) * 0.04);
-            const simRate = parseFloat((baseRate + variance).toFixed(4));
-            extra.unshift({ date: dateStr, rate: simRate });
+        let rate;
+        if (historyMap[dateStr] !== undefined) {
+            rate = historyMap[dateStr];
+        } else if (i === 0) {
+            rate = baseRate;
+            historyMap[dateStr] = rate;
+        } else {
+            const variance = (Math.sin(i * 1.5) * 0.12) + (Math.cos(i * 0.7) * 0.06);
+            rate = parseFloat((baseRate + variance).toFixed(2));
+            historyMap[dateStr] = rate;
         }
-        history = [...extra, ...history];
+        result.push({ date: dateStr, rate: rate });
     }
     
-    return history.slice(-15);
+    try {
+        const historyArray = Object.keys(historyMap).sort().map(d => ({ date: d, rate: historyMap[d] })).slice(-30);
+        localStorage.setItem('krw_vnd_history', JSON.stringify(historyArray));
+    } catch (e) { }
+    
+    return result;
 }
 
 function renderExchangeRateChart() {
     const container = document.getElementById('exchangeRateHistoryChart');
     if (!container) return;
     
-    const width = container.clientWidth || 300;
-    const height = container.clientHeight || 200;
-    const margin = { top: 20, right: 10, bottom: 25, left: 35 };
+    const width = container.clientWidth || 350;
+    const height = container.clientHeight || 250;
+    const margin = { top: 25, right: 20, bottom: 35, left: 45 };
     
     const data = getExchangeHistoryList(exchangeRate || 18.5);
     const rates = data.map(d => d.rate);
@@ -2023,7 +2022,7 @@ function renderExchangeRateChart() {
         minRate -= 0.5;
         maxRate += 0.5;
     } else {
-        const pad = (maxRate - minRate) * 0.15;
+        const pad = (maxRate - minRate) * 0.2;
         minRate -= pad;
         maxRate += pad;
     }
@@ -2034,39 +2033,41 @@ function renderExchangeRateChart() {
     const getX = (idx) => margin.left + (idx / (data.length - 1)) * chartW;
     const getY = (val) => margin.top + chartH - ((val - minRate) / (maxRate - minRate)) * chartH;
     
-    let svg = `<svg class="exchange-chart-svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">`;
+    let svg = `<svg class="exchange-chart-svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}">`;
     svg += `
       <defs>
         <linearGradient id="exchange-area-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--accent-primary)" stop-opacity="0.25"/>
+          <stop offset="0%" stop-color="var(--accent-primary)" stop-opacity="0.3"/>
           <stop offset="100%" stop-color="var(--accent-primary)" stop-opacity="0.00"/>
         </linearGradient>
       </defs>
     `;
     
     // Gridlines
-    for (let i = 0; i <= 2; i++) {
-        const val = minRate + (i / 2) * (maxRate - minRate);
+    for (let i = 0; i <= 3; i++) {
+        const val = minRate + (i / 3) * (maxRate - minRate);
         const y = getY(val);
         svg += `<g class="exchange-chart-grid">
             <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" />
-            <text class="exchange-chart-label" x="${margin.left - 5}" y="${y + 3}" text-anchor="end">${val.toFixed(1)}</text>
+            <text class="exchange-chart-label" x="${margin.left - 6}" y="${y + 3}" text-anchor="end">${val.toFixed(1)}</text>
         </g>`;
     }
     
-    // Date labels
-    const xIndices = [0, Math.floor(data.length / 2), data.length - 1];
-    xIndices.forEach(idx => {
-        const d = data[idx];
-        const x = getX(idx);
-        const parts = d.date.split('-');
-        const label = `${parts[2]}/${parts[1]}`;
-        svg += `<text class="exchange-chart-label" x="${x}" y="${height - 5}" text-anchor="middle">${label}</text>`;
+    // Date labels (Show 6 evenly spaced labels across the 15 days)
+    const labelIndices = [0, 3, 6, 9, 12, 14];
+    labelIndices.forEach(idx => {
+        if (idx < data.length) {
+            const d = data[idx];
+            const x = getX(idx);
+            const parts = d.date.split('-');
+            const label = `${parts[2]}/${parts[1]}`;
+            svg += `<text class="exchange-chart-label" x="${x}" y="${height - 8}" text-anchor="middle">${label}</text>`;
+        }
     });
     
     // Area and line pathing
     let linePoints = '';
-    let areaPoints = `M ${getX(0)} ${height - margin.bottom} `;
+    let areaPoints = `M ${getX(0)} ${margin.top + chartH} `;
     
     data.forEach((d, idx) => {
         const x = getX(idx);
@@ -2074,19 +2075,21 @@ function renderExchangeRateChart() {
         linePoints += `${idx === 0 ? 'M' : 'L'} ${x} ${y} `;
         areaPoints += `L ${x} ${y} `;
     });
-    areaPoints += `L ${getX(data.length - 1)} ${height - margin.bottom} Z`;
+    areaPoints += `L ${getX(data.length - 1)} ${margin.top + chartH} Z`;
     
     svg += `<path class="exchange-chart-area" d="${areaPoints}" />`;
     svg += `<path class="exchange-chart-line" d="${linePoints}" />`;
     
-    // Transparent dots for larger hover target
+    // Dots & interactive hover targets
     data.forEach((d, idx) => {
         const x = getX(idx);
         const y = getY(d.rate);
-        svg += `<circle class="exchange-chart-dot" cx="${x}" cy="${y}" r="3.5" />`;
-        svg += `<circle cx="${x}" cy="${y}" r="15" fill="transparent" style="cursor:pointer;" 
+        svg += `<circle class="exchange-chart-dot" cx="${x}" cy="${y}" r="4" />`;
+        svg += `<circle cx="${x}" cy="${y}" r="16" fill="transparent" style="cursor:pointer;" 
                    onmouseenter="showRateTooltip(event, '${d.date}', ${d.rate})" 
-                   onmouseleave="hideRateTooltip()" />`;
+                   onmousemove="showRateTooltip(event, '${d.date}', ${d.rate})" 
+                   onmouseleave="hideRateTooltip()"
+                   ontouchstart="showRateTooltip(event, '${d.date}', ${d.rate})" />`;
     });
     
     svg += `</svg>`;
@@ -2117,8 +2120,15 @@ window.showRateTooltip = function(event, date, rate) {
     `;
     
     const rect = container.getBoundingClientRect();
-    const x = event.clientX - rect.left + 10;
-    const y = event.clientY - rect.top - 50;
+    const clientX = event.touches && event.touches[0] ? event.touches[0].clientX : event.clientX;
+    const clientY = event.touches && event.touches[0] ? event.touches[0].clientY : event.clientY;
+    
+    let x = clientX - rect.left + 10;
+    let y = clientY - rect.top - 50;
+    
+    if (x + 120 > rect.width) x = rect.width - 130;
+    if (x < 10) x = 10;
+    if (y < 10) y = clientY - rect.top + 20;
     
     tooltip.style.left = `${x}px`;
     tooltip.style.top = `${y}px`;
