@@ -4849,21 +4849,32 @@ body, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
 }
 
 /* Responsive constraints & Mobile Navigation */
+/* Responsive constraints & Floating Mobile Navigation ("bóng ma") */
 .mobile-bottom-nav {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    max-width: 480px;
+    margin: 0 auto;
     z-index: 9999;
-    background: var(--bg-card);
-    border-top: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 999px;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: var(--transition);
+}
+
+body.dark .mobile-bottom-nav {
+    background: rgba(30, 41, 59, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
 }
 
 .mobile-bottom-nav a {
@@ -4871,16 +4882,16 @@ body, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 3px;
     flex: 1;
-    padding: 6px 0;
+    padding: 6px 10px;
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 0.72rem;
-    font-weight: 500;
+    font-size: 0.7rem;
+    font-weight: 600;
     min-height: 48px;
-    transition: var(--transition);
-    border-radius: var(--radius-sm);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 999px;
     -webkit-tap-highlight-color: transparent;
     cursor: pointer;
     touch-action: manipulation;
@@ -4892,14 +4903,28 @@ body, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
 }
 
 .mobile-bottom-nav a.active {
-    color: var(--accent-primary);
-    font-weight: 700;
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.1);
+    font-weight: 800;
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.15);
+}
+
+body.dark .mobile-bottom-nav a.active {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.25);
 }
 
 .mobile-bottom-nav a .icon-svg,
 .mobile-bottom-nav a svg {
     width: 20px;
     height: 20px;
+    transition: transform 0.2s ease;
+}
+
+.mobile-bottom-nav a.active .icon-svg,
+.mobile-bottom-nav a.active svg {
+    transform: scale(1.1);
 }
 
 @media (max-width: 768px) {
@@ -4908,21 +4933,21 @@ body, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
     }
 
     .app-wrapper {
-        padding-bottom: 90px !important;
+        padding-bottom: 100px !important;
     }
 
     .header-content {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
+        gap: 10px;
         flex-wrap: wrap;
     }
 
     .header-left {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
     }
 
     .header-left .logo {
@@ -4936,28 +4961,61 @@ body, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
     .header-right {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 10px;
         flex-wrap: nowrap;
         margin-left: auto;
     }
 
+    .theme-toggle {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        flex-shrink: 0 !important;
+        border-radius: 14px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: var(--shadow-sm) !important;
+        cursor: pointer;
+    }
+
+    .theme-toggle .icon-svg,
+    .theme-toggle svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+
     .date-badge {
-        padding: 6px 10px;
-        font-size: 0.7rem;
+        padding: 8px 12px;
+        font-size: 0.72rem;
+        border-radius: 14px;
         white-space: nowrap;
         background: var(--bg-card);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        flex-shrink: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .user-badge {
-        padding: 6px 10px;
+        padding: 8px 12px;
         font-size: 0.75rem;
+        border-radius: 14px;
         white-space: nowrap;
-        width: auto;
         background: var(--bg-card);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        flex-shrink: 0;
     }
 
     .user-badge .user-name {
-        max-width: 70px;
+        max-width: 75px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
