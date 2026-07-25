@@ -381,6 +381,18 @@ async function showApp() {
         savingsGoals = [];
     }
 
+function setDefaultDate() {
+    const now = new Date();
+    const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    const dayName = days[now.getDay()];
+    const formatted = `${dayName}, ${now.getDate()} tháng ${now.getMonth() + 1}, ${now.getFullYear()}`;
+
+    const dateMobile = document.getElementById('currentDate');
+    const dateDesktop = document.getElementById('currentDateDesktop');
+    if (dateMobile) dateMobile.textContent = formatted;
+    if (dateDesktop) dateDesktop.textContent = formatted;
+}
+
     document.getElementById('loadingOverlay').style.display = 'none';
     setDefaultDate();
     renderAll();

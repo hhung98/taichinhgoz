@@ -110,40 +110,46 @@
         <!-- HEADER -->
         <header class="header" role="banner">
             <div class="header-content">
-                <div class="header-left">
-                    <div class="brand-mark" aria-hidden="true"><i class="icon-svg" data-lucide="wallet"></i></div>
-                    <div>
-                        <h1 class="logo">GOZ Finance</h1>
-                        <p class="subtitle">Dashboard thu chi cá nhân</p>
-                    </div>
-                </div>
-                
-                <!-- TOP NAV TABS FOR DESKTOP -->
-                <nav class="desktop-header-tabs" aria-label="Điều hướng chính">
-                    <button class="header-tab-btn active" onclick="switchTab('overview')" id="h-nav-overview">
-                        <i class="icon-svg" data-lucide="layout-dashboard"></i> <span>Tổng quan</span>
-                    </button>
-                    <button class="header-tab-btn" onclick="switchTab('budget')" id="h-nav-budget">
-                        <i class="icon-svg" data-lucide="calendar-range"></i> <span>Ngân sách 12T</span>
-                    </button>
-                    <button class="header-tab-btn" onclick="switchTab('exchange')" id="h-nav-exchange">
-                        <i class="icon-svg" data-lucide="trending-up"></i> <span>Tỷ giá</span>
-                    </button>
-                    <button class="header-tab-btn" onclick="switchTab('settings')" id="h-nav-settings">
-                        <i class="icon-svg" data-lucide="settings"></i> <span>Cài đặt</span>
-                    </button>
-                </nav>
-
-                <div class="header-right header-actions">
-                    <button class="theme-toggle icon-btn" onclick="toggleTheme()" title="Dark/Light Mode"
-                        aria-label="Chuyển theme"><i class="icon-svg" data-lucide="moon"></i></button>
-                    <div class="date-badge"><i class="icon-svg" data-lucide="calendar-days"></i><span id="currentDate"></span></div>
-                    <div class="user-badge" id="userBadge" onclick="switchTab('settings')" style="cursor: pointer;" title="Xem cài đặt tài khoản">
-                        <span class="user-avatar" id="userAvatar" aria-hidden="true"><i class="icon-svg" data-lucide="user-round"></i></span>
-                        <div class="user-info-column">
-                            <span class="user-name" id="userName"></span>
+                <div class="header-top-bar">
+                    <div class="header-left">
+                        <div class="brand-mark" aria-hidden="true"><i class="icon-svg" data-lucide="wallet"></i></div>
+                        <div>
+                            <h1 class="logo">GOZ Finance</h1>
+                            <p class="subtitle">Dashboard thu chi cá nhân</p>
                         </div>
                     </div>
+                    
+                    <!-- TOP NAV TABS FOR DESKTOP -->
+                    <nav class="desktop-header-tabs" aria-label="Điều hướng chính">
+                        <button class="header-tab-btn active" onclick="switchTab('overview')" id="h-nav-overview">
+                            <i class="icon-svg" data-lucide="layout-dashboard"></i> <span>Tổng quan</span>
+                        </button>
+                        <button class="header-tab-btn" onclick="switchTab('budget')" id="h-nav-budget">
+                            <i class="icon-svg" data-lucide="calendar-range"></i> <span>Ngân sách 12T</span>
+                        </button>
+                        <button class="header-tab-btn" onclick="switchTab('exchange')" id="h-nav-exchange">
+                            <i class="icon-svg" data-lucide="trending-up"></i> <span>Tỷ giá</span>
+                        </button>
+                        <button class="header-tab-btn" onclick="switchTab('settings')" id="h-nav-settings">
+                            <i class="icon-svg" data-lucide="settings"></i> <span>Cài đặt</span>
+                        </button>
+                    </nav>
+
+                    <div class="header-right header-actions">
+                        <button class="theme-toggle icon-btn" onclick="toggleTheme()" title="Dark/Light Mode"
+                            aria-label="Chuyển theme"><i class="icon-svg" data-lucide="moon"></i></button>
+                        <div class="date-badge desktop-date-badge"><i class="icon-svg" data-lucide="calendar-days"></i><span id="currentDateDesktop"></span></div>
+                        <div class="user-badge" id="userBadge" onclick="switchTab('settings')" style="cursor: pointer;" title="Xem cài đặt tài khoản">
+                            <span class="user-avatar" id="userAvatar" aria-hidden="true"><i class="icon-svg" data-lucide="user-round"></i></span>
+                            <div class="user-info-column">
+                                <span class="user-name" id="userName"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="date-badge-row">
+                    <div class="date-badge mobile-date-badge"><i class="icon-svg" data-lucide="calendar-days"></i><span id="currentDate"></span></div>
                 </div>
             </div>
         </header>
