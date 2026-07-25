@@ -1964,10 +1964,11 @@ function getExchangeHistoryList(currentRate) {
         console.error('Error reading rate history:', e);
     }
     
-    const baseRate = parseFloat(currentRate) || 18.5;
+    const baseRate = parseFloat(currentRate) || 18.04;
     const now = new Date();
     const result = [];
     
+    // Generate smooth realistic daily variation for missing historical dates
     for (let i = 14; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
         const y = d.getFullYear();
@@ -1982,8 +1983,10 @@ function getExchangeHistoryList(currentRate) {
             rate = baseRate;
             historyMap[dateStr] = rate;
         } else {
-            const variance = (Math.sin(i * 1.5) * 0.12) + (Math.cos(i * 0.7) * 0.06);
-            rate = parseFloat((baseRate + variance).toFixed(2));
+            const seed = (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate());
+            const pseudoRand = (Math.sin(seed * 999) + 1) / 2;
+            const change = (pseudoRand - 0.48) * 0.12;
+            rate = parseFloat((baseRate + (Math.sin(i * 0.5) * 0.15) + change).toFixed(2));
             historyMap[dateStr] = rate;
         }
         result.push({ date: dateStr, rate: rate });
@@ -2003,9 +2006,9 @@ function renderExchangeRateChart() {
     
     const width = container.clientWidth || 350;
     const height = container.clientHeight || 250;
-    const margin = { top: 25, right: 20, bottom: 35, left: 45 };
+    const margin = { top: 30, right: 25, bottom: 40, left: 50 };
     
-    const data = getExchangeHistoryList(exchangeRate || 18.5);
+    const data = getExchangeHistoryList(exchangeRate || 18.04);
     const rates = data.map(d => d.rate);
     let minRate = Math.min(...rates);
     let maxRate = Math.max(...rates);
@@ -2022,7 +2025,7 @@ function renderExchangeRateChart() {
         minRate -= 0.5;
         maxRate += 0.5;
     } else {
-        const pad = (maxRate - minRate) * 0.2;
+        const pad = (maxRate - minRate) * 0.25;
         minRate -= pad;
         maxRate += pad;
     }
@@ -2037,31 +2040,34 @@ function renderExchangeRateChart() {
     svg += `
       <defs>
         <linearGradient id="exchange-area-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--accent-primary)" stop-opacity="0.3"/>
+          <stop offset="0%" stop-color="var(--accent-primary)" stop-opacity="0.25"/>
           <stop offset="100%" stop-color="var(--accent-primary)" stop-opacity="0.00"/>
         </linearGradient>
       </defs>
     `;
     
-    // Gridlines
-    for (let i = 0; i <= 3; i++) {
-        const val = minRate + (i / 3) * (maxRate - minRate);
+    // Gridlines & Y-axis labels
+    for (let i = 0; i <= 4; i++) {
+        const val = minRate + (i / 4) * (maxRate - minRate);
         const y = getY(val);
         svg += `<g class="exchange-chart-grid">
-            <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" />
-            <text class="exchange-chart-label" x="${margin.left - 6}" y="${y + 3}" text-anchor="end">${val.toFixed(1)}</text>
+            <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="var(--border)" stroke-dasharray="3 3" />
+            <text class="exchange-chart-label" x="${margin.left - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="var(--text-muted)">${val.toFixed(2)}</text>
         </g>`;
     }
     
-    // Date labels (Show 6 evenly spaced labels across the 15 days)
-    const labelIndices = [0, 3, 6, 9, 12, 14];
+    // Vertical Gridlines & X-axis Date Labels (8 evenly spaced labels: 0, 2, 4, 6, 8, 10, 12, 14)
+    const labelIndices = [0, 2, 4, 6, 8, 10, 12, 14];
     labelIndices.forEach(idx => {
         if (idx < data.length) {
             const d = data[idx];
             const x = getX(idx);
             const parts = d.date.split('-');
             const label = `${parts[2]}/${parts[1]}`;
-            svg += `<text class="exchange-chart-label" x="${x}" y="${height - 8}" text-anchor="middle">${label}</text>`;
+            svg += `<g class="exchange-chart-vgrid">
+                <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${margin.top + chartH}" stroke="var(--border)" stroke-dasharray="2 4" opacity="0.4" />
+                <text class="exchange-chart-label" x="${x}" y="${height - 10}" text-anchor="middle" font-size="11" fill="var(--text-secondary)" font-weight="600">${label}</text>
+            </g>`;
         }
     });
     
@@ -2080,16 +2086,20 @@ function renderExchangeRateChart() {
     svg += `<path class="exchange-chart-area" d="${areaPoints}" />`;
     svg += `<path class="exchange-chart-line" d="${linePoints}" />`;
     
-    // Dots & interactive hover targets
+    // Crosshair reference line
+    svg += `<line id="rateCrosshair" x1="0" y1="${margin.top}" x2="0" y2="${margin.top + chartH}" stroke="var(--accent-primary)" stroke-width="1.5" stroke-dasharray="3 3" opacity="0" style="transition: opacity 0.15s ease;" />`;
+    
+    // Dots & interactive column trigger rects
+    const stepW = chartW / (data.length - 1);
     data.forEach((d, idx) => {
         const x = getX(idx);
         const y = getY(d.rate);
-        svg += `<circle class="exchange-chart-dot" cx="${x}" cy="${y}" r="4" />`;
-        svg += `<circle cx="${x}" cy="${y}" r="16" fill="transparent" style="cursor:pointer;" 
-                   onmouseenter="showRateTooltip(event, '${d.date}', ${d.rate})" 
-                   onmousemove="showRateTooltip(event, '${d.date}', ${d.rate})" 
-                   onmouseleave="hideRateTooltip()"
-                   ontouchstart="showRateTooltip(event, '${d.date}', ${d.rate})" />`;
+        svg += `<circle id="rateDot-${idx}" class="exchange-chart-dot" cx="${x}" cy="${y}" r="4" style="transition: all 0.15s ease;" />`;
+        svg += `<rect x="${x - stepW / 2}" y="${margin.top}" width="${stepW}" height="${chartH}" fill="transparent" style="cursor:pointer;" 
+                   onmouseenter="highlightRatePoint(${idx}, '${d.date}', ${d.rate}, ${x}, ${y})" 
+                   onmousemove="highlightRatePoint(${idx}, '${d.date}', ${d.rate}, ${x}, ${y})" 
+                   onmouseleave="unhighlightRatePoint(${idx})"
+                   ontouchstart="highlightRatePoint(${idx}, '${d.date}', ${d.rate}, ${x}, ${y})" />`;
     });
     
     svg += `</svg>`;
@@ -2105,43 +2115,67 @@ function renderExchangeRateChart() {
     container.appendChild(tooltip);
 }
 
-window.showRateTooltip = function(event, date, rate) {
+window.highlightRatePoint = function(idx, date, rate, x, y) {
     const container = document.getElementById('exchangeRateHistoryChart');
     if (!container) return;
     const tooltip = container.querySelector('.rate-tooltip');
-    if (!tooltip) return;
+    const crosshair = container.querySelector('#rateCrosshair');
     
-    const parts = date.split('-');
-    const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    if (crosshair) {
+        crosshair.setAttribute('x1', x);
+        crosshair.setAttribute('x2', x);
+        crosshair.style.opacity = '1';
+    }
     
-    tooltip.innerHTML = `
-        <div class="rate-tooltip-date">${formattedDate}</div>
-        <div class="rate-tooltip-val">1 KRW = ${rate.toFixed(2)} VND</div>
-    `;
+    const dot = container.querySelector('#rateDot-' + idx);
+    if (dot) {
+        dot.setAttribute('r', '7');
+        dot.style.fill = 'var(--accent-primary)';
+    }
     
-    const rect = container.getBoundingClientRect();
-    const clientX = event.touches && event.touches[0] ? event.touches[0].clientX : event.clientX;
-    const clientY = event.touches && event.touches[0] ? event.touches[0].clientY : event.clientY;
+    if (tooltip) {
+        const parts = date.split('-');
+        const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        tooltip.innerHTML = `
+            <div class="rate-tooltip-date">${formattedDate}</div>
+            <div class="rate-tooltip-val">1 KRW = ${rate.toFixed(2)} VND</div>
+        `;
+        
+        const rect = container.getBoundingClientRect();
+        let tooltipX = x - 60;
+        let tooltipY = y - 55;
+        
+        if (tooltipX < 10) tooltipX = 10;
+        if (tooltipX + 130 > rect.width) tooltipX = rect.width - 140;
+        if (tooltipY < 10) tooltipY = y + 15;
+        
+        tooltip.style.left = `${tooltipX}px`;
+        tooltip.style.top = `${tooltipY}px`;
+        tooltip.style.opacity = '1';
+    }
+};
+
+window.unhighlightRatePoint = function(idx) {
+    const container = document.getElementById('exchangeRateHistoryChart');
+    if (!container) return;
+    const tooltip = container.querySelector('.rate-tooltip');
+    const crosshair = container.querySelector('#rateCrosshair');
+    if (crosshair) crosshair.style.opacity = '0';
+    if (tooltip) tooltip.style.opacity = '0';
     
-    let x = clientX - rect.left + 10;
-    let y = clientY - rect.top - 50;
-    
-    if (x + 120 > rect.width) x = rect.width - 130;
-    if (x < 10) x = 10;
-    if (y < 10) y = clientY - rect.top + 20;
-    
-    tooltip.style.left = `${x}px`;
-    tooltip.style.top = `${y}px`;
-    tooltip.style.opacity = '1';
+    const dot = container.querySelector('#rateDot-' + idx);
+    if (dot) {
+        dot.setAttribute('r', '4');
+        dot.style.fill = '';
+    }
+};
+
+window.showRateTooltip = function(event, date, rate) {
+    // Retained for backward compatibility
 };
 
 window.hideRateTooltip = function() {
-    const container = document.getElementById('exchangeRateHistoryChart');
-    if (!container) return;
-    const tooltip = container.querySelector('.rate-tooltip');
-    if (tooltip) {
-        tooltip.style.opacity = '0';
-    }
+    // Retained for backward compatibility
 };
 
 // Init
