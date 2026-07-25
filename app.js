@@ -32,6 +32,24 @@ function applyDemoBudgetIfEmpty(data) {
     return localStorage.getItem('goz_demo_data') === 'true' ? getDemoBudgetData() : data;
 }
 
+function fmtCompact(val) {
+    if (val === 0 || val === null || val === undefined) return '0';
+    const abs = Math.abs(val);
+    const sign = val < 0 ? '-' : '';
+    if (abs >= 1000000) {
+        return sign + (abs / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    }
+    if (abs >= 1000) {
+        return sign + (abs / 1000).toFixed(0) + 'K';
+    }
+    return sign + abs.toLocaleString('vi-VN');
+}
+
+function fmtFull(val) {
+    if (!val && val !== 0) return '0';
+    return Number(val).toLocaleString('vi-VN');
+}
+
 function iconMarkup(name, extraClass = '') {
     return `<i class="icon-svg ${extraClass}" data-lucide="${name}"></i>`;
 }
@@ -1399,223 +1417,6 @@ function renderBudgetOverviewChart() {
         </div>
     </div>`;
 }
-
-// ===== 31-Day & Multi-view Overview Chart =====
-let overviewChartView = 'day'; // 'day' | 'week' | 'month'
-let overviewSelectedMonthOffset = 0;
-
-function setOverviewChartView(mode) {
-    overviewChartView = mode;
-    document.querySelectorAll('#overviewChartViewTabs button').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.getElementById('ov-tab-' + mode);
-    if (activeBtn) activeBtn.classList.add('active');
-    
-    // Ghost or show month switcher
-    const switcher = document.getElementById('overviewChartMonthSwitcher');
-    if (switcher) {
-        if (mode === 'day') {
-            switcher.classList.remove('income-month-switcher--ghost');
-        } else {
-            switcher.classList.add('income-month-switcher--ghost');
-        }
-    }
-    
-    renderBudgetOverviewChart();
-}
-
-function shiftOverviewChartMonth(delta) {
-    overviewSelectedMonthOffset += delta;
-    renderBudgetOverviewChart();
-}
-
-renderBudgetOverviewChart = function() {
-    const container = document.getElementById('budgetOverviewChart');
-    if (!container) return;
-
-    const now = new Date();
-    const targetDate = new Date(now.getFullYear(), now.getMonth() + overviewSelectedMonthOffset, 1);
-    const targetYear = targetDate.getFullYear();
-    const targetMonthIdx = targetDate.getMonth();
-    const daysInMonth = new Date(targetYear, targetMonthIdx + 1, 0).getDate();
-
-    // Update Header Text
-    const titleEl = document.getElementById('overviewChartTitle');
-    const subtitleEl = document.getElementById('overviewChartSubtitle');
-    const monthNumEl = document.getElementById('overviewChartMonthNumber');
-    
-    if (subtitleEl) subtitleEl.textContent = `Tháng ${targetMonthIdx + 1} Năm ${targetYear}`;
-    if (monthNumEl) monthNumEl.textContent = targetMonthIdx + 1;
-
-    if (titleEl) {
-        if (overviewChartView === 'day') {
-            titleEl.textContent = `Thu và chi ${daysInMonth} ngày`;
-        } else if (overviewChartView === 'week') {
-            titleEl.textContent = 'Thu nhập theo tuần';
-        } else {
-            titleEl.textContent = 'Thu nhập theo tháng';
-        }
-    }
-
-    if (overviewChartView === 'day') {
-        // ===== 31-DAY LINE & AREA CHART =====
-        const key = getBudgetKey(targetYear, targetMonthIdx);
-        const bd = monthlyBudget[key] || {};
-        const totalInc = Number(bd.income || 0);
-        const totalExp = Number(bd.expense || 0);
-
-        // Generate realistic daily breakdown for the month
-        const dailyData = [];
-        let maxFlow = 10;
-
-        for (let d = 1; d <= daysInMonth; d++) {
-            const seed = (targetYear * 10000 + (targetMonthIdx + 1) * 100 + d);
-            const r1 = (Math.sin(seed * 777) + 1) / 2;
-            const r2 = (Math.cos(seed * 333) + 1) / 2;
-
-            // Distribute monthly total smoothly across working days
-            let inc = 0;
-            let exp = 0;
-            if (totalInc > 0) {
-                inc = Math.round((totalInc / daysInMonth) * (0.4 + r1 * 1.2));
-            }
-            if (totalExp > 0) {
-                exp = Math.round((totalExp / daysInMonth) * (0.3 + r2 * 1.4));
-            }
-            if (inc > maxFlow) maxFlow = inc;
-            if (exp > maxFlow) maxFlow = exp;
-
-            dailyData.push({ day: d, income: inc, expense: exp });
-        }
-
-        const W = 320;
-        const H = 132;
-        const padX = 20;
-        const chartW = 282;
-        const topY = 16;
-        const botY = 112;
-        const chartH = botY - topY;
-
-        const getX = (dIdx) => padX + (dIdx / (daysInMonth - 1)) * chartW;
-        const getY = (val) => botY - (val / (maxFlow || 1)) * chartH;
-
-        let incLineD = '';
-        let incAreaD = `M ${getX(0)} ${botY} `;
-        let expLineD = '';
-        let expAreaD = `M ${getX(0)} ${botY} `;
-
-        let dotsHtml = '';
-
-        dailyData.forEach((item, idx) => {
-            const x = getX(idx);
-            const yInc = getY(item.income);
-            const yExp = getY(item.expense);
-
-            incLineD += `${idx === 0 ? 'M' : 'L'} ${x} ${yInc} `;
-            incAreaD += `L ${x} ${yInc} `;
-
-            expLineD += `${idx === 0 ? 'M' : 'L'} ${x} ${yExp} `;
-            expAreaD += `L ${x} ${yExp} `;
-
-            if (item.income > 0) {
-                dotsHtml += `<circle class="income-flow-dot income-flow-dot-income" cx="${x}" cy="${yInc}" r="3.5"><title>Ngày ${item.day}: Thu ${fmtCompact(item.income)} ₩</title></circle>`;
-            }
-            if (item.expense > 0) {
-                dotsHtml += `<circle class="income-flow-dot income-flow-dot-expense" cx="${x}" cy="${yExp}" r="3.5"><title>Ngày ${item.day}: Chi ${fmtCompact(item.expense)} ₩</title></circle>`;
-            }
-        });
-
-        incAreaD += `L ${getX(daysInMonth - 1)} ${botY} Z`;
-        expAreaD += `L ${getX(daysInMonth - 1)} ${botY} Z`;
-
-        // Check if current day vertical line should render
-        let todayLineHtml = '';
-        const isCurrentMonth = (targetYear === now.getFullYear() && targetMonthIdx === now.getMonth());
-        if (isCurrentMonth) {
-            const todayDay = now.getDate();
-            const todayX = getX(todayDay - 1);
-            todayLineHtml = `<line x1="${todayX}" x2="${todayX}" y1="${topY}" y2="${botY}" class="income-flow-today-line" />`;
-        }
-
-        // Ticks for X-axis
-        const axisDays = [1, 5, 10, 15, 20, 25, 30].filter(d => d <= daysInMonth);
-        const xAxisHtml = axisDays.map(d => `<span>${d}</span>`).join('');
-
-        // Gridlines
-        let gridHtml = '';
-        [0.25, 0.5, 0.75, 1].forEach(tick => {
-            const y = botY - tick * chartH;
-            gridHtml += `<g>
-                <line x1="${padX}" x2="${padX + chartW}" y1="${y}" y2="${y}" class="income-flow-grid" />
-                <text x="4" y="${y + 3}" class="income-flow-y-label">${fmtCompact(maxFlow * tick)}</text>
-            </g>`;
-        });
-
-        container.innerHTML = `<div class="income-flow-line-chart">
-            <div class="income-flow-legend">
-                <span class="income-flow-legend-income">Thu</span>
-                <span class="income-flow-legend-expense">Chi</span>
-            </div>
-            <svg class="income-flow-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Biểu đồ thu và chi 31 ngày">
-                ${gridHtml}
-                ${todayLineHtml}
-                <path class="income-flow-area income-flow-area-income" d="${incAreaD}" />
-                <path class="income-flow-area income-flow-area-expense" d="${expAreaD}" />
-                <path class="income-flow-line income-flow-line-income" d="${incLineD}" />
-                <path class="income-flow-line income-flow-line-expense" d="${expLineD}" />
-                ${dotsHtml}
-            </svg>
-            <div class="income-flow-x-axis">
-                ${xAxisHtml}
-            </div>
-        </div>`;
-    } else {
-        // ===== GROUPED BARS CHART (WEEK / MONTH VIEW) =====
-        const isWeek = overviewChartView === 'week';
-        const groupCount = 6;
-        const groups = [];
-        let maxGroupVal = 100;
-
-        if (isWeek) {
-            for (let i = groupCount - 1; i >= 0; i--) {
-                const wInc = Math.round((Number(monthlyBudget[getBudgetKey(targetYear, targetMonthIdx)]?.income || 0) / 4) * (0.7 + i * 0.1));
-                if (wInc > maxGroupVal) maxGroupVal = wInc;
-                groups.push({
-                    label: `T${6 - i}`,
-                    total: wInc,
-                    isCurrent: i === 0
-                });
-            }
-        } else {
-            for (let i = groupCount - 1; i >= 0; i--) {
-                const mIdx = (targetMonthIdx - i + 12) % 12;
-                const y = targetYear - (targetMonthIdx - i < 0 ? 1 : 0);
-                const k = getBudgetKey(y, mIdx);
-                const inc = Number(monthlyBudget[k]?.income || 0);
-                if (inc > maxGroupVal) maxGroupVal = inc;
-                groups.push({
-                    label: `T${mIdx + 1}`,
-                    total: inc,
-                    isCurrent: i === 0
-                });
-            }
-        }
-
-        const barsHtml = groups.map(item => {
-            const h = Math.max(6, Math.round((item.total / maxGroupVal) * 74));
-            return `<div class="igb-col${item.isCurrent ? ' current' : ''}">
-                <span class="igb-value">${fmtCompact(item.total)}</span>
-                <div class="igb-bar-wrap">
-                    <div class="igb-bar-fill" style="height: ${h}px;"></div>
-                </div>
-                <div class="igb-bottom">
-                    <span class="igb-label">${item.label}</span>
-                </div>
-            </div>`;
-        }).join('');
-
-        container.innerHTML = `<div class="income-grouped-bars">${barsHtml}</div>`;
-    }
-};
 
 // ===== Chart Fullscreen =====
 function openChartFullscreen() {

@@ -279,35 +279,16 @@
 
                 <!-- BENTO GRID SECTION FOR CHARTS -->
                 <section class="overview-charts-grid" aria-label="Biểu đồ phân tích">
-                    <!-- 31-DAY & MONTHLY/WEEKLY OVERVIEW CHART CARD -->
-                    <section class="income-chart-panel monthly panel chart-panel line-chart-card" aria-label="Tổng quan thu chi">
-                        <div class="income-section-head">
-                            <div>
-                                <p class="income-kicker">Tổng quan tháng</p>
-                                <h2 class="income-title" id="overviewChartTitle">Thu và chi 31 ngày</h2>
-                                <span class="income-month-caption" id="overviewChartSubtitle">Tháng 7 Năm 2026</span>
-                            </div>
-                            <div class="income-month-switcher" id="overviewChartMonthSwitcher" aria-label="Chọn tháng biểu đồ">
-                                <button type="button" onclick="shiftOverviewChartMonth(-1)" title="Tháng trước">
-                                    <i class="icon-svg" data-lucide="chevron-left"></i>
-                                </button>
-                                <strong id="overviewChartMonthNumber">7</strong>
-                                <button type="button" onclick="shiftOverviewChartMonth(1)" title="Tháng sau">
-                                    <i class="icon-svg" data-lucide="chevron-right"></i>
-                                </button>
+                    <!-- LINE CHART CARD -->
+                    <div class="panel chart-panel line-chart-card">
+                        <div class="panel-header chart-panel-header">
+                            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+                                <h3 class="chart-title"><i class="icon-svg" data-lucide="chart-no-axes-combined"></i> Biểu đồ tổng quan các tháng</h3>
+                                <button class="chart-zoom-btn" onclick="openChartFullscreen()" title="Phóng to"><i class="icon-svg" data-lucide="search"></i></button>
                             </div>
                         </div>
-
-                        <div class="income-chart-area" id="budgetOverviewChart">
-                            <!-- Rendered dynamically by app.js -->
-                        </div>
-
-                        <div class="income-chart-view-tabs" id="overviewChartViewTabs">
-                            <button type="button" onclick="setOverviewChartView('month')" id="ov-tab-month">Tháng</button>
-                            <button type="button" onclick="setOverviewChartView('week')" id="ov-tab-week">Tuần</button>
-                            <button type="button" onclick="setOverviewChartView('day')" id="ov-tab-day" class="active">Ngày</button>
-                        </div>
-                    </section>
+                        <div class="budget-chart-container" id="budgetOverviewChart" onclick="openChartFullscreen()"></div>
+                    </div>
 
                     <!-- ALLOCATION CHART CARD -->
                     <div class="panel chart-panel allocation-chart-card">
