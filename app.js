@@ -1743,7 +1743,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=33').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=34').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
@@ -2080,6 +2080,7 @@ function renderExchangeRateChart() {
         const valK = minKrw + pct * (maxKrw - minKrw);
         const valU = minUsd + pct * (maxUsd - minUsd);
         const yK = getY_KRW(valK);
+        const yU = getY_USD(valU);
 
         svg += `<g class="exchange-chart-grid">
             <line x1="${margin.left}" y1="${yK}" x2="${width - margin.right}" y2="${yK}" stroke="var(--border)" stroke-dasharray="3 3" opacity="0.6" />`;
@@ -2088,7 +2089,7 @@ function renderExchangeRateChart() {
             svg += `<text class="exchange-chart-label krw" x="${margin.left - 8}" y="${yK + 4}" text-anchor="end" font-size="10" fill="#00b894" font-weight="700">${valK.toFixed(2)}</text>`;
         }
         if (showUSD) {
-            svg += `<text class="exchange-chart-label usd" x="${width - margin.right + 8}" y="${yK + 4}" text-anchor="start" font-size="10" fill="#3b82f6" font-weight="700">${fmtFull(Math.round(valU))}</text>`;
+            svg += `<text class="exchange-chart-label usd" x="${width - margin.right + 8}" y="${yU + 4}" text-anchor="start" font-size="10" fill="#3b82f6" font-weight="700">${fmtFull(Math.round(valU))}</text>`;
         }
         svg += `</g>`;
     }
@@ -2108,7 +2109,7 @@ function renderExchangeRateChart() {
         }
     });
 
-    // Render KRW Path
+    // Render KRW Path (Solid Green)
     if (showKRW) {
         let krwLinePoints = '';
         let krwAreaPoints = `M ${getX(0)} ${margin.top + chartH} `;
@@ -2124,7 +2125,7 @@ function renderExchangeRateChart() {
         svg += `<path class="exchange-chart-line krw" stroke="#00b894" stroke-width="2.5" fill="none" stroke-linecap="round" d="${krwLinePoints}" />`;
     }
 
-    // Render USD Path
+    // Render USD Path (Dashed Blue)
     if (showUSD) {
         let usdLinePoints = '';
         let usdAreaPoints = `M ${getX(0)} ${margin.top + chartH} `;
@@ -2137,7 +2138,7 @@ function renderExchangeRateChart() {
         usdAreaPoints += `L ${getX(data.length - 1)} ${margin.top + chartH} Z`;
 
         svg += `<path class="exchange-chart-area usd" fill="url(#usd-area-grad)" d="${usdAreaPoints}" />`;
-        svg += `<path class="exchange-chart-line usd" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-linecap="round" d="${usdLinePoints}" />`;
+        svg += `<path class="exchange-chart-line usd" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="6 3" fill="none" stroke-linecap="round" d="${usdLinePoints}" />`;
     }
 
     // Crosshair reference line

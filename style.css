@@ -5730,23 +5730,52 @@ body.dark .mobile-bottom-nav a.active span {
 }
 
 .exchange-chart-line {
-    stroke: var(--accent-primary);
     stroke-width: 2.5;
     fill: none;
     stroke-linecap: round;
 }
 
+.exchange-chart-line.krw {
+    stroke: #00b894 !important;
+}
+
+.exchange-chart-line.usd {
+    stroke: #3b82f6 !important;
+}
+
+[data-theme="light"] .exchange-chart-line.krw {
+    stroke: #059669 !important;
+}
+
+[data-theme="light"] .exchange-chart-line.usd {
+    stroke: #2563eb !important;
+}
+
 .exchange-chart-area {
-    fill: url(#exchange-area-grad);
-    opacity: 0.15;
+    opacity: 0.18;
 }
 
 .exchange-chart-dot {
-    fill: var(--accent-primary);
     stroke: var(--bg-card);
     stroke-width: 2;
     cursor: pointer;
     transition: r 0.15s ease;
+}
+
+.exchange-chart-dot.krw {
+    fill: #00b894 !important;
+}
+
+.exchange-chart-dot.usd {
+    fill: #3b82f6 !important;
+}
+
+[data-theme="light"] .exchange-chart-dot.krw {
+    fill: #059669 !important;
+}
+
+[data-theme="light"] .exchange-chart-dot.usd {
+    fill: #2563eb !important;
 }
 
 .exchange-chart-dot:hover {
