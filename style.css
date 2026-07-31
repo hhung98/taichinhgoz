@@ -6012,10 +6012,52 @@ body.dark .mobile-bottom-nav a.active span {
     fill: #e67e22 !important;
 }
 
-.rate-tooltip-val.usdkrw {
-    color: #ff9f43;
-    font-weight: 700;
+.expense-cell-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
 }
+
+.expense-cell-container .expense-input {
+    flex: 1;
+    min-width: 85px;
+}
+
+.expense-pct-badge {
+    display: inline-block;
+    padding: 3px 6px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.expense-pct-badge.safe {
+    background: rgba(0, 184, 148, 0.15);
+    color: #00b894;
+}
+
+.expense-pct-badge.warning {
+    background: rgba(255, 159, 67, 0.18);
+    color: #ff9f43;
+}
+
+.expense-pct-badge.danger {
+    background: rgba(255, 107, 107, 0.18);
+    color: #ff6b6b;
+}
+
+.expense-pct-badge.muted {
+    opacity: 0.45;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
 
 
 

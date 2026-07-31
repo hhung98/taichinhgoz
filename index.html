@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function() {
-            const CURRENT_VER = 'v36';
+            const CURRENT_VER = 'v37';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=36">
+    <link rel="stylesheet" href="style.css?v=37">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -441,7 +441,7 @@
                                     <th>Sinh hoạt<br><small class="th-pct blue">40%</small></th>
                                     <th>Dự phòng<br><small class="th-pct yellow">40%</small></th>
                                     <th>Đầu tư<br><small class="th-pct purple">20%</small></th>
-                                    <th>Chi tiêu<br><small class="th-pct red">₩ KRW</small></th>
+                                    <th>Chi tiêu<br><small class="th-pct red">₩ / % Thu nhập</small></th>
                                     <th>Còn lại</th>
                                     <th>Dư/Thiếu<br><small class="th-pct green">SH-CT</small></th>
                                 </tr>
@@ -495,7 +495,7 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v36 (Lucide Icon Upgrade)</strong></p>
+                                        <p>Phiên bản: <strong>v37 (Expense % Ratio Feature)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới khi đẩy code lên Git.</p>
                                     </div>
                                     <div class="settings-option-control">
@@ -563,7 +563,7 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=36"></script>
+    <script src="app.js?v=37"></script>
 </body>
 
 </html>

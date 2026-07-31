@@ -991,6 +991,18 @@ function onExpenseInput(month, value) {
     debounceSaveBudget(budgetYear, month, monthlyBudget[key].income || 0, monthlyBudget[key].expense);
 }
 
+function getExpensePctBadgeHtml(inc, exp) {
+    if (!inc || !exp) {
+        return `<span class="expense-pct-badge muted">${inc ? '0%' : '-'}</span>`;
+    }
+    const pct = (exp / inc) * 100;
+    const pctStr = pct.toFixed(1) + '%';
+    let cls = 'safe';
+    if (pct > 90) cls = 'danger';
+    else if (pct > 60) cls = 'warning';
+    return `<span class="expense-pct-badge ${cls}">${pctStr}</span>`;
+}
+
 function updateRowInline(month) {
     const tbody = document.getElementById('budgetTableBody');
     if (!tbody) return;
@@ -1006,13 +1018,30 @@ function updateRowInline(month) {
     const bC = balance >= 0 ? 'positive' : 'negative', sC = surplus >= 0 ? 'positive' : 'negative';
     const reserveDisplay = inc ? `${fmtFull(reserve)}<span class="cell-new-val">/ ${fmtFull(reserveFromBalance)}</span>` : '-';
     const investDisplay = inc ? `${fmtFull(invest)}<span class="cell-new-val">/ ${fmtFull(investFromBalance)}</span>` : '-';
-    // Update cells (skip col 0=month, 1=income input, 5=expense input)
+    // Update cells (skip col 0=month, 1=income input)
     row.cells[2].innerHTML = inc ? fmtFull(living) : '-';
     row.cells[2].className = 'cell-living';
     row.cells[3].innerHTML = reserveDisplay;
     row.cells[3].className = 'cell-reserve';
     row.cells[4].innerHTML = investDisplay;
     row.cells[4].className = 'cell-invest';
+
+    // Update Expense Pct Badge inline (col 5)
+    const badgeEl = row.cells[5]?.querySelector('.expense-pct-badge');
+    if (badgeEl) {
+        if (!inc || !exp) {
+            badgeEl.textContent = inc ? '0%' : '-';
+            badgeEl.className = 'expense-pct-badge muted';
+        } else {
+            const pct = (exp / inc) * 100;
+            badgeEl.textContent = pct.toFixed(1) + '%';
+            let cls = 'safe';
+            if (pct > 90) cls = 'danger';
+            else if (pct > 60) cls = 'warning';
+            badgeEl.className = `expense-pct-badge ${cls}`;
+        }
+    }
+
     row.cells[6].innerHTML = inc || exp ? fmtFull(balance) : '-';
     row.cells[6].className = `cell-balance ${bC}`;
     row.cells[7].innerHTML = inc || exp ? fmtFull(surplus) : '-';
@@ -1037,13 +1066,16 @@ function updateTableFooter() {
         tVnew += (inc || exp) ? investFromBalance : 0;
     }
     const tB = tI - tE, bC = tB >= 0 ? 'positive' : 'negative', sC = tS >= 0 ? 'positive' : 'negative';
+    const totalExpPct = tI > 0 ? (tE / tI * 100) : 0;
+    const totalExpPctStr = (tI > 0 && tE > 0) ? `<span style="font-size:0.75rem;opacity:0.9;margin-left:4px;font-weight:700;color:var(--accent-red);">(${totalExpPct.toFixed(1)}%)</span>` : '';
+
     tfoot.innerHTML = `<tr>
         <td><strong>Tổng ₩</strong></td>
         <td style="color:var(--accent-green);font-weight:700;text-align:center;">${fmtFull(tI)}</td>
         <td class="cell-living">${fmtFull(tL)}</td>
         <td class="cell-reserve">${fmtFull(tR)}<span class="cell-new-val">/ ${fmtFull(tRnew)}</span></td>
         <td class="cell-invest">${fmtFull(tV)}<span class="cell-new-val">/ ${fmtFull(tVnew)}</span></td>
-        <td style="color:var(--accent-red);font-weight:700;text-align:center;">${fmtFull(tE)}</td>
+        <td style="color:var(--accent-red);font-weight:700;text-align:center;">${fmtFull(tE)}${totalExpPctStr}</td>
         <td class="cell-balance ${bC}">${fmtFull(tB)}</td>
         <td class="cell-surplus ${sC}">${fmtFull(tS)}</td>
     </tr>
@@ -1053,7 +1085,7 @@ function updateTableFooter() {
         <td class="cell-living">${fmtFull(Math.round(tL * rate))}</td>
         <td class="cell-reserve">${fmtFull(Math.round(tR * rate))}<span class="cell-new-val">/ ${fmtFull(Math.round(tRnew * rate))}</span></td>
         <td class="cell-invest">${fmtFull(Math.round(tV * rate))}<span class="cell-new-val">/ ${fmtFull(Math.round(tVnew * rate))}</span></td>
-        <td style="color:var(--accent-red);text-align:center;">${fmtFull(Math.round(tE * rate))}</td>
+        <td style="color:var(--accent-red);text-align:center;">${fmtFull(Math.round(tE * rate))}${totalExpPctStr}</td>
         <td class="cell-balance ${bC}">${fmtFull(Math.round(tB * rate))}</td>
         <td class="cell-surplus ${sC}">${fmtFull(Math.round(tS * rate))}</td>
     </tr>`;
@@ -1095,18 +1127,26 @@ function renderMonthlyBudgetTable() {
         // Extract raw number value to display normally, but formatted
         const incVal = inc ? fmtFullRaw(inc) : '';
         const expVal = exp ? fmtFullRaw(exp) : '';
+        const expBadge = getExpensePctBadgeHtml(inc, exp);
+
         rows += `<tr${isCurrent ? ' style="background:rgba(108,92,231,0.08);"' : ''}>
             <td>${MONTHS[m]}</td>
             <td><input class="income-input" type="text" inputmode="numeric" value="${incVal}" placeholder="₩" oninput="formatInputLive(this); onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-living">${inc ? fmtFull(living) : '-'}</td>
             <td class="cell-reserve">${reserveDisplay}</td>
             <td class="cell-invest">${investDisplay}</td>
-            <td><input class="expense-input" type="text" inputmode="numeric" value="${expVal}" placeholder="₩" oninput="formatInputLive(this); onExpenseInput(${m},this.value)" onfocus="this.select()"></td>
+            <td>
+                <div class="expense-cell-container">
+                    <input class="expense-input" type="text" inputmode="numeric" value="${expVal}" placeholder="₩" oninput="formatInputLive(this); onExpenseInput(${m},this.value)" onfocus="this.select()">
+                    ${expBadge}
+                </div>
+            </td>
             <td class="cell-balance ${bC}">${inc || exp ? fmtFull(balance) : '-'}</td>
             <td class="cell-surplus ${sC}">${inc || exp ? fmtFull(surplus) : '-'}</td>
         </tr>`;
     }
     tbody.innerHTML = rows;
+    updateTableFooter();
     const tB = tI - tE, bC = tB >= 0 ? 'positive' : 'negative', sC = tS >= 0 ? 'positive' : 'negative';
     tfoot.innerHTML = `<tr>
         <td><strong>Tổng ₩</strong></td>
@@ -1745,7 +1785,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=36').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=37').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
