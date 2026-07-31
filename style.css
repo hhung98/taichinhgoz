@@ -5946,8 +5946,13 @@ body.dark .mobile-bottom-nav a.active span {
     background: #ff9f43;
 }
 
-.dot-indicator.both {
-    background: linear-gradient(135deg, #00b894 0%, #3b82f6 50%, #ff9f43 100%);
+.stat-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--text-primary);
 }
 
 .triple-currency-stats {

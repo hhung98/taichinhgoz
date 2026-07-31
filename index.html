@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function() {
-            const CURRENT_VER = 'v39';
+            const CURRENT_VER = 'v40';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=39">
+    <link rel="stylesheet" href="style.css?v=40">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -342,10 +342,10 @@
             <div id="tab-exchange" class="tab-pane animate-tab-content">
                 <section class="panel exchange-chart-panel" aria-label="Lịch sử tỷ giá">
                     <div class="panel-header" style="flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;">
-                        <h2 class="panel-title"><i class="icon-svg" data-lucide="trending-up"></i> Lịch sử Tỷ giá KRW, USD & USD/KRW (15 ngày)</h2>
+                        <h2 class="panel-title">Lịch sử Tỷ giá (15 ngày)</h2>
                         <div class="exchange-legend-selector">
-                            <button class="exchange-mode-btn active" id="btnRateBoth" onclick="setExchangeRateMode('both')" title="Xem tất cả 3 tỷ giá">
-                                <span class="dot-indicator both"></span> <span>Tất cả (3)</span>
+                            <button class="exchange-mode-btn active" id="btnRateBoth" onclick="setExchangeRateMode('both')" title="Xem tất cả tỷ giá">
+                                <span class="dot-indicator both"></span> <span>Tất cả</span>
                             </button>
                             <button class="exchange-mode-btn" id="btnRateKRW" onclick="setExchangeRateMode('krw')" title="Chỉ xem KRW/VND">
                                 <span class="dot-indicator krw"></span> <span>KRW/VND</span>
@@ -363,8 +363,7 @@
                     <div class="exchange-stats-summary triple-currency-stats">
                         <div class="exchange-stat-card krw-stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-flag"><i class="icon-svg" data-lucide="coins" style="width:15px;height:15px;color:#00b894;"></i> KRW / VND</span>
-                                <span class="stat-badge live">Trục trái</span>
+                                <span class="stat-flag"><span class="dot-indicator krw"></span> KRW / VND</span>
                             </div>
                             <div class="stat-row"><span class="stat-label">Hiện tại:</span> <strong id="krwHistoryCurrent">-- ₫</strong></div>
                             <div class="stat-row"><span class="stat-label">Cao nhất (15 ngày):</span> <span id="krwHistoryMax" class="val-max">-- ₫</span></div>
@@ -373,8 +372,7 @@
 
                         <div class="exchange-stat-card usd-stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-flag"><i class="icon-svg" data-lucide="circle-dollar-sign" style="width:15px;height:15px;color:#3b82f6;"></i> USD / VND</span>
-                                <span class="stat-badge live" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">Trục phải</span>
+                                <span class="stat-flag"><span class="dot-indicator usd"></span> USD / VND</span>
                             </div>
                             <div class="stat-row"><span class="stat-label">Hiện tại:</span> <strong id="usdHistoryCurrent">-- ₫</strong></div>
                             <div class="stat-row"><span class="stat-label">Cao nhất (15 ngày):</span> <span id="usdHistoryMax" class="val-max">-- ₫</span></div>
@@ -383,8 +381,7 @@
 
                         <div class="exchange-stat-card usdkrw-stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-flag"><i class="icon-svg" data-lucide="banknote" style="width:15px;height:15px;color:#ff9f43;"></i> USD / KRW</span>
-                                <span class="stat-badge live" style="background: rgba(255, 159, 67, 0.15); color: #ff9f43;">Tỷ giá Won</span>
+                                <span class="stat-flag"><span class="dot-indicator usdkrw"></span> USD / KRW</span>
                             </div>
                             <div class="stat-row"><span class="stat-label">Hiện tại:</span> <strong id="usdKrwHistoryCurrent">-- ₩</strong></div>
                             <div class="stat-row"><span class="stat-label">Cao nhất (15 ngày):</span> <span id="usdKrwHistoryMax" class="val-max">-- ₩</span></div>
@@ -495,7 +492,7 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v39 (Exchange Tab Mobile Optimization)</strong></p>
+                                        <p>Phiên bản: <strong>v40 (Minimalist Clean Design)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới khi đẩy code lên Git.</p>
                                     </div>
                                     <div class="settings-option-control">
@@ -563,7 +560,7 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=39"></script>
+    <script src="app.js?v=40"></script>
 </body>
 
 </html>
