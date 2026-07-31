@@ -342,14 +342,7 @@ body.dark .header-tab-btn.active {
     transform: rotate(20deg);
 }
 
-/* TAB PANES */
-.tab-pane {
-    display: none;
-}
-
-.tab-pane.active {
-    display: block;
-}
+/* TAB PANES — see FAST GPU TAB SWITCH block for canonical rules */
 
 /* DESKTOP HEADER TABS */
 .desktop-header-tabs {
@@ -3997,11 +3990,8 @@ html[data-theme="light"] body {
 /* ===== Premium Motion + Layout Fixes ===== */
 .reveal-box {
     opacity: 0;
-    transform: translateY(8px);
-    transition-property: opacity, transform;
-    transition-duration: 0.28s;
-    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: opacity, transform;
+    transform: translateY(6px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
 .reveal-box.is-visible {
@@ -4899,33 +4889,7 @@ body, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
     font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Tab pane base visibility */
-.tab-pane {
-    display: none;
-    opacity: 0;
-}
-
-.tab-pane.active {
-    display: block;
-    opacity: 1;
-}
-
-/* Slide and fade transition */
-@keyframes tabContentIn {
-    from {
-        opacity: 0;
-        transform: translate3d(0, 12px, 0);
-    }
-    to {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-    }
-}
-
-.animate-tab-content {
-    animation: tabContentIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    will-change: transform, opacity;
-}
+/* Tab pane rules consolidated into FAST GPU TAB SWITCH block */
 
 /* Desktop Header Navigation Tabs */
 .desktop-header-tabs {
@@ -5000,43 +4964,26 @@ body, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
     margin-bottom: 0 !important;
 }
 
-/* ===== TAB STAGGERED WATERFALL ENTRANCE ANIMATION ===== */
-@keyframes tabWaterfallCascade {
-    0% {
+/* ===== FAST GPU TAB SWITCH ANIMATION ===== */
+@keyframes tabFastIn {
+    from {
         opacity: 0;
-        transform: translateY(22px) scale(0.985);
+        transform: translateY(4px);
     }
-    60% {
-        opacity: 0.85;
-    }
-    100% {
+    to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
 }
 
 .tab-pane {
     display: none;
+    opacity: 0;
 }
 
 .tab-pane.active {
     display: block;
-}
-
-/* Sequential stagger for items inside active tab pane */
-.tab-pane.active .exchange-shell,
-.tab-pane.active .stats-section,
-.tab-pane.active .financial-insight-card,
-.tab-pane.active .overview-charts-grid > *,
-.tab-pane.active .budget-dashboard-header,
-.tab-pane.active .budget-dashboard-grid > *,
-.tab-pane.active .exchange-grid > *,
-.tab-pane.active .settings-group,
-.tab-pane.active .settings-card,
-.tab-pane.active .panel {
-    animation: tabWaterfallCascade 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
-    animation-delay: calc(var(--stagger-index, 0) * 55ms);
-    will-change: transform, opacity;
+    animation: tabFastIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Responsive constraints & Floating Mobile Navigation ("bóng ma") */

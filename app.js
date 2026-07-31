@@ -144,49 +144,27 @@ function iconMarkup(name, extraClass = '') {
     return `<i class="icon-svg ${extraClass}" data-lucide="${name}"></i>`;
 }
 
+let _refreshIconsTimer = null;
 function refreshIcons() {
-    if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons({ attrs: { 'stroke-width': 1.8 } });
-    }
+    if (_refreshIconsTimer) return;
+    _refreshIconsTimer = requestAnimationFrame(() => {
+        _refreshIconsTimer = null;
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons({ attrs: { 'stroke-width': 1.8 } });
+        }
+    });
 }
 
+let _scrollRevealDone = false;
 function initScrollReveal() {
-    const REVEAL_STAGGER = 35;
-    const REVEAL_MAX_DELAY = 120;
+    if (_scrollRevealDone) return;
+    _scrollRevealDone = true;
     const targets = document.querySelectorAll(
         '.exchange-shell, .summary-card, .financial-insight-card, .panel, .budget-dash-item, .pie-card, .goal-item'
     );
-
-    targets.forEach((el, index) => {
-        el.classList.add('reveal-box', 'premium-card-hover');
-        const groupIndex = index % 4;
-        const delay = Math.min(groupIndex * REVEAL_STAGGER, REVEAL_MAX_DELAY);
-        el.style.transitionDelay = `${delay}ms`;
-        el.dataset.revealDelay = String(delay);
-    });
-
-    const pending = Array.from(targets).filter(el => !el.dataset.revealBound);
-    if (!pending.length) return;
-
-    if (!('IntersectionObserver' in window)) {
-        pending.forEach(el => {
-            el.classList.add('is-visible');
-            el.dataset.revealBound = 'true';
-        });
-        return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target);
-        });
-    }, { threshold: 0.08, rootMargin: '0px 0px 8% 0px' });
-
-    pending.forEach(el => {
-        el.dataset.revealBound = 'true';
-        observer.observe(el);
+    // Mark all visible immediately — no stagger delay on first load
+    targets.forEach(el => {
+        el.classList.add('reveal-box', 'premium-card-hover', 'is-visible');
     });
 }
 
@@ -703,10 +681,12 @@ function renderAll() {
     renderSavingsGoals();
     renderMonthlyBudgetTable();
     renderBudgetDashboard();
-    renderBudgetOverviewChart();
-    renderPieCharts();
-    refreshIcons();
-    initScrollReveal();
+    requestAnimationFrame(() => {
+        renderBudgetOverviewChart();
+        renderPieCharts();
+        refreshIcons();
+        initScrollReveal();
+    });
 }
 
 function renderWithoutTable() {
@@ -715,10 +695,12 @@ function renderWithoutTable() {
     renderBudgetHealth();
     renderSavingsGoals();
     renderBudgetDashboard();
-    renderBudgetOverviewChart();
-    renderPieCharts();
-    refreshIcons();
-    initScrollReveal();
+    requestAnimationFrame(() => {
+        renderBudgetOverviewChart();
+        renderPieCharts();
+        refreshIcons();
+        initScrollReveal();
+    });
 }
 
 // ===== Formatters =====
@@ -1869,7 +1851,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=43').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=44').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
@@ -1951,6 +1933,9 @@ async function checkPWAUpdateManual() {
 let activeTab = 'overview';
 
 function switchTab(tabId) {
+    if (activeTab === tabId && document.getElementById('tab-' + tabId)?.classList.contains('active')) {
+        return;
+    }
     activeTab = tabId;
     
     // Hide all tab panes and show the selected one
@@ -1960,17 +1945,7 @@ function switchTab(tabId) {
     
     const selectedPane = document.getElementById('tab-' + tabId);
     if (selectedPane) {
-        // Trigger DOM reflow to restart CSS keyframe animations
-        void selectedPane.offsetWidth;
         selectedPane.classList.add('active');
-
-        // Assign staggered sequential animation indexes to cards/sections
-        const animElements = selectedPane.querySelectorAll(
-            '.exchange-shell, .stats-section, .financial-insight-card, .chart-panel, .budget-dashboard-header, .budget-dash-item, .exchange-card, .settings-group, .settings-card, .panel'
-        );
-        animElements.forEach((el, index) => {
-            el.style.setProperty('--stagger-index', index);
-        });
     }
     
     // Update desktop header tabs active state
@@ -1991,15 +1966,15 @@ function switchTab(tabId) {
         mobileBtn.classList.add('active');
     }
     
-    // Trigger charts rendering when entering respective tabs
-    if (tabId === 'overview') {
-        renderBudgetOverviewChart();
-        renderPieCharts();
-    } else if (tabId === 'exchange') {
-        renderExchangeRateChart();
-    }
-    
-    refreshIcons();
+    // Defer chart rendering to next animation frame so tab switch paints instantly
+    requestAnimationFrame(() => {
+        if (tabId === 'overview') {
+            renderBudgetOverviewChart();
+            renderPieCharts();
+        } else if (tabId === 'exchange') {
+            renderExchangeRateChart();
+        }
+    });
 }
 
 // ===== Exchange Rate History Chart (Multi-Currency: KRW, USD & USD/KRW) =====
