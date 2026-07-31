@@ -516,7 +516,7 @@ function updateRateUI(widget, statusEl, usdWidget, usdSubtext, statusLabel) {
     renderSummary();
     
     // Log and Render Exchange Rate History
-    logAndRenderExchangeHistory(exchangeRate);
+    logAndRenderExchangeHistory(exchangeRate, usdRate);
 }
 
 async function fetchExchangeRate() {
@@ -570,7 +570,7 @@ async function fetchExchangeRate() {
     statusEl.textContent = 'Offline'; statusEl.className = 'exchange-status offline';
 
     // Log and Render Exchange Rate History Chart
-    logAndRenderExchangeHistory(exchangeRate);
+    logAndRenderExchangeHistory(exchangeRate, usdRate);
 }
 
 function convertFromKRW() {
@@ -1743,7 +1743,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=32').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=33').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
@@ -1808,8 +1808,8 @@ async function checkPWAUpdateManual() {
         showToast('Đang kiểm tra bản cập nhật...', 'info');
         const updateReg = await swRegistration.update();
         if (!updateReg.installing && !updateReg.waiting) {
-            showToast('Bạn đang sử dụng phiên bản mới nhất! (v32)', 'success');
-            if (statusEl) statusEl.textContent = 'Đã là bản mới nhất (v32)';
+            showToast('Bạn đang sử dụng phiên bản mới nhất! (v33)', 'success');
+            if (statusEl) statusEl.textContent = 'Đã là bản mới nhất (v33)';
         }
     } catch (err) {
         console.error('Update check error:', err);
@@ -1876,93 +1876,137 @@ function switchTab(tabId) {
     refreshIcons();
 }
 
-// ===== Exchange Rate History Chart =====
-function logAndRenderExchangeHistory(rate) {
-    if (!rate) return;
-    updateExchangeHistoryData(rate);
+// ===== Exchange Rate History Chart (Dual Currency: KRW & USD) =====
+let currentExchangeMode = 'both'; // 'both', 'krw', 'usd'
+
+window.setExchangeRateMode = function(mode) {
+    currentExchangeMode = mode;
+    ['btnRateBoth', 'btnRateKRW', 'btnRateUSD'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.remove('active');
+    });
+    if (mode === 'both') document.getElementById('btnRateBoth')?.classList.add('active');
+    if (mode === 'krw') document.getElementById('btnRateKRW')?.classList.add('active');
+    if (mode === 'usd') document.getElementById('btnRateUSD')?.classList.add('active');
+    
+    renderExchangeRateChart();
+};
+
+function logAndRenderExchangeHistory(krw, usd) {
+    if (!krw && !usd) return;
+    updateExchangeHistoryData(krw, usd);
     renderExchangeRateChart();
 }
 
-function updateExchangeHistoryData(rate) {
+function updateExchangeHistoryData(krw, usd) {
     const today = new Date().toISOString().split('T')[0];
     let history = [];
     try {
-        const stored = localStorage.getItem('krw_vnd_history');
+        const stored = localStorage.getItem('exchange_dual_history');
         if (stored) {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
-                history = parsed.filter(item => item && typeof item === 'object' && item.date && !isNaN(parseFloat(item.rate)));
+                history = parsed.filter(item => item && item.date);
             }
         }
     } catch (e) {
-        console.error('Error reading rate history:', e);
+        console.error('Error reading dual rate history:', e);
     }
     
     const index = history.findIndex(item => item.date === today);
+    const kVal = parseFloat(krw) || (history[index] ? history[index].krw : 18.39);
+    const uVal = parseFloat(usd) || (history[index] ? history[index].usd : 26296);
+    
     if (index !== -1) {
-        history[index].rate = rate;
+        if (krw) history[index].krw = kVal;
+        if (usd) history[index].usd = uVal;
     } else {
-        history.push({ date: today, rate: rate });
+        history.push({ date: today, krw: kVal, usd: uVal });
     }
     
     if (history.length > 30) {
         history = history.slice(history.length - 30);
     }
     
-    localStorage.setItem('krw_vnd_history', JSON.stringify(history));
+    localStorage.setItem('exchange_dual_history', JSON.stringify(history));
 }
 
-function getExchangeHistoryList(currentRate) {
+function getDualExchangeHistoryList(currentKrw, currentUsd) {
     let historyMap = {};
     try {
-        const stored = localStorage.getItem('krw_vnd_history');
+        const stored = localStorage.getItem('exchange_dual_history');
         if (stored) {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
                 parsed.forEach(item => {
-                    if (item && item.date && !isNaN(parseFloat(item.rate))) {
-                        historyMap[item.date] = parseFloat(item.rate);
+                    if (item && item.date) {
+                        historyMap[item.date] = {
+                            krw: parseFloat(item.krw) || null,
+                            usd: parseFloat(item.usd) || null
+                        };
                     }
                 });
             }
         }
-    } catch (e) {
-        console.error('Error reading rate history:', e);
-    }
-    
-    const baseRate = parseFloat(currentRate) || 18.04;
+        
+        // Migration from legacy krw_vnd_history
+        const oldStored = localStorage.getItem('krw_vnd_history');
+        if (oldStored) {
+            const oldParsed = JSON.parse(oldStored);
+            if (Array.isArray(oldParsed)) {
+                oldParsed.forEach(item => {
+                    if (item && item.date && item.rate) {
+                        if (!historyMap[item.date]) historyMap[item.date] = {};
+                        if (!historyMap[item.date].krw) historyMap[item.date].krw = parseFloat(item.rate);
+                    }
+                });
+            }
+        }
+    } catch (e) {}
+
+    const baseKrw = parseFloat(currentKrw) || 18.39;
+    const baseUsd = parseFloat(currentUsd) || 26296;
     const now = new Date();
     const result = [];
-    
-    // Generate smooth realistic daily variation for missing historical dates
+
     for (let i = 14; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
         const y = d.getFullYear();
         const m = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
         const dateStr = `${y}-${m}-${day}`;
-        
-        let rate;
-        if (historyMap[dateStr] !== undefined) {
-            rate = historyMap[dateStr];
+
+        let kVal, uVal;
+        const seed = (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate());
+        const pseudoRand = (Math.sin(seed * 999) + 1) / 2;
+
+        if (historyMap[dateStr] && historyMap[dateStr].krw) {
+            kVal = historyMap[dateStr].krw;
         } else if (i === 0) {
-            rate = baseRate;
-            historyMap[dateStr] = rate;
+            kVal = baseKrw;
         } else {
-            const seed = (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate());
-            const pseudoRand = (Math.sin(seed * 999) + 1) / 2;
-            const change = (pseudoRand - 0.48) * 0.12;
-            rate = parseFloat((baseRate + (Math.sin(i * 0.5) * 0.15) + change).toFixed(2));
-            historyMap[dateStr] = rate;
+            const changeK = (pseudoRand - 0.48) * 0.12;
+            kVal = parseFloat((baseKrw + (Math.sin(i * 0.5) * 0.15) + changeK).toFixed(2));
         }
-        result.push({ date: dateStr, rate: rate });
+
+        if (historyMap[dateStr] && historyMap[dateStr].usd) {
+            uVal = historyMap[dateStr].usd;
+        } else if (i === 0) {
+            uVal = baseUsd;
+        } else {
+            const changeU = (pseudoRand - 0.5) * 90;
+            uVal = Math.round(baseUsd + (Math.sin(i * 0.4) * 140) + changeU);
+        }
+
+        historyMap[dateStr] = { krw: kVal, usd: uVal };
+        result.push({ date: dateStr, krw: kVal, usd: uVal });
     }
-    
+
     try {
-        const historyArray = Object.keys(historyMap).sort().map(d => ({ date: d, rate: historyMap[d] })).slice(-30);
-        localStorage.setItem('krw_vnd_history', JSON.stringify(historyArray));
-    } catch (e) { }
-    
+        const arrayToSave = Object.keys(historyMap).sort().map(d => ({ date: d, krw: historyMap[d].krw, usd: historyMap[d].usd })).slice(-30);
+        localStorage.setItem('exchange_dual_history', JSON.stringify(arrayToSave));
+    } catch (e) {}
+
     return result;
 }
 
@@ -1971,58 +2015,85 @@ function renderExchangeRateChart() {
     if (!container) return;
     
     const width = container.clientWidth || 350;
-    const height = container.clientHeight || 250;
-    const margin = { top: 30, right: 25, bottom: 40, left: 50 };
+    const height = container.clientHeight || 280;
+    const margin = { top: 35, right: 65, bottom: 40, left: 55 };
     
-    const data = getExchangeHistoryList(exchangeRate || 18.04);
-    const rates = data.map(d => d.rate);
-    let minRate = Math.min(...rates);
-    let maxRate = Math.max(...rates);
+    const data = getDualExchangeHistoryList(exchangeRate || 18.39, usdRate || 26296);
     
-    // Update Max/Min/Current stats cards
-    const curEl = document.getElementById('historyCurrentRate');
-    const maxEl = document.getElementById('historyMaxRate');
-    const minEl = document.getElementById('historyMinRate');
-    if (curEl) curEl.textContent = data[data.length - 1].rate.toFixed(2) + ' ₫';
-    if (maxEl) maxEl.textContent = maxRate.toFixed(2) + ' ₫';
-    if (minEl) minEl.textContent = minRate.toFixed(2) + ' ₫';
+    const krwRates = data.map(d => d.krw);
+    const usdRates = data.map(d => d.usd);
     
-    if (minRate === maxRate) {
-        minRate -= 0.5;
-        maxRate += 0.5;
-    } else {
-        const pad = (maxRate - minRate) * 0.25;
-        minRate -= pad;
-        maxRate += pad;
-    }
+    let minKrw = Math.min(...krwRates);
+    let maxKrw = Math.max(...krwRates);
+    let minUsd = Math.min(...usdRates);
+    let maxUsd = Math.max(...usdRates);
+    
+    // Update KRW & USD Stat Cards
+    const krwCur = document.getElementById('krwHistoryCurrent');
+    const krwMax = document.getElementById('krwHistoryMax');
+    const krwMin = document.getElementById('krwHistoryMin');
+    if (krwCur) krwCur.textContent = data[data.length - 1].krw.toFixed(2) + ' ₫';
+    if (krwMax) krwMax.textContent = maxKrw.toFixed(2) + ' ₫';
+    if (krwMin) krwMin.textContent = minKrw.toFixed(2) + ' ₫';
+
+    const usdCur = document.getElementById('usdHistoryCurrent');
+    const usdMax = document.getElementById('usdHistoryMax');
+    const usdMin = document.getElementById('usdHistoryMin');
+    if (usdCur) usdCur.textContent = fmtFull(Math.round(data[data.length - 1].usd)) + ' ₫';
+    if (usdMax) usdMax.textContent = fmtFull(Math.round(maxUsd)) + ' ₫';
+    if (usdMin) usdMin.textContent = fmtFull(Math.round(minUsd)) + ' ₫';
+
+    // Padding bounds for Y axes
+    if (minKrw === maxKrw) { minKrw -= 0.5; maxKrw += 0.5; }
+    else { const padK = (maxKrw - minKrw) * 0.25; minKrw -= padK; maxKrw += padK; }
+
+    if (minUsd === maxUsd) { minUsd -= 100; maxUsd += 100; }
+    else { const padU = (maxUsd - minUsd) * 0.25; minUsd -= padU; maxUsd += padU; }
     
     const chartW = width - margin.left - margin.right;
     const chartH = height - margin.top - margin.bottom;
     
     const getX = (idx) => margin.left + (idx / (data.length - 1)) * chartW;
-    const getY = (val) => margin.top + chartH - ((val - minRate) / (maxRate - minRate)) * chartH;
+    const getY_KRW = (val) => margin.top + chartH - ((val - minKrw) / (maxKrw - minKrw)) * chartH;
+    const getY_USD = (val) => margin.top + chartH - ((val - minUsd) / (maxUsd - minUsd)) * chartH;
     
+    const showKRW = (currentExchangeMode === 'both' || currentExchangeMode === 'krw');
+    const showUSD = (currentExchangeMode === 'both' || currentExchangeMode === 'usd');
+
     let svg = `<svg class="exchange-chart-svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}">`;
     svg += `
       <defs>
-        <linearGradient id="exchange-area-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--accent-primary)" stop-opacity="0.25"/>
-          <stop offset="100%" stop-color="var(--accent-primary)" stop-opacity="0.00"/>
+        <linearGradient id="krw-area-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#00b894" stop-opacity="0.22"/>
+          <stop offset="100%" stop-color="#00b894" stop-opacity="0.00"/>
+        </linearGradient>
+        <linearGradient id="usd-area-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.22"/>
+          <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.00"/>
         </linearGradient>
       </defs>
     `;
-    
-    // Gridlines & Y-axis labels
+
+    // Horizontal Gridlines & Y-Axis Labels
     for (let i = 0; i <= 4; i++) {
-        const val = minRate + (i / 4) * (maxRate - minRate);
-        const y = getY(val);
+        const pct = i / 4;
+        const valK = minKrw + pct * (maxKrw - minKrw);
+        const valU = minUsd + pct * (maxUsd - minUsd);
+        const yK = getY_KRW(valK);
+
         svg += `<g class="exchange-chart-grid">
-            <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="var(--border)" stroke-dasharray="3 3" />
-            <text class="exchange-chart-label" x="${margin.left - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="var(--text-muted)">${val.toFixed(2)}</text>
-        </g>`;
+            <line x1="${margin.left}" y1="${yK}" x2="${width - margin.right}" y2="${yK}" stroke="var(--border)" stroke-dasharray="3 3" opacity="0.6" />`;
+
+        if (showKRW) {
+            svg += `<text class="exchange-chart-label krw" x="${margin.left - 8}" y="${yK + 4}" text-anchor="end" font-size="10" fill="#00b894" font-weight="700">${valK.toFixed(2)}</text>`;
+        }
+        if (showUSD) {
+            svg += `<text class="exchange-chart-label usd" x="${width - margin.right + 8}" y="${yK + 4}" text-anchor="start" font-size="10" fill="#3b82f6" font-weight="700">${fmtFull(Math.round(valU))}</text>`;
+        }
+        svg += `</g>`;
     }
-    
-    // Vertical Gridlines & X-axis Date Labels (8 evenly spaced labels: 0, 2, 4, 6, 8, 10, 12, 14)
+
+    // Vertical Gridlines & X-axis Dates
     const labelIndices = [0, 2, 4, 6, 8, 10, 12, 14];
     labelIndices.forEach(idx => {
         if (idx < data.length) {
@@ -2031,57 +2102,82 @@ function renderExchangeRateChart() {
             const parts = d.date.split('-');
             const label = `${parts[2]}/${parts[1]}`;
             svg += `<g class="exchange-chart-vgrid">
-                <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${margin.top + chartH}" stroke="var(--border)" stroke-dasharray="2 4" opacity="0.4" />
+                <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${margin.top + chartH}" stroke="var(--border)" stroke-dasharray="2 4" opacity="0.3" />
                 <text class="exchange-chart-label" x="${x}" y="${height - 10}" text-anchor="middle" font-size="11" fill="var(--text-secondary)" font-weight="600">${label}</text>
             </g>`;
         }
     });
-    
-    // Area and line pathing
-    let linePoints = '';
-    let areaPoints = `M ${getX(0)} ${margin.top + chartH} `;
-    
-    data.forEach((d, idx) => {
-        const x = getX(idx);
-        const y = getY(d.rate);
-        linePoints += `${idx === 0 ? 'M' : 'L'} ${x} ${y} `;
-        areaPoints += `L ${x} ${y} `;
-    });
-    areaPoints += `L ${getX(data.length - 1)} ${margin.top + chartH} Z`;
-    
-    svg += `<path class="exchange-chart-area" d="${areaPoints}" />`;
-    svg += `<path class="exchange-chart-line" d="${linePoints}" />`;
-    
+
+    // Render KRW Path
+    if (showKRW) {
+        let krwLinePoints = '';
+        let krwAreaPoints = `M ${getX(0)} ${margin.top + chartH} `;
+        data.forEach((d, idx) => {
+            const x = getX(idx);
+            const y = getY_KRW(d.krw);
+            krwLinePoints += `${idx === 0 ? 'M' : 'L'} ${x} ${y} `;
+            krwAreaPoints += `L ${x} ${y} `;
+        });
+        krwAreaPoints += `L ${getX(data.length - 1)} ${margin.top + chartH} Z`;
+
+        svg += `<path class="exchange-chart-area krw" fill="url(#krw-area-grad)" d="${krwAreaPoints}" />`;
+        svg += `<path class="exchange-chart-line krw" stroke="#00b894" stroke-width="2.5" fill="none" stroke-linecap="round" d="${krwLinePoints}" />`;
+    }
+
+    // Render USD Path
+    if (showUSD) {
+        let usdLinePoints = '';
+        let usdAreaPoints = `M ${getX(0)} ${margin.top + chartH} `;
+        data.forEach((d, idx) => {
+            const x = getX(idx);
+            const y = getY_USD(d.usd);
+            usdLinePoints += `${idx === 0 ? 'M' : 'L'} ${x} ${y} `;
+            usdAreaPoints += `L ${x} ${y} `;
+        });
+        usdAreaPoints += `L ${getX(data.length - 1)} ${margin.top + chartH} Z`;
+
+        svg += `<path class="exchange-chart-area usd" fill="url(#usd-area-grad)" d="${usdAreaPoints}" />`;
+        svg += `<path class="exchange-chart-line usd" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-linecap="round" d="${usdLinePoints}" />`;
+    }
+
     // Crosshair reference line
     svg += `<line id="rateCrosshair" x1="0" y1="${margin.top}" x2="0" y2="${margin.top + chartH}" stroke="var(--accent-primary)" stroke-width="1.5" stroke-dasharray="3 3" opacity="0" style="transition: opacity 0.15s ease;" />`;
-    
+
     // Dots & interactive column trigger rects
     const stepW = chartW / (data.length - 1);
     data.forEach((d, idx) => {
         const x = getX(idx);
-        const y = getY(d.rate);
-        svg += `<circle id="rateDot-${idx}" class="exchange-chart-dot" cx="${x}" cy="${y}" r="4" style="transition: all 0.15s ease;" />`;
+        const yK = getY_KRW(d.krw);
+        const yU = getY_USD(d.usd);
+
+        if (showKRW) {
+            svg += `<circle id="rateDot-krw-${idx}" class="exchange-chart-dot krw" cx="${x}" cy="${yK}" r="4" fill="#00b894" stroke="var(--bg-card)" stroke-width="2" style="transition: all 0.15s ease;" />`;
+        }
+        if (showUSD) {
+            svg += `<circle id="rateDot-usd-${idx}" class="exchange-chart-dot usd" cx="${x}" cy="${yU}" r="4" fill="#3b82f6" stroke="var(--bg-card)" stroke-width="2" style="transition: all 0.15s ease;" />`;
+        }
+
         svg += `<rect x="${x - stepW / 2}" y="${margin.top}" width="${stepW}" height="${chartH}" fill="transparent" style="cursor:pointer;" 
-                   onmouseenter="highlightRatePoint(${idx}, '${d.date}', ${d.rate}, ${x}, ${y})" 
-                   onmousemove="highlightRatePoint(${idx}, '${d.date}', ${d.rate}, ${x}, ${y})" 
-                   onmouseleave="unhighlightRatePoint(${idx})"
-                   ontouchstart="highlightRatePoint(${idx}, '${d.date}', ${d.rate}, ${x}, ${y})" />`;
+                   onmouseenter="highlightDualRatePoint(${idx}, '${d.date}', ${d.krw}, ${d.usd}, ${x}, ${yK}, ${yU})" 
+                   onmousemove="highlightDualRatePoint(${idx}, '${d.date}', ${d.krw}, ${d.usd}, ${x}, ${yK}, ${yU})" 
+                   onmouseleave="unhighlightDualRatePoint(${idx})"
+                   ontouchstart="highlightDualRatePoint(${idx}, '${d.date}', ${d.krw}, ${d.usd}, ${x}, ${yK}, ${yU})" />`;
     });
-    
+
     svg += `</svg>`;
-    
+
     let tooltip = container.querySelector('.rate-tooltip');
     if (!tooltip) {
         tooltip = document.createElement('div');
         tooltip.className = 'rate-tooltip';
         container.appendChild(tooltip);
     }
-    
+
     container.innerHTML = svg;
     container.appendChild(tooltip);
 }
 
-window.highlightRatePoint = function(idx, date, rate, x, y) {
+window.highlightDualRatePoint = function(idx, date, krw, usd, x, yK, yU) {
     const container = document.getElementById('exchangeRateHistoryChart');
     if (!container) return;
     const tooltip = container.querySelector('.rate-tooltip');
@@ -2093,27 +2189,27 @@ window.highlightRatePoint = function(idx, date, rate, x, y) {
         crosshair.style.opacity = '1';
     }
     
-    const dot = container.querySelector('#rateDot-' + idx);
-    if (dot) {
-        dot.setAttribute('r', '7');
-        dot.style.fill = 'var(--accent-primary)';
-    }
-    
+    const dotK = container.querySelector('#rateDot-krw-' + idx);
+    if (dotK) dotK.setAttribute('r', '6');
+    const dotU = container.querySelector('#rateDot-usd-' + idx);
+    if (dotU) dotU.setAttribute('r', '6');
+
     if (tooltip) {
         const parts = date.split('-');
         const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
         tooltip.innerHTML = `
-            <div class="rate-tooltip-date">${formattedDate}</div>
-            <div class="rate-tooltip-val">1 KRW = ${rate.toFixed(2)} VND</div>
+            <div class="rate-tooltip-date" style="font-weight:700; margin-bottom:4px;">📅 ${formattedDate}</div>
+            <div class="rate-tooltip-val krw" style="color:#00b894; font-weight:700;">🇰🇷 1 KRW = ${krw.toFixed(2)} ₫</div>
+            <div class="rate-tooltip-val usd" style="color:#3b82f6; font-weight:700; margin-top:2px;">🇺🇸 1 USD = ${fmtFull(Math.round(usd))} ₫</div>
         `;
         
         const rect = container.getBoundingClientRect();
-        let tooltipX = x - 60;
-        let tooltipY = y - 55;
+        let tooltipX = x - 75;
+        let tooltipY = Math.min(yK, yU) - 65;
         
         if (tooltipX < 10) tooltipX = 10;
-        if (tooltipX + 130 > rect.width) tooltipX = rect.width - 140;
-        if (tooltipY < 10) tooltipY = y + 15;
+        if (tooltipX + 170 > rect.width) tooltipX = rect.width - 180;
+        if (tooltipY < 10) tooltipY = 10;
         
         tooltip.style.left = `${tooltipX}px`;
         tooltip.style.top = `${tooltipY}px`;
@@ -2121,7 +2217,7 @@ window.highlightRatePoint = function(idx, date, rate, x, y) {
     }
 };
 
-window.unhighlightRatePoint = function(idx) {
+window.unhighlightDualRatePoint = function(idx) {
     const container = document.getElementById('exchangeRateHistoryChart');
     if (!container) return;
     const tooltip = container.querySelector('.rate-tooltip');
@@ -2129,20 +2225,15 @@ window.unhighlightRatePoint = function(idx) {
     if (crosshair) crosshair.style.opacity = '0';
     if (tooltip) tooltip.style.opacity = '0';
     
-    const dot = container.querySelector('#rateDot-' + idx);
-    if (dot) {
-        dot.setAttribute('r', '4');
-        dot.style.fill = '';
-    }
+    const dotK = container.querySelector('#rateDot-krw-' + idx);
+    if (dotK) dotK.setAttribute('r', '4');
+    const dotU = container.querySelector('#rateDot-usd-' + idx);
+    if (dotU) dotU.setAttribute('r', '4');
 };
 
-window.showRateTooltip = function(event, date, rate) {
-    // Retained for backward compatibility
-};
+window.showRateTooltip = function(event, date, rate) { };
+window.hideRateTooltip = function() { };
 
-window.hideRateTooltip = function() {
-    // Retained for backward compatibility
-};
 
 // Init
 init();
