@@ -1726,12 +1726,100 @@ function exportToCSV() {
 // ===== Toast =====
 function showToast(msg, type = 'info') { const t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.className = `toast ${type} show`; setTimeout(() => t.classList.remove('show'), 2600); }
 
-// ===== PWA =====
+// ===== PWA Service Worker & Auto-Update Engine =====
+let swRegistration = null;
+
 function registerSW() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => { });
+    if (!('serviceWorker' in navigator)) return;
+
+    // Listen for controllerchange: When a new SW takes over, auto-reload page to apply new code immediately
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        showToast('🚀 Đã cập nhật phiên bản mới nhất! Đang tải lại...', 'success');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    });
+
+    navigator.serviceWorker.register('sw.js').then(reg => {
+        swRegistration = reg;
+
+        // Check if an update is waiting right now
+        if (reg.waiting) {
+            promptSWUpdate(reg.waiting);
+        }
+
+        // Listen for new service worker installation
+        reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // A new version was installed while the old worker was controlling the page
+                    promptSWUpdate(newWorker);
+                }
+            });
+        });
+
+        // Trigger manual update check on focus & visibilitychange (Mobile PWA reopen)
+        const checkUpdate = () => {
+            if (navigator.onLine && reg) {
+                reg.update().catch(() => {});
+            }
+        };
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') checkUpdate();
+        });
+        window.addEventListener('focus', checkUpdate);
+
+        // Check update every 10 minutes in background
+        setInterval(checkUpdate, 10 * 60 * 1000);
+    }).catch(err => {
+        console.warn('PWA SW registration failed:', err);
+    });
+}
+
+// Prompt SW Update & activate
+function promptSWUpdate(worker) {
+    if (!worker) return;
+    showToast('✨ Đã có bản cập nhật mới! Đang tự động áp dụng...', 'info');
+    worker.postMessage({ type: 'SKIP_WAITING' });
+}
+
+// Manual Check Update for Settings Tab Button
+async function checkPWAUpdateManual() {
+    const btn = document.getElementById('checkUpdateBtn');
+    const statusEl = document.getElementById('updateStatusText');
+    if (btn) btn.disabled = true;
+    if (statusEl) statusEl.textContent = 'Đang kiểm tra máy chủ...';
+
+    if (!('serviceWorker' in navigator) || !swRegistration) {
+        showToast('Trình duyệt không hỗ trợ Service Worker', 'info');
+        if (btn) btn.disabled = false;
+        if (statusEl) statusEl.textContent = 'Không hỗ trợ PWA';
+        return;
+    }
+
+    try {
+        showToast('Đang kiểm tra bản cập nhật...', 'info');
+        const updateReg = await swRegistration.update();
+        if (!updateReg.installing && !updateReg.waiting) {
+            showToast('Bạn đang sử dụng phiên bản mới nhất! (v32)', 'success');
+            if (statusEl) statusEl.textContent = 'Đã là bản mới nhất (v32)';
+        }
+    } catch (err) {
+        console.error('Update check error:', err);
+        showToast('Lỗi khi kiểm tra cập nhật. Hãy thử lại!', 'error');
+        if (statusEl) statusEl.textContent = 'Không thể kiểm tra';
+    } finally {
+        if (btn) setTimeout(() => { btn.disabled = false; }, 1500);
     }
 }
+
 
 // ===== Tab Navigation =====
 let activeTab = 'overview';

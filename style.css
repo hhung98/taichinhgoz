@@ -5759,4 +5759,86 @@ body.dark .mobile-bottom-nav a.active span {
     font-family: 'Outfit', sans-serif;
 }
 
+/* ===== MOBILE & TABLET RESPONSIVE UX ENHANCEMENTS ===== */
+.update-status-sub {
+    font-size: 0.75rem;
+    color: var(--accent-teal);
+    margin-top: 4px;
+}
+
+/* Touch Targets & Safe Area Insets */
+@media (max-width: 768px) {
+    .main-content {
+        padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    .mobile-bottom-nav {
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Prevent mobile input auto-zoom on iOS */
+    .goal-input,
+    .converter-input,
+    .auth-field input,
+    .monthly-table input {
+        font-size: 16px !important;
+    }
+
+    /* Ensure minimum touch target size (44px) */
+    .mobile-bottom-nav a {
+        min-height: 44px;
+    }
+
+    .action-btn,
+    .goal-add-btn,
+    .auth-btn,
+    .pin-btn {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+
+    /* Table touch scrolling */
+    .budget-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
+        border-radius: var(--radius-sm);
+    }
+}
+
+/* Tablet Layout Optimization (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .app-wrapper {
+        padding: 16px 24px 40px;
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 14px;
+    }
+
+    .summary-card:nth-child(5),
+    .summary-card:nth-child(6) {
+        grid-column: span 1 !important;
+    }
+
+    .overview-charts-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+
+    .exchange-stats-summary {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    .budget-dashboard {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+
+    .monthly-table {
+        min-width: 100%;
+    }
+}
+
+
 
