@@ -16,9 +16,26 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+        (function() {
+            const CURRENT_VER = 'v32';
+            if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
+                localStorage.setItem('goz_app_ver', CURRENT_VER);
+                if ('caches' in window) {
+                    caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+                }
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+                }
+            }
+        })();
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=32">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -515,7 +532,7 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=32"></script>
 </body>
 
 </html>

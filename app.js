@@ -1743,7 +1743,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=32').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
