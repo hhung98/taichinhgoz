@@ -27,6 +27,98 @@ function getDemoBudgetData(year = budgetYear) {
     }, {});
 }
 
+let budgetRatios = {
+    livingPct: 40,
+    reservePct: 40,
+    investPct: 20
+};
+
+function loadBudgetRatios() {
+    try {
+        const stored = localStorage.getItem('goz_budget_ratios');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (typeof parsed.livingPct === 'number' && typeof parsed.reservePct === 'number' && typeof parsed.investPct === 'number') {
+                budgetRatios = parsed;
+            }
+        }
+    } catch (e) {
+        console.error('Error loading budget ratios:', e);
+    }
+}
+loadBudgetRatios();
+
+function getBudgetAllocation(inc) {
+    const living = Math.round(inc * (budgetRatios.livingPct / 100));
+    const reserve = Math.round(inc * (budgetRatios.reservePct / 100));
+    const invest = Math.round(inc * (budgetRatios.investPct / 100));
+    return { living, reserve, invest };
+}
+
+window.openRatioConfigModal = function() {
+    loadBudgetRatios();
+    const elL = document.getElementById('inputLivingPct');
+    const elR = document.getElementById('inputReservePct');
+    const elI = document.getElementById('inputInvestPct');
+    if (elL) elL.value = budgetRatios.livingPct;
+    if (elR) elR.value = budgetRatios.reservePct;
+    if (elI) elI.value = budgetRatios.investPct;
+    window.onRatioInputsChange();
+    const modal = document.getElementById('ratioConfigModal');
+    if (modal) {
+        modal.classList.add('visible');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+};
+
+window.closeRatioConfigModal = function() {
+    const modal = document.getElementById('ratioConfigModal');
+    if (modal) {
+        modal.classList.remove('visible');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+};
+
+window.onRatioInputsChange = function() {
+    const l = parseInt(document.getElementById('inputLivingPct')?.value, 10) || 0;
+    const r = parseInt(document.getElementById('inputReservePct')?.value, 10) || 0;
+    const i = parseInt(document.getElementById('inputInvestPct')?.value, 10) || 0;
+    const sum = l + r + i;
+    const sumEl = document.getElementById('ratioSumValue');
+    const alertEl = document.getElementById('ratioSumAlert');
+    const btn = document.getElementById('btnSaveRatios');
+
+    if (sumEl) sumEl.textContent = sum;
+    if (alertEl) {
+        if (sum === 100) {
+            alertEl.style.background = 'rgba(0,184,148,0.15)';
+            alertEl.style.color = '#00b894';
+            alertEl.innerHTML = `Tổng: <strong>100%</strong> (Hợp lệ)`;
+            if (btn) btn.disabled = false;
+        } else {
+            alertEl.style.background = 'rgba(255,107,107,0.15)';
+            alertEl.style.color = '#ff6b6b';
+            alertEl.innerHTML = `Tổng: <strong>${sum}%</strong> (Phải bằng 100%)`;
+            if (btn) btn.disabled = true;
+        }
+    }
+};
+
+window.saveRatioConfig = function() {
+    const l = parseInt(document.getElementById('inputLivingPct')?.value, 10) || 0;
+    const r = parseInt(document.getElementById('inputReservePct')?.value, 10) || 0;
+    const i = parseInt(document.getElementById('inputInvestPct')?.value, 10) || 0;
+    if (l + r + i !== 100) {
+        showToast('Tổng 3 mục phải bằng 100%', 'error');
+        return;
+    }
+    budgetRatios = { livingPct: l, reservePct: r, investPct: i };
+    localStorage.setItem('goz_budget_ratios', JSON.stringify(budgetRatios));
+    closeRatioConfigModal();
+    renderAll();
+    showToast('Đã cập nhật tỷ lệ phân bổ ngân sách mới!', 'success');
+};
+
 function applyDemoBudgetIfEmpty(data) {
     if (data && Object.keys(data).length) return data;
     return localStorage.getItem('goz_demo_data') === 'true' ? getDemoBudgetData() : data;
@@ -1011,7 +1103,7 @@ function updateRowInline(month) {
     const key = getBudgetKey(budgetYear, month);
     const data = monthlyBudget[key] || {};
     const inc = Number(data.income || 0), exp = Number(data.expense || 0);
-    const living = Math.round(inc * 0.40), reserve = Math.round(inc * 0.40), invest = Math.round(inc * 0.20);
+    const { living, reserve, invest } = getBudgetAllocation(inc);
     const balance = inc - exp, surplus = living - exp;
     const reserveFromBalance = Math.round(balance * (2/3));
     const investFromBalance = balance - reserveFromBalance;
@@ -1057,7 +1149,7 @@ function updateTableFooter() {
     for (let m = 0; m < 12; m++) {
         const key = getBudgetKey(budgetYear, m), data = monthlyBudget[key] || {};
         const inc = Number(data.income || 0), exp = Number(data.expense || 0);
-        const living = Math.round(inc * 0.40), reserve = Math.round(inc * 0.40), invest = Math.round(inc * 0.20);
+        const { living, reserve, invest } = getBudgetAllocation(inc);
         const balance = inc - exp, surplus = living - exp;
         const reserveFromBalance = Math.round(balance * (2/3));
         const investFromBalance = balance - reserveFromBalance;
@@ -1106,6 +1198,23 @@ function debounceSaveBudget(year, month, income, expense) {
 function renderMonthlyBudgetTable() {
     const tbody = document.getElementById('budgetTableBody'), tfoot = document.getElementById('budgetTableFoot');
     if (!tbody || !tfoot) return;
+
+    // Update dynamic header % text & legend text
+    const thL = document.getElementById('thLivingPct');
+    const thR = document.getElementById('thReservePct');
+    const thI = document.getElementById('thInvestPct');
+    if (thL) thL.innerHTML = `${budgetRatios.livingPct}% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i>`;
+    if (thR) thR.innerHTML = `${budgetRatios.reservePct}% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i>`;
+    if (thI) thI.innerHTML = `${budgetRatios.investPct}% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i>`;
+    refreshIcons();
+
+    const legL = document.getElementById('legendLiving');
+    const legR = document.getElementById('legendReserve');
+    const legI = document.getElementById('legendInvest');
+    if (legL) legL.textContent = `Sinh hoạt ${budgetRatios.livingPct}%`;
+    if (legR) legR.textContent = `Dự phòng ${budgetRatios.reservePct}%`;
+    if (legI) legI.textContent = `Đầu tư ${budgetRatios.investPct}%`;
+
     const rate = exchangeRate || 18.5;
     let tI = 0, tL = 0, tR = 0, tV = 0, tE = 0, tS = 0;
     let tRnew = 0, tVnew = 0;
@@ -1113,7 +1222,7 @@ function renderMonthlyBudgetTable() {
     for (let m = 0; m < 12; m++) {
         const key = getBudgetKey(budgetYear, m), data = monthlyBudget[key] || {};
         const inc = Number(data.income || 0), exp = Number(data.expense || 0);
-        const living = Math.round(inc * 0.40), reserve = Math.round(inc * 0.40), invest = Math.round(inc * 0.20);
+        const { living, reserve, invest } = getBudgetAllocation(inc);
         const balance = inc - exp, surplus = living - exp;
         const reserveFromBalance = Math.round(balance * (2/3));
         const investFromBalance = balance - reserveFromBalance;
@@ -1147,27 +1256,6 @@ function renderMonthlyBudgetTable() {
     }
     tbody.innerHTML = rows;
     updateTableFooter();
-    const tB = tI - tE, bC = tB >= 0 ? 'positive' : 'negative', sC = tS >= 0 ? 'positive' : 'negative';
-    tfoot.innerHTML = `<tr>
-        <td><strong>Tổng ₩</strong></td>
-        <td style="color:var(--accent-green);font-weight:700;text-align:center;">${fmtFull(tI)}</td>
-        <td class="cell-living">${fmtFull(tL)}</td>
-        <td class="cell-reserve">${fmtFull(tR)}<span class="cell-new-val">/ ${fmtFull(tRnew)}</span></td>
-        <td class="cell-invest">${fmtFull(tV)}<span class="cell-new-val">/ ${fmtFull(tVnew)}</span></td>
-        <td style="color:var(--accent-red);font-weight:700;text-align:center;">${fmtFull(tE)}</td>
-        <td class="cell-balance ${bC}">${fmtFull(tB)}</td>
-        <td class="cell-surplus ${sC}">${fmtFull(tS)}</td>
-    </tr>
-    <tr style="font-size:0.68rem;opacity:0.75;">
-        <td><strong>Tổng ₫</strong></td>
-        <td style="color:var(--accent-green);text-align:center;">${fmtFull(Math.round(tI * rate))}</td>
-        <td class="cell-living">${fmtFull(Math.round(tL * rate))}</td>
-        <td class="cell-reserve">${fmtFull(Math.round(tR * rate))}<span class="cell-new-val">/ ${fmtFull(Math.round(tRnew * rate))}</span></td>
-        <td class="cell-invest">${fmtFull(Math.round(tV * rate))}<span class="cell-new-val">/ ${fmtFull(Math.round(tVnew * rate))}</span></td>
-        <td style="color:var(--accent-red);text-align:center;">${fmtFull(Math.round(tE * rate))}</td>
-        <td class="cell-balance ${bC}">${fmtFull(Math.round(tB * rate))}</td>
-        <td class="cell-surplus ${sC}">${fmtFull(Math.round(tS * rate))}</td>
-    </tr>`;
 }
 
 // ===== Budget Overview Line Chart =====
@@ -1180,9 +1268,7 @@ function legacyRenderBudgetOverviewChart() {
     for (let m = 0; m < 12; m++) {
         const key = getBudgetKey(budgetYear, m), bd = monthlyBudget[key] || {};
         const inc = Number(bd.income || 0), exp = Number(bd.expense || 0);
-        const living = Math.round(inc * 0.40);
-        const reserve = Math.round(inc * 0.40);
-        const invest = Math.round(inc * 0.20);
+        const { living, reserve, invest } = getBudgetAllocation(inc);
         const bal = inc - exp;
         if (inc || exp) hasData = true;
         series.income.push(inc);
@@ -1694,7 +1780,7 @@ function exportToCSV() {
             
             if (inc === 0 && exp === 0) return; // Skip completely empty months
             
-            const living = Math.round(inc * 0.40);
+            const { living } = getBudgetAllocation(inc);
             const balance = inc - exp;
             const balPositive = Math.max(0, balance);
             const reserve = Math.round(balPositive * (2/3));
@@ -1785,7 +1871,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=40').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=41').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now

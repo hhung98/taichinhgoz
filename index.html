@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function() {
-            const CURRENT_VER = 'v40';
+            const CURRENT_VER = 'v41';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=40">
+    <link rel="stylesheet" href="style.css?v=41">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -435,9 +435,9 @@
                                 <tr>
                                     <th>Tháng</th>
                                     <th>Thu nhập<br><small class="th-pct green">₩ KRW</small></th>
-                                    <th>Sinh hoạt<br><small class="th-pct blue">40%</small></th>
-                                    <th>Dự phòng<br><small class="th-pct yellow">40%</small></th>
-                                    <th>Đầu tư<br><small class="th-pct purple">20%</small></th>
+                                    <th>Sinh hoạt<br><small class="th-pct blue clickable" id="thLivingPct" onclick="openRatioConfigModal()" title="Nhấp để thay đổi tỷ lệ %">40% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i></small></th>
+                                    <th>Dự phòng<br><small class="th-pct yellow clickable" id="thReservePct" onclick="openRatioConfigModal()" title="Nhấp để thay đổi tỷ lệ %">40% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i></small></th>
+                                    <th>Đầu tư<br><small class="th-pct purple clickable" id="thInvestPct" onclick="openRatioConfigModal()" title="Nhấp để thay đổi tỷ lệ %">20% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i></small></th>
                                     <th>Chi tiêu<br><small class="th-pct red">₩ / % Thu nhập</small></th>
                                     <th>Còn lại</th>
                                     <th>Dư/Thiếu<br><small class="th-pct green">SH-CT</small></th>
@@ -449,13 +449,13 @@
                     </div>
                     <div class="table-legend">
                         <div class="table-legend-item">
-                            <div class="table-legend-dot" style="background:#74b9ff"></div> Sinh hoạt 40%
+                            <div class="table-legend-dot" style="background:#74b9ff"></div> <span id="legendLiving">Sinh hoạt 40%</span>
                         </div>
                         <div class="table-legend-item">
-                            <div class="table-legend-dot" style="background:#ff9f43"></div> Dự phòng 40%
+                            <div class="table-legend-dot" style="background:#ff9f43"></div> <span id="legendReserve">Dự phòng 40%</span>
                         </div>
                         <div class="table-legend-item">
-                            <div class="table-legend-dot" style="background:#a29bfe"></div> Đầu tư 20%
+                            <div class="table-legend-dot" style="background:#a29bfe"></div> <span id="legendInvest">Đầu tư 20%</span>
                         </div>
                     </div>
                 </section>
@@ -492,7 +492,7 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v40 (Minimalist Clean Design)</strong></p>
+                                        <p>Phiên bản: <strong>v41 (Custom Budget Allocation Ratios)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới khi đẩy code lên Git.</p>
                                     </div>
                                     <div class="settings-option-control">
@@ -557,10 +557,59 @@
         </section>
     </div>
 
+    <div class="goz-confirm-backdrop" id="ratioConfigModal" aria-hidden="true">
+        <section class="goz-confirm-modal ratio-config-dialog" role="dialog" aria-modal="true" aria-labelledby="ratioModalTitle" style="max-width: 420px; text-align: left;">
+            <div class="panel-header" style="border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 16px;">
+                <h3 id="ratioModalTitle" style="font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                    <i class="icon-svg" data-lucide="sliders"></i> Tùy chỉnh Tỷ lệ Ngân sách
+                </h3>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.4;">
+                Điều chỉnh phần trăm phân bổ thu nhập cho 3 mục. Tổng 3 mục phải bằng <strong>100%</strong>.
+            </p>
+            <div class="ratio-input-group" style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="ratio-field-row" style="display: flex; align-items: center; justify-content: space-between;">
+                    <label style="font-size: 0.85rem; font-weight: 700; color: #74b9ff; display: flex; align-items: center; gap: 6px;">
+                        <span class="dot-indicator" style="background: #74b9ff;"></span> Sinh hoạt:
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <input type="number" id="inputLivingPct" min="0" max="100" class="ratio-num-input" style="width: 70px; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid var(--border); font-weight: 700; background: var(--bg-input); color: var(--text-primary);" oninput="onRatioInputsChange()">
+                        <span style="font-weight: 700;">%</span>
+                    </div>
+                </div>
+                <div class="ratio-field-row" style="display: flex; align-items: center; justify-content: space-between;">
+                    <label style="font-size: 0.85rem; font-weight: 700; color: #ff9f43; display: flex; align-items: center; gap: 6px;">
+                        <span class="dot-indicator" style="background: #ff9f43;"></span> Dự phòng:
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <input type="number" id="inputReservePct" min="0" max="100" class="ratio-num-input" style="width: 70px; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid var(--border); font-weight: 700; background: var(--bg-input); color: var(--text-primary);" oninput="onRatioInputsChange()">
+                        <span style="font-weight: 700;">%</span>
+                    </div>
+                </div>
+                <div class="ratio-field-row" style="display: flex; align-items: center; justify-content: space-between;">
+                    <label style="font-size: 0.85rem; font-weight: 700; color: #a29bfe; display: flex; align-items: center; gap: 6px;">
+                        <span class="dot-indicator" style="background: #a29bfe;"></span> Đầu tư:
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <input type="number" id="inputInvestPct" min="0" max="100" class="ratio-num-input" style="width: 70px; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid var(--border); font-weight: 700; background: var(--bg-input); color: var(--text-primary);" oninput="onRatioInputsChange()">
+                        <span style="font-weight: 700;">%</span>
+                    </div>
+                </div>
+            </div>
+            <div id="ratioSumAlert" style="margin-top: 14px; font-size: 0.82rem; font-weight: 700; text-align: center; padding: 8px; border-radius: 6px; background: rgba(0,184,148,0.12); color: #00b894;">
+                Tổng: <span id="ratioSumValue">100</span>%
+            </div>
+            <div class="goz-confirm-actions" style="margin-top: 18px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="goz-confirm-btn secondary" type="button" onclick="closeRatioConfigModal()">Hủy</button>
+                <button class="goz-confirm-btn primary" id="btnSaveRatios" type="button" onclick="saveRatioConfig()">Lưu cài đặt</button>
+            </div>
+        </section>
+    </div>
+
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=40"></script>
+    <script src="app.js?v=41"></script>
 </body>
 
 </html>
