@@ -1739,13 +1739,13 @@ function registerSW() {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (refreshing) return;
         refreshing = true;
-        showToast('🚀 Đã cập nhật phiên bản mới nhất! Đang tải lại...', 'success');
+        showToast('Đã cập nhật phiên bản mới nhất! Đang tải lại...', 'success');
         setTimeout(() => {
             window.location.reload();
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=35').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=36').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
@@ -1788,7 +1788,7 @@ function registerSW() {
 // Prompt SW Update & activate
 function promptSWUpdate(worker) {
     if (!worker) return;
-    showToast('✨ Đã có bản cập nhật mới! Đang tự động áp dụng...', 'info');
+    showToast('Đã có bản cập nhật mới! Đang tự động áp dụng...', 'info');
     worker.postMessage({ type: 'SKIP_WAITING' });
 }
 
@@ -2267,10 +2267,19 @@ window.highlightMultiRatePoint = function(idx, date, krw, usd, usdKrw, x, yK, yU
         const parts = date.split('-');
         const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
         tooltip.innerHTML = `
-            <div class="rate-tooltip-date" style="font-weight:700; margin-bottom:4px;">📅 ${formattedDate}</div>
-            <div class="rate-tooltip-val krw" style="color:#00b894; font-weight:700;">🇰🇷 1 KRW = ${krw.toFixed(2)} ₫</div>
-            <div class="rate-tooltip-val usd" style="color:#3b82f6; font-weight:700; margin-top:2px;">🇺🇸 1 USD = ${fmtFull(Math.round(usd))} ₫</div>
-            <div class="rate-tooltip-val usdkrw" style="color:#ff9f43; font-weight:700; margin-top:2px;">💵 1 USD = ${fmtFull(Math.round(usdKrw))} ₩</div>
+            <div class="rate-tooltip-date" style="font-weight:700; margin-bottom:5px; font-size:0.78rem; display:flex; align-items:center; gap:4px; opacity:0.9;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                <span>${formattedDate}</span>
+            </div>
+            <div class="rate-tooltip-val krw" style="color:#00b894; font-weight:700; font-size:0.8rem; display:flex; align-items:center; gap:5px;">
+                <span style="background:rgba(0,184,148,0.15); color:#00b894; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800;">KRW</span> 1 KRW = ${krw.toFixed(2)} ₫
+            </div>
+            <div class="rate-tooltip-val usd" style="color:#3b82f6; font-weight:700; font-size:0.8rem; margin-top:3px; display:flex; align-items:center; gap:5px;">
+                <span style="background:rgba(59,130,246,0.15); color:#3b82f6; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800;">USD</span> 1 USD = ${fmtFull(Math.round(usd))} ₫
+            </div>
+            <div class="rate-tooltip-val usdkrw" style="color:#ff9f43; font-weight:700; font-size:0.8rem; margin-top:3px; display:flex; align-items:center; gap:5px;">
+                <span style="background:rgba(255,159,67,0.15); color:#ff9f43; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800;">USD/KRW</span> 1 USD = ${fmtFull(Math.round(usdKrw))} ₩
+            </div>
         `;
         
         const rect = container.getBoundingClientRect();
