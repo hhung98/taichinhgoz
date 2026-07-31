@@ -66,7 +66,7 @@ window.openRatioConfigModal = function() {
     window.onRatioInputsChange();
     const modal = document.getElementById('ratioConfigModal');
     if (modal) {
-        modal.classList.add('visible');
+        modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
     }
 };
@@ -74,7 +74,7 @@ window.openRatioConfigModal = function() {
 window.closeRatioConfigModal = function() {
     const modal = document.getElementById('ratioConfigModal');
     if (modal) {
-        modal.classList.remove('visible');
+        modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
     }
 };
@@ -1871,7 +1871,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=41').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=42').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now

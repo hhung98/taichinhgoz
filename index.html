@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function() {
-            const CURRENT_VER = 'v41';
+            const CURRENT_VER = 'v42';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=41">
+    <link rel="stylesheet" href="style.css?v=42">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -435,9 +435,9 @@
                                 <tr>
                                     <th>Tháng</th>
                                     <th>Thu nhập<br><small class="th-pct green">₩ KRW</small></th>
-                                    <th>Sinh hoạt<br><small class="th-pct blue clickable" id="thLivingPct" onclick="openRatioConfigModal()" title="Nhấp để thay đổi tỷ lệ %">40% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i></small></th>
-                                    <th>Dự phòng<br><small class="th-pct yellow clickable" id="thReservePct" onclick="openRatioConfigModal()" title="Nhấp để thay đổi tỷ lệ %">40% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i></small></th>
-                                    <th>Đầu tư<br><small class="th-pct purple clickable" id="thInvestPct" onclick="openRatioConfigModal()" title="Nhấp để thay đổi tỷ lệ %">20% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i></small></th>
+                                    <th class="th-ratio-clickable" onclick="openRatioConfigModal()" title="Nhấp để tùy chỉnh tỷ lệ %">Sinh hoạt<br><small class="th-pct blue" id="thLivingPct">40% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i></small></th>
+                                    <th class="th-ratio-clickable" onclick="openRatioConfigModal()" title="Nhấp để tùy chỉnh tỷ lệ %">Dự phòng<br><small class="th-pct yellow" id="thReservePct">40% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i></small></th>
+                                    <th class="th-ratio-clickable" onclick="openRatioConfigModal()" title="Nhấp để tùy chỉnh tỷ lệ %">Đầu tư<br><small class="th-pct purple" id="thInvestPct">20% <i class="icon-svg" data-lucide="pencil" style="width:10px;height:10px;"></i></small></th>
                                     <th>Chi tiêu<br><small class="th-pct red">₩ / % Thu nhập</small></th>
                                     <th>Còn lại</th>
                                     <th>Dư/Thiếu<br><small class="th-pct green">SH-CT</small></th>
@@ -492,7 +492,7 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v41 (Custom Budget Allocation Ratios)</strong></p>
+                                        <p>Phiên bản: <strong>v42 (Modal Click Trigger Fix)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới khi đẩy code lên Git.</p>
                                     </div>
                                     <div class="settings-option-control">
@@ -609,7 +609,7 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=41"></script>
+    <script src="app.js?v=42"></script>
 </body>
 
 </html>
