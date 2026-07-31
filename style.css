@@ -964,17 +964,17 @@ body.dark .header-tab-btn.active {
 
 .monthly-table .income-input,
 .monthly-table .expense-input {
-    width: 100%;
-    max-width: 120px;
-    padding: 6px 6px;
+    width: 105px;
+    padding: 5px 6px;
     background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius-xs);
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 0.75rem;
+    font-size: 0.82rem;
     outline: none;
-    text-align: center;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
     transition: var(--transition);
 }
 
@@ -1990,8 +1990,8 @@ body.dark .header-tab-btn.active {
     }
 
     .monthly-table {
-        font-size: 0.62rem;
-        min-width: 620px;
+        font-size: 0.72rem;
+        min-width: 780px;
     }
 
     .monthly-table th,
@@ -2001,9 +2001,11 @@ body.dark .header-tab-btn.active {
 
     .monthly-table .income-input,
     .monthly-table .expense-input {
-        max-width: 80px;
-        padding: 5px 4px;
-        font-size: 0.68rem;
+        width: 100px;
+        max-width: 105px;
+        padding: 4px 5px;
+        font-size: 0.78rem;
+        text-align: right;
     }
 
     /* Budget dashboard mobile */
@@ -5808,8 +5810,7 @@ body.dark .mobile-bottom-nav a.active span {
     /* Prevent mobile input auto-zoom on iOS */
     .goal-input,
     .converter-input,
-    .auth-field input,
-    .monthly-table input {
+    .auth-field input {
         font-size: 16px !important;
     }
 
@@ -6015,26 +6016,27 @@ body.dark .mobile-bottom-nav a.active span {
 .expense-cell-container {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 5px;
+    justify-content: flex-end;
+    gap: 4px;
     width: 100%;
 }
 
 .expense-cell-container .expense-input {
-    flex: 1;
-    min-width: 85px;
+    width: 95px;
+    flex-shrink: 0;
 }
 
 .expense-pct-badge {
     display: inline-block;
-    padding: 3px 6px;
-    border-radius: 6px;
-    font-size: 0.72rem;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: 0.7rem;
     font-weight: 800;
-    line-height: 1;
+    line-height: 1.1;
     white-space: nowrap;
     transition: all 0.2s ease;
     font-family: 'Inter', sans-serif;
+    flex-shrink: 0;
 }
 
 .expense-pct-badge.safe {
