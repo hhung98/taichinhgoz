@@ -1851,7 +1851,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=44').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=45').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
@@ -1946,6 +1946,12 @@ function switchTab(tabId) {
     const selectedPane = document.getElementById('tab-' + tabId);
     if (selectedPane) {
         selectedPane.classList.add('active');
+
+        // Assign waterfall stagger indexes to direct children for cascade effect
+        let wi = 0;
+        for (const child of selectedPane.children) {
+            child.style.setProperty('--wi', wi++);
+        }
     }
     
     // Update desktop header tabs active state
@@ -1974,6 +1980,7 @@ function switchTab(tabId) {
         } else if (tabId === 'exchange') {
             renderExchangeRateChart();
         }
+        refreshIcons();
     });
 }
 
