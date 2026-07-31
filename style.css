@@ -5977,6 +5977,47 @@ body.dark .mobile-bottom-nav a.active span {
     font-weight: 700;
 }
 
+.dot-indicator.usdkrw {
+    background: #ff9f43;
+}
+
+.dot-indicator.both {
+    background: linear-gradient(135deg, #00b894 0%, #3b82f6 50%, #ff9f43 100%);
+}
+
+.triple-currency-stats {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 14px;
+}
+
+@media (max-width: 768px) {
+    .triple-currency-stats {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.exchange-chart-line.usdkrw {
+    stroke: #ff9f43 !important;
+}
+
+[data-theme="light"] .exchange-chart-line.usdkrw {
+    stroke: #e67e22 !important;
+}
+
+.exchange-chart-dot.usdkrw {
+    fill: #ff9f43 !important;
+}
+
+[data-theme="light"] .exchange-chart-dot.usdkrw {
+    fill: #e67e22 !important;
+}
+
+.rate-tooltip-val.usdkrw {
+    color: #ff9f43;
+    font-weight: 700;
+}
+
+
 
 
 

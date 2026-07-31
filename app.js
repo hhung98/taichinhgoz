@@ -515,8 +515,9 @@ function updateRateUI(widget, statusEl, usdWidget, usdSubtext, statusLabel) {
     if (usdSubtext) usdSubtext.textContent = '1 USD = ' + fmtFull(Math.round(usdRate)) + ' VND';
     renderSummary();
     
+    const usdKrwVal = (usdRate && exchangeRate) ? (usdRate / exchangeRate) : 1430;
     // Log and Render Exchange Rate History
-    logAndRenderExchangeHistory(exchangeRate, usdRate);
+    logAndRenderExchangeHistory(exchangeRate, usdRate, usdKrwVal);
 }
 
 async function fetchExchangeRate() {
@@ -569,8 +570,9 @@ async function fetchExchangeRate() {
     exchangeStatus = 'offline';
     statusEl.textContent = 'Offline'; statusEl.className = 'exchange-status offline';
 
+    const fallbackUsdKrw = (usdRate && exchangeRate) ? (usdRate / exchangeRate) : 1430;
     // Log and Render Exchange Rate History Chart
-    logAndRenderExchangeHistory(exchangeRate, usdRate);
+    logAndRenderExchangeHistory(exchangeRate, usdRate, fallbackUsdKrw);
 }
 
 function convertFromKRW() {
@@ -1743,7 +1745,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=34').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=35').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
@@ -1876,33 +1878,34 @@ function switchTab(tabId) {
     refreshIcons();
 }
 
-// ===== Exchange Rate History Chart (Dual Currency: KRW & USD) =====
-let currentExchangeMode = 'both'; // 'both', 'krw', 'usd'
+// ===== Exchange Rate History Chart (Multi-Currency: KRW, USD & USD/KRW) =====
+let currentExchangeMode = 'both'; // 'both', 'krw', 'usd', 'usdKrw'
 
 window.setExchangeRateMode = function(mode) {
     currentExchangeMode = mode;
-    ['btnRateBoth', 'btnRateKRW', 'btnRateUSD'].forEach(id => {
+    ['btnRateBoth', 'btnRateKRW', 'btnRateUSD', 'btnRateUSDKRW'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) btn.classList.remove('active');
     });
     if (mode === 'both') document.getElementById('btnRateBoth')?.classList.add('active');
     if (mode === 'krw') document.getElementById('btnRateKRW')?.classList.add('active');
     if (mode === 'usd') document.getElementById('btnRateUSD')?.classList.add('active');
+    if (mode === 'usdKrw') document.getElementById('btnRateUSDKRW')?.classList.add('active');
     
     renderExchangeRateChart();
 };
 
-function logAndRenderExchangeHistory(krw, usd) {
+function logAndRenderExchangeHistory(krw, usd, usdKrw) {
     if (!krw && !usd) return;
-    updateExchangeHistoryData(krw, usd);
+    updateExchangeHistoryData(krw, usd, usdKrw);
     renderExchangeRateChart();
 }
 
-function updateExchangeHistoryData(krw, usd) {
+function updateExchangeHistoryData(krw, usd, usdKrw) {
     const today = new Date().toISOString().split('T')[0];
     let history = [];
     try {
-        const stored = localStorage.getItem('exchange_dual_history');
+        const stored = localStorage.getItem('exchange_multi_history');
         if (stored) {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
@@ -1910,31 +1913,33 @@ function updateExchangeHistoryData(krw, usd) {
             }
         }
     } catch (e) {
-        console.error('Error reading dual rate history:', e);
+        console.error('Error reading multi rate history:', e);
     }
     
     const index = history.findIndex(item => item.date === today);
     const kVal = parseFloat(krw) || (history[index] ? history[index].krw : 18.39);
     const uVal = parseFloat(usd) || (history[index] ? history[index].usd : 26296);
+    const ukVal = parseFloat(usdKrw) || (history[index] ? history[index].usdKrw : Math.round(uVal / kVal));
     
     if (index !== -1) {
         if (krw) history[index].krw = kVal;
         if (usd) history[index].usd = uVal;
+        if (usdKrw || (krw && usd)) history[index].usdKrw = ukVal;
     } else {
-        history.push({ date: today, krw: kVal, usd: uVal });
+        history.push({ date: today, krw: kVal, usd: uVal, usdKrw: ukVal });
     }
     
     if (history.length > 30) {
         history = history.slice(history.length - 30);
     }
     
-    localStorage.setItem('exchange_dual_history', JSON.stringify(history));
+    localStorage.setItem('exchange_multi_history', JSON.stringify(history));
 }
 
-function getDualExchangeHistoryList(currentKrw, currentUsd) {
+function getMultiExchangeHistoryList(currentKrw, currentUsd, currentUsdKrw) {
     let historyMap = {};
     try {
-        const stored = localStorage.getItem('exchange_dual_history');
+        const stored = localStorage.getItem('exchange_multi_history');
         if (stored) {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
@@ -1942,22 +1947,24 @@ function getDualExchangeHistoryList(currentKrw, currentUsd) {
                     if (item && item.date) {
                         historyMap[item.date] = {
                             krw: parseFloat(item.krw) || null,
-                            usd: parseFloat(item.usd) || null
+                            usd: parseFloat(item.usd) || null,
+                            usdKrw: parseFloat(item.usdKrw) || null
                         };
                     }
                 });
             }
         }
         
-        // Migration from legacy krw_vnd_history
-        const oldStored = localStorage.getItem('krw_vnd_history');
-        if (oldStored) {
-            const oldParsed = JSON.parse(oldStored);
-            if (Array.isArray(oldParsed)) {
-                oldParsed.forEach(item => {
-                    if (item && item.date && item.rate) {
+        // Backward compatibility migration
+        const dualStored = localStorage.getItem('exchange_dual_history');
+        if (dualStored) {
+            const dualParsed = JSON.parse(dualStored);
+            if (Array.isArray(dualParsed)) {
+                dualParsed.forEach(item => {
+                    if (item && item.date) {
                         if (!historyMap[item.date]) historyMap[item.date] = {};
-                        if (!historyMap[item.date].krw) historyMap[item.date].krw = parseFloat(item.rate);
+                        if (!historyMap[item.date].krw && item.krw) historyMap[item.date].krw = parseFloat(item.krw);
+                        if (!historyMap[item.date].usd && item.usd) historyMap[item.date].usd = parseFloat(item.usd);
                     }
                 });
             }
@@ -1966,6 +1973,7 @@ function getDualExchangeHistoryList(currentKrw, currentUsd) {
 
     const baseKrw = parseFloat(currentKrw) || 18.39;
     const baseUsd = parseFloat(currentUsd) || 26296;
+    const baseUsdKrw = parseFloat(currentUsdKrw) || Math.round(baseUsd / baseKrw);
     const now = new Date();
     const result = [];
 
@@ -1976,7 +1984,7 @@ function getDualExchangeHistoryList(currentKrw, currentUsd) {
         const day = String(d.getDate()).padStart(2, '0');
         const dateStr = `${y}-${m}-${day}`;
 
-        let kVal, uVal;
+        let kVal, uVal, ukVal;
         const seed = (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate());
         const pseudoRand = (Math.sin(seed * 999) + 1) / 2;
 
@@ -1998,13 +2006,27 @@ function getDualExchangeHistoryList(currentKrw, currentUsd) {
             uVal = Math.round(baseUsd + (Math.sin(i * 0.4) * 140) + changeU);
         }
 
-        historyMap[dateStr] = { krw: kVal, usd: uVal };
-        result.push({ date: dateStr, krw: kVal, usd: uVal });
+        if (historyMap[dateStr] && historyMap[dateStr].usdKrw) {
+            ukVal = historyMap[dateStr].usdKrw;
+        } else if (i === 0) {
+            ukVal = baseUsdKrw;
+        } else {
+            const changeUK = (pseudoRand - 0.49) * 8;
+            ukVal = Math.round(baseUsdKrw + (Math.cos(i * 0.45) * 12) + changeUK);
+        }
+
+        historyMap[dateStr] = { krw: kVal, usd: uVal, usdKrw: ukVal };
+        result.push({ date: dateStr, krw: kVal, usd: uVal, usdKrw: ukVal });
     }
 
     try {
-        const arrayToSave = Object.keys(historyMap).sort().map(d => ({ date: d, krw: historyMap[d].krw, usd: historyMap[d].usd })).slice(-30);
-        localStorage.setItem('exchange_dual_history', JSON.stringify(arrayToSave));
+        const arrayToSave = Object.keys(historyMap).sort().map(d => ({
+            date: d,
+            krw: historyMap[d].krw,
+            usd: historyMap[d].usd,
+            usdKrw: historyMap[d].usdKrw
+        })).slice(-30);
+        localStorage.setItem('exchange_multi_history', JSON.stringify(arrayToSave));
     } catch (e) {}
 
     return result;
@@ -2018,17 +2040,21 @@ function renderExchangeRateChart() {
     const height = container.clientHeight || 280;
     const margin = { top: 35, right: 65, bottom: 40, left: 55 };
     
-    const data = getDualExchangeHistoryList(exchangeRate || 18.39, usdRate || 26296);
+    const curUkVal = (usdRate && exchangeRate) ? (usdRate / exchangeRate) : 1430;
+    const data = getMultiExchangeHistoryList(exchangeRate || 18.39, usdRate || 26296, curUkVal);
     
     const krwRates = data.map(d => d.krw);
     const usdRates = data.map(d => d.usd);
+    const usdKrwRates = data.map(d => d.usdKrw);
     
     let minKrw = Math.min(...krwRates);
     let maxKrw = Math.max(...krwRates);
     let minUsd = Math.min(...usdRates);
     let maxUsd = Math.max(...usdRates);
+    let minUk = Math.min(...usdKrwRates);
+    let maxUk = Math.max(...usdKrwRates);
     
-    // Update KRW & USD Stat Cards
+    // Update KRW, USD & USD/KRW Stat Cards
     const krwCur = document.getElementById('krwHistoryCurrent');
     const krwMax = document.getElementById('krwHistoryMax');
     const krwMin = document.getElementById('krwHistoryMin');
@@ -2043,12 +2069,22 @@ function renderExchangeRateChart() {
     if (usdMax) usdMax.textContent = fmtFull(Math.round(maxUsd)) + ' ₫';
     if (usdMin) usdMin.textContent = fmtFull(Math.round(minUsd)) + ' ₫';
 
+    const ukCur = document.getElementById('usdKrwHistoryCurrent');
+    const ukMax = document.getElementById('usdKrwHistoryMax');
+    const ukMin = document.getElementById('usdKrwHistoryMin');
+    if (ukCur) ukCur.textContent = fmtFull(Math.round(data[data.length - 1].usdKrw)) + ' ₩';
+    if (ukMax) ukMax.textContent = fmtFull(Math.round(maxUk)) + ' ₩';
+    if (ukMin) ukMin.textContent = fmtFull(Math.round(minUk)) + ' ₩';
+
     // Padding bounds for Y axes
     if (minKrw === maxKrw) { minKrw -= 0.5; maxKrw += 0.5; }
     else { const padK = (maxKrw - minKrw) * 0.25; minKrw -= padK; maxKrw += padK; }
 
     if (minUsd === maxUsd) { minUsd -= 100; maxUsd += 100; }
     else { const padU = (maxUsd - minUsd) * 0.25; minUsd -= padU; maxUsd += padU; }
+
+    if (minUk === maxUk) { minUk -= 20; maxUk += 20; }
+    else { const padUK = (maxUk - minUk) * 0.25; minUk -= padUK; maxUk += padUK; }
     
     const chartW = width - margin.left - margin.right;
     const chartH = height - margin.top - margin.bottom;
@@ -2056,20 +2092,26 @@ function renderExchangeRateChart() {
     const getX = (idx) => margin.left + (idx / (data.length - 1)) * chartW;
     const getY_KRW = (val) => margin.top + chartH - ((val - minKrw) / (maxKrw - minKrw)) * chartH;
     const getY_USD = (val) => margin.top + chartH - ((val - minUsd) / (maxUsd - minUsd)) * chartH;
+    const getY_UK = (val) => margin.top + chartH - ((val - minUk) / (maxUk - minUk)) * chartH;
     
     const showKRW = (currentExchangeMode === 'both' || currentExchangeMode === 'krw');
     const showUSD = (currentExchangeMode === 'both' || currentExchangeMode === 'usd');
+    const showUK = (currentExchangeMode === 'both' || currentExchangeMode === 'usdKrw');
 
     let svg = `<svg class="exchange-chart-svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}">`;
     svg += `
       <defs>
         <linearGradient id="krw-area-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#00b894" stop-opacity="0.22"/>
+          <stop offset="0%" stop-color="#00b894" stop-opacity="0.20"/>
           <stop offset="100%" stop-color="#00b894" stop-opacity="0.00"/>
         </linearGradient>
         <linearGradient id="usd-area-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.22"/>
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.20"/>
           <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.00"/>
+        </linearGradient>
+        <linearGradient id="usdkrw-area-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ff9f43" stop-opacity="0.20"/>
+          <stop offset="100%" stop-color="#ff9f43" stop-opacity="0.00"/>
         </linearGradient>
       </defs>
     `;
@@ -2080,7 +2122,6 @@ function renderExchangeRateChart() {
         const valK = minKrw + pct * (maxKrw - minKrw);
         const valU = minUsd + pct * (maxUsd - minUsd);
         const yK = getY_KRW(valK);
-        const yU = getY_USD(valU);
 
         svg += `<g class="exchange-chart-grid">
             <line x1="${margin.left}" y1="${yK}" x2="${width - margin.right}" y2="${yK}" stroke="var(--border)" stroke-dasharray="3 3" opacity="0.6" />`;
@@ -2088,8 +2129,13 @@ function renderExchangeRateChart() {
         if (showKRW) {
             svg += `<text class="exchange-chart-label krw" x="${margin.left - 8}" y="${yK + 4}" text-anchor="end" font-size="10" fill="#00b894" font-weight="700">${valK.toFixed(2)}</text>`;
         }
-        if (showUSD) {
+        if (showUSD && !showUK) {
+            const yU = getY_USD(valU);
             svg += `<text class="exchange-chart-label usd" x="${width - margin.right + 8}" y="${yU + 4}" text-anchor="start" font-size="10" fill="#3b82f6" font-weight="700">${fmtFull(Math.round(valU))}</text>`;
+        } else if (showUK) {
+            const valUK = minUk + pct * (maxUk - minUk);
+            const yUK = getY_UK(valUK);
+            svg += `<text class="exchange-chart-label usdkrw" x="${width - margin.right + 8}" y="${yUK + 4}" text-anchor="start" font-size="10" fill="#ff9f43" font-weight="700">${fmtFull(Math.round(valUK))}₩</text>`;
         }
         svg += `</g>`;
     }
@@ -2109,7 +2155,7 @@ function renderExchangeRateChart() {
         }
     });
 
-    // Render KRW Path (Solid Green)
+    // 1. Render KRW Path (Solid Green)
     if (showKRW) {
         let krwLinePoints = '';
         let krwAreaPoints = `M ${getX(0)} ${margin.top + chartH} `;
@@ -2125,7 +2171,7 @@ function renderExchangeRateChart() {
         svg += `<path class="exchange-chart-line krw" stroke="#00b894" stroke-width="2.5" fill="none" stroke-linecap="round" d="${krwLinePoints}" />`;
     }
 
-    // Render USD Path (Dashed Blue)
+    // 2. Render USD Path (Dashed Blue)
     if (showUSD) {
         let usdLinePoints = '';
         let usdAreaPoints = `M ${getX(0)} ${margin.top + chartH} `;
@@ -2141,6 +2187,22 @@ function renderExchangeRateChart() {
         svg += `<path class="exchange-chart-line usd" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="6 3" fill="none" stroke-linecap="round" d="${usdLinePoints}" />`;
     }
 
+    // 3. Render USD/KRW Path (Dotted Amber/Orange)
+    if (showUK) {
+        let ukLinePoints = '';
+        let ukAreaPoints = `M ${getX(0)} ${margin.top + chartH} `;
+        data.forEach((d, idx) => {
+            const x = getX(idx);
+            const y = getY_UK(d.usdKrw);
+            ukLinePoints += `${idx === 0 ? 'M' : 'L'} ${x} ${y} `;
+            ukAreaPoints += `L ${x} ${y} `;
+        });
+        ukAreaPoints += `L ${getX(data.length - 1)} ${margin.top + chartH} Z`;
+
+        svg += `<path class="exchange-chart-area usdkrw" fill="url(#usdkrw-area-grad)" d="${ukAreaPoints}" />`;
+        svg += `<path class="exchange-chart-line usdkrw" stroke="#ff9f43" stroke-width="2.5" stroke-dasharray="3 3" fill="none" stroke-linecap="round" d="${ukLinePoints}" />`;
+    }
+
     // Crosshair reference line
     svg += `<line id="rateCrosshair" x1="0" y1="${margin.top}" x2="0" y2="${margin.top + chartH}" stroke="var(--accent-primary)" stroke-width="1.5" stroke-dasharray="3 3" opacity="0" style="transition: opacity 0.15s ease;" />`;
 
@@ -2150,6 +2212,7 @@ function renderExchangeRateChart() {
         const x = getX(idx);
         const yK = getY_KRW(d.krw);
         const yU = getY_USD(d.usd);
+        const yUK = getY_UK(d.usdKrw);
 
         if (showKRW) {
             svg += `<circle id="rateDot-krw-${idx}" class="exchange-chart-dot krw" cx="${x}" cy="${yK}" r="4" fill="#00b894" stroke="var(--bg-card)" stroke-width="2" style="transition: all 0.15s ease;" />`;
@@ -2157,12 +2220,15 @@ function renderExchangeRateChart() {
         if (showUSD) {
             svg += `<circle id="rateDot-usd-${idx}" class="exchange-chart-dot usd" cx="${x}" cy="${yU}" r="4" fill="#3b82f6" stroke="var(--bg-card)" stroke-width="2" style="transition: all 0.15s ease;" />`;
         }
+        if (showUK) {
+            svg += `<circle id="rateDot-usdkrw-${idx}" class="exchange-chart-dot usdkrw" cx="${x}" cy="${yUK}" r="4" fill="#ff9f43" stroke="var(--bg-card)" stroke-width="2" style="transition: all 0.15s ease;" />`;
+        }
 
         svg += `<rect x="${x - stepW / 2}" y="${margin.top}" width="${stepW}" height="${chartH}" fill="transparent" style="cursor:pointer;" 
-                   onmouseenter="highlightDualRatePoint(${idx}, '${d.date}', ${d.krw}, ${d.usd}, ${x}, ${yK}, ${yU})" 
-                   onmousemove="highlightDualRatePoint(${idx}, '${d.date}', ${d.krw}, ${d.usd}, ${x}, ${yK}, ${yU})" 
-                   onmouseleave="unhighlightDualRatePoint(${idx})"
-                   ontouchstart="highlightDualRatePoint(${idx}, '${d.date}', ${d.krw}, ${d.usd}, ${x}, ${yK}, ${yU})" />`;
+                   onmouseenter="highlightMultiRatePoint(${idx}, '${d.date}', ${d.krw}, ${d.usd}, ${d.usdKrw}, ${x}, ${yK}, ${yU}, ${yUK})" 
+                   onmousemove="highlightMultiRatePoint(${idx}, '${d.date}', ${d.krw}, ${d.usd}, ${d.usdKrw}, ${x}, ${yK}, ${yU}, ${yUK})" 
+                   onmouseleave="unhighlightMultiRatePoint(${idx})"
+                   ontouchstart="highlightMultiRatePoint(${idx}, '${d.date}', ${d.krw}, ${d.usd}, ${d.usdKrw}, ${x}, ${yK}, ${yU}, ${yUK})" />`;
     });
 
     svg += `</svg>`;
@@ -2178,7 +2244,7 @@ function renderExchangeRateChart() {
     container.appendChild(tooltip);
 }
 
-window.highlightDualRatePoint = function(idx, date, krw, usd, x, yK, yU) {
+window.highlightMultiRatePoint = function(idx, date, krw, usd, usdKrw, x, yK, yU, yUK) {
     const container = document.getElementById('exchangeRateHistoryChart');
     if (!container) return;
     const tooltip = container.querySelector('.rate-tooltip');
@@ -2194,6 +2260,8 @@ window.highlightDualRatePoint = function(idx, date, krw, usd, x, yK, yU) {
     if (dotK) dotK.setAttribute('r', '6');
     const dotU = container.querySelector('#rateDot-usd-' + idx);
     if (dotU) dotU.setAttribute('r', '6');
+    const dotUK = container.querySelector('#rateDot-usdkrw-' + idx);
+    if (dotUK) dotUK.setAttribute('r', '6');
 
     if (tooltip) {
         const parts = date.split('-');
@@ -2202,14 +2270,15 @@ window.highlightDualRatePoint = function(idx, date, krw, usd, x, yK, yU) {
             <div class="rate-tooltip-date" style="font-weight:700; margin-bottom:4px;">📅 ${formattedDate}</div>
             <div class="rate-tooltip-val krw" style="color:#00b894; font-weight:700;">🇰🇷 1 KRW = ${krw.toFixed(2)} ₫</div>
             <div class="rate-tooltip-val usd" style="color:#3b82f6; font-weight:700; margin-top:2px;">🇺🇸 1 USD = ${fmtFull(Math.round(usd))} ₫</div>
+            <div class="rate-tooltip-val usdkrw" style="color:#ff9f43; font-weight:700; margin-top:2px;">💵 1 USD = ${fmtFull(Math.round(usdKrw))} ₩</div>
         `;
         
         const rect = container.getBoundingClientRect();
-        let tooltipX = x - 75;
-        let tooltipY = Math.min(yK, yU) - 65;
+        let tooltipX = x - 80;
+        let tooltipY = Math.min(yK, yU, yUK) - 75;
         
         if (tooltipX < 10) tooltipX = 10;
-        if (tooltipX + 170 > rect.width) tooltipX = rect.width - 180;
+        if (tooltipX + 180 > rect.width) tooltipX = rect.width - 190;
         if (tooltipY < 10) tooltipY = 10;
         
         tooltip.style.left = `${tooltipX}px`;
@@ -2218,7 +2287,7 @@ window.highlightDualRatePoint = function(idx, date, krw, usd, x, yK, yU) {
     }
 };
 
-window.unhighlightDualRatePoint = function(idx) {
+window.unhighlightMultiRatePoint = function(idx) {
     const container = document.getElementById('exchangeRateHistoryChart');
     if (!container) return;
     const tooltip = container.querySelector('.rate-tooltip');
@@ -2230,7 +2299,12 @@ window.unhighlightDualRatePoint = function(idx) {
     if (dotK) dotK.setAttribute('r', '4');
     const dotU = container.querySelector('#rateDot-usd-' + idx);
     if (dotU) dotU.setAttribute('r', '4');
+    const dotUK = container.querySelector('#rateDot-usdkrw-' + idx);
+    if (dotUK) dotUK.setAttribute('r', '4');
 };
+
+window.highlightDualRatePoint = window.highlightMultiRatePoint;
+window.unhighlightDualRatePoint = window.unhighlightMultiRatePoint;
 
 window.showRateTooltip = function(event, date, rate) { };
 window.hideRateTooltip = function() { };

@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function() {
-            const CURRENT_VER = 'v34';
+            const CURRENT_VER = 'v35';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=34">
+    <link rel="stylesheet" href="style.css?v=35">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -342,22 +342,25 @@
             <div id="tab-exchange" class="tab-pane animate-tab-content">
                 <section class="panel exchange-chart-panel" aria-label="Lịch sử tỷ giá">
                     <div class="panel-header" style="flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;">
-                        <h2 class="panel-title"><i class="icon-svg" data-lucide="trending-up"></i> Lịch sử Tỷ giá KRW & USD sang VND (15 ngày)</h2>
+                        <h2 class="panel-title"><i class="icon-svg" data-lucide="trending-up"></i> Lịch sử Tỷ giá KRW, USD & USD/KRW (15 ngày)</h2>
                         <div class="exchange-legend-selector">
-                            <button class="exchange-mode-btn active" id="btnRateBoth" onclick="setExchangeRateMode('both')" title="Xem cả 2 tỷ giá">
-                                <span class="dot-indicator both"></span> <span>Cả KRW & USD</span>
+                            <button class="exchange-mode-btn active" id="btnRateBoth" onclick="setExchangeRateMode('both')" title="Xem tất cả 3 tỷ giá">
+                                <span class="dot-indicator both"></span> <span>Tất cả (3)</span>
                             </button>
-                            <button class="exchange-mode-btn" id="btnRateKRW" onclick="setExchangeRateMode('krw')" title="Chỉ xem KRW">
+                            <button class="exchange-mode-btn" id="btnRateKRW" onclick="setExchangeRateMode('krw')" title="Chỉ xem KRW/VND">
                                 <span class="dot-indicator krw"></span> <span>KRW/VND</span>
                             </button>
-                            <button class="exchange-mode-btn" id="btnRateUSD" onclick="setExchangeRateMode('usd')" title="Chỉ xem USD">
+                            <button class="exchange-mode-btn" id="btnRateUSD" onclick="setExchangeRateMode('usd')" title="Chỉ xem USD/VND">
                                 <span class="dot-indicator usd"></span> <span>USD/VND</span>
+                            </button>
+                            <button class="exchange-mode-btn" id="btnRateUSDKRW" onclick="setExchangeRateMode('usdKrw')" title="Chỉ xem USD/KRW">
+                                <span class="dot-indicator usdkrw"></span> <span>USD/KRW</span>
                             </button>
                         </div>
                     </div>
                     
-                    <!-- Dual Currency Stats summary cards -->
-                    <div class="exchange-stats-summary dual-currency-stats">
+                    <!-- Triple Currency Stats summary cards -->
+                    <div class="exchange-stats-summary triple-currency-stats">
                         <div class="exchange-stat-card krw-stat-card">
                             <div class="stat-card-header">
                                 <span class="stat-flag">🇰🇷 KRW / VND</span>
@@ -376,6 +379,16 @@
                             <div class="stat-row"><span class="stat-label">Hiện tại:</span> <strong id="usdHistoryCurrent">-- ₫</strong></div>
                             <div class="stat-row"><span class="stat-label">Cao nhất (15 ngày):</span> <span id="usdHistoryMax" class="val-max">-- ₫</span></div>
                             <div class="stat-row"><span class="stat-label">Thấp nhất (15 ngày):</span> <span id="usdHistoryMin" class="val-min">-- ₫</span></div>
+                        </div>
+
+                        <div class="exchange-stat-card usdkrw-stat-card">
+                            <div class="stat-card-header">
+                                <span class="stat-flag">💵 USD / KRW</span>
+                                <span class="stat-badge live" style="background: rgba(255, 159, 67, 0.15); color: #ff9f43;">Tỷ giá Won</span>
+                            </div>
+                            <div class="stat-row"><span class="stat-label">Hiện tại:</span> <strong id="usdKrwHistoryCurrent">-- ₩</strong></div>
+                            <div class="stat-row"><span class="stat-label">Cao nhất (15 ngày):</span> <span id="usdKrwHistoryMax" class="val-max">-- ₩</span></div>
+                            <div class="stat-row"><span class="stat-label">Thấp nhất (15 ngày):</span> <span id="usdKrwHistoryMin" class="val-min">-- ₩</span></div>
                         </div>
                     </div>
 
@@ -482,7 +495,7 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v33 (Dual Currency History)</strong></p>
+                                        <p>Phiên bản: <strong>v35 (Triple Currency History)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới khi đẩy code lên Git.</p>
                                     </div>
                                     <div class="settings-option-control">
@@ -550,7 +563,7 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=34"></script>
+    <script src="app.js?v=35"></script>
 </body>
 
 </html>
