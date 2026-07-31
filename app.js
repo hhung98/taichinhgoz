@@ -91,13 +91,11 @@ window.onRatioInputsChange = function() {
     if (sumEl) sumEl.textContent = sum;
     if (alertEl) {
         if (sum === 100) {
-            alertEl.style.background = 'rgba(0,184,148,0.15)';
-            alertEl.style.color = '#00b894';
+            alertEl.className = 'ratio-sum-badge valid';
             alertEl.innerHTML = `Tổng: <strong>100%</strong> (Hợp lệ)`;
             if (btn) btn.disabled = false;
         } else {
-            alertEl.style.background = 'rgba(255,107,107,0.15)';
-            alertEl.style.color = '#ff6b6b';
+            alertEl.className = 'ratio-sum-badge invalid';
             alertEl.innerHTML = `Tổng: <strong>${sum}%</strong> (Phải bằng 100%)`;
             if (btn) btn.disabled = true;
         }
@@ -1871,7 +1869,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=42').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=43').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
