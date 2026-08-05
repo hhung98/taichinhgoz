@@ -1,6 +1,6 @@
 {
-    "name": "Finance Dashboard",
-    "short_name": "Finance",
+    "name": "Duhoc Mate Finance - Quản lý tài chính",
+    "short_name": "Duhoc Mate Finance",
     "description": "Dashboard quản lý tài chính cá nhân thông minh",
     "start_url": "./index.html",
     "scope": "./",

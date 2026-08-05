@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Duhoc Mate Finance - Quản lý Tài chính</title>
     <meta name="description"
         content="Dashboard quản lý tài chính cá nhân thông minh: theo dõi thu nhập, chi tiêu, ngân sách 12 tháng, tỉ giá KRW/VND realtime.">
     <meta name="keywords" content="quản lý tài chính, thu chi, ngân sách, KRW, VND, dashboard">
@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function() {
-            const CURRENT_VER = 'v54';
+            const CURRENT_VER = 'v56';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=54">
+    <link rel="stylesheet" href="style.css?v=56">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -76,7 +76,7 @@
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-card">
             <div class="auth-header">
-                <h2 class="auth-logo"><i class="icon-svg" data-lucide="wallet"></i> GOZ Finance</h2>
+                <h2 class="auth-logo"><i class="icon-svg" data-lucide="wallet"></i> Duhoc Mate Finance</h2>
                 <p class="auth-subtitle">Đăng nhập để quản lý tài chính</p>
             </div>
             <form id="authForm" onsubmit="handleAuth(event)">
@@ -130,10 +130,10 @@
                 <div class="header-top-bar">
                     <div class="header-left">
                         <div class="brand-mark" aria-hidden="true">
-                            <img src="logo.png" alt="GOZ Finance Logo" class="brand-logo-img">
+                            <img src="logo.png" alt="Duhoc Mate Finance Logo" class="brand-logo-img">
                         </div>
                         <div>
-                            <h1 class="logo">GOZ Finance</h1>
+                            <h1 class="logo">Duhoc Mate Finance</h1>
                             <p class="subtitle">Dashboard</p>
                         </div>
                     </div>
@@ -506,7 +506,7 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v54 (Goal Remaining Amount Display)</strong></p>
+                                        <p>Phiên bản: <strong>v56 (Rebrand to Duhoc Mate Finance)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới khi đẩy code lên Git.</p>
                                     </div>
                                     <div class="settings-option-control">
@@ -547,7 +547,7 @@
         </nav>
 
         <footer class="footer" id="settingsSection" role="contentinfo">
-            <p>GOZ Finance &copy; 2026</p>
+            <p>Duhoc Mate Finance &copy; 2026</p>
         </footer>
     </div>
 
@@ -560,7 +560,7 @@
         <section class="goz-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="gozConfirmTitle">
             <div class="goz-confirm-icon"><i class="icon-svg" data-lucide="shield-alert"></i></div>
             <div class="goz-confirm-copy">
-                <p class="goz-confirm-kicker">GOZ Finance</p>
+                <p class="goz-confirm-kicker">Duhoc Mate Finance</p>
                 <h2 id="gozConfirmTitle">Xác nhận thao tác</h2>
                 <p id="gozConfirmMessage">Bạn có chắc chắn muốn tiếp tục?</p>
             </div>
@@ -627,7 +627,7 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=54"></script>
+    <script src="app.js?v=56"></script>
 </body>
 
 </html>
