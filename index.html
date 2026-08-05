@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function() {
-            const CURRENT_VER = 'v49';
+            const CURRENT_VER = 'v50';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=49">
+    <link rel="stylesheet" href="style.css?v=50">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -371,29 +371,35 @@
                     <div class="exchange-stats-summary triple-currency-stats">
                         <div class="exchange-stat-card krw-stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-flag"><span class="dot-indicator krw"></span> KRW / VND</span>
+                                <span class="stat-flag"><span class="dot-indicator krw"></span> KRW/VND</span>
                             </div>
-                            <div class="stat-row"><span class="stat-label">Hiện tại:</span> <strong id="krwHistoryCurrent">-- ₫</strong></div>
-                            <div class="stat-row"><span class="stat-label">Cao nhất (15 ngày):</span> <span id="krwHistoryMax" class="val-max">-- ₫</span></div>
-                            <div class="stat-row"><span class="stat-label">Thấp nhất (15 ngày):</span> <span id="krwHistoryMin" class="val-min">-- ₫</span></div>
+                            <div class="stat-current-val" id="krwHistoryCurrent">-- ₫</div>
+                            <div class="stat-minmax-row">
+                                <span class="stat-badge max" title="Cao nhất 15 ngày"><i class="icon-svg" data-lucide="arrow-up-right"></i> <span id="krwHistoryMax">-- ₫</span></span>
+                                <span class="stat-badge min" title="Thấp nhất 15 ngày"><i class="icon-svg" data-lucide="arrow-down-right"></i> <span id="krwHistoryMin">-- ₫</span></span>
+                            </div>
                         </div>
 
                         <div class="exchange-stat-card usd-stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-flag"><span class="dot-indicator usd"></span> USD / VND</span>
+                                <span class="stat-flag"><span class="dot-indicator usd"></span> USD/VND</span>
                             </div>
-                            <div class="stat-row"><span class="stat-label">Hiện tại:</span> <strong id="usdHistoryCurrent">-- ₫</strong></div>
-                            <div class="stat-row"><span class="stat-label">Cao nhất (15 ngày):</span> <span id="usdHistoryMax" class="val-max">-- ₫</span></div>
-                            <div class="stat-row"><span class="stat-label">Thấp nhất (15 ngày):</span> <span id="usdHistoryMin" class="val-min">-- ₫</span></div>
+                            <div class="stat-current-val" id="usdHistoryCurrent">-- ₫</div>
+                            <div class="stat-minmax-row">
+                                <span class="stat-badge max" title="Cao nhất 15 ngày"><i class="icon-svg" data-lucide="arrow-up-right"></i> <span id="usdHistoryMax">-- ₫</span></span>
+                                <span class="stat-badge min" title="Thấp nhất 15 ngày"><i class="icon-svg" data-lucide="arrow-down-right"></i> <span id="usdHistoryMin">-- ₫</span></span>
+                            </div>
                         </div>
 
                         <div class="exchange-stat-card usdkrw-stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-flag"><span class="dot-indicator usdkrw"></span> USD / KRW</span>
+                                <span class="stat-flag"><span class="dot-indicator usdkrw"></span> USD/KRW</span>
                             </div>
-                            <div class="stat-row"><span class="stat-label">Hiện tại:</span> <strong id="usdKrwHistoryCurrent">-- ₩</strong></div>
-                            <div class="stat-row"><span class="stat-label">Cao nhất (15 ngày):</span> <span id="usdKrwHistoryMax" class="val-max">-- ₩</span></div>
-                            <div class="stat-row"><span class="stat-label">Thấp nhất (15 ngày):</span> <span id="usdKrwHistoryMin" class="val-min">-- ₩</span></div>
+                            <div class="stat-current-val" id="usdKrwHistoryCurrent">-- ₩</div>
+                            <div class="stat-minmax-row">
+                                <span class="stat-badge max" title="Cao nhất 15 ngày"><i class="icon-svg" data-lucide="arrow-up-right"></i> <span id="usdKrwHistoryMax">-- ₩</span></span>
+                                <span class="stat-badge min" title="Thấp nhất 15 ngày"><i class="icon-svg" data-lucide="arrow-down-right"></i> <span id="usdKrwHistoryMin">-- ₩</span></span>
+                            </div>
                         </div>
                     </div>
 
@@ -500,7 +506,7 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v49 (Goal Amount Field Fix)</strong></p>
+                                        <p>Phiên bản: <strong>v50 (3-Column Bento Exchange & Styled Dropdown)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới khi đẩy code lên Git.</p>
                                     </div>
                                     <div class="settings-option-control">
@@ -621,7 +627,7 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=49"></script>
+    <script src="app.js?v=50"></script>
 </body>
 
 </html>
