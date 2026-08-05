@@ -3317,9 +3317,9 @@ body {
 
 .goal-form {
     display: grid;
-    grid-template-columns: minmax(220px, 1.1fr) minmax(220px, 1fr) minmax(130px, 0.5fr) auto;
+    grid-template-columns: minmax(220px, 1.1fr) minmax(240px, 1.2fr) minmax(130px, 0.6fr) auto;
     gap: 10px;
-    align-items: end;
+    align-items: start;
     padding: 12px;
     margin-bottom: 12px;
     border-radius: 8px;
@@ -3354,6 +3354,7 @@ body {
 
 .goal-add-btn {
     height: 42px;
+    margin-top: 20px;
     padding: 0 16px;
     border-radius: 7px;
     background: var(--accent-money);
@@ -3521,6 +3522,7 @@ body {
 
     .goal-add-btn {
         width: 100%;
+        margin-top: 0;
     }
 
     .goal-item {
