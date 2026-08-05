@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function() {
-            const CURRENT_VER = 'v47';
+            const CURRENT_VER = 'v48';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=47">
+    <link rel="stylesheet" href="style.css?v=48">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -281,28 +281,30 @@
                     </div>
                     <div id="savingsGoalContent">
                         <div class="goal-form" id="goalForm">
-                            <label class="goal-field">
+                            <div class="goal-field">
                                 <span>Tên mục tiêu</span>
                                 <input type="text" id="goalName" placeholder="VD: Mua laptop" class="goal-input">
-                            </label>
-                            <label class="goal-field goal-amount-wrapper">
+                            </div>
+                            <div class="goal-field goal-amount-wrapper">
                                 <span>Số tiền</span>
-                                <div style="display: flex; gap: 6px; align-items: center; width: 100%;">
-                                    <select id="goalCurrency" class="goal-input" style="width: 85px; flex-shrink: 0; padding: 0 6px; font-weight: 700;" onchange="previewGoalVND()">
+                                <div class="goal-amount-box">
+                                    <select id="goalCurrency" class="goal-currency-select" onchange="previewGoalVND()">
                                         <option value="KRW">₩ KRW</option>
                                         <option value="VND">₫ VND</option>
                                     </select>
-                                    <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền" class="goal-input" style="flex: 1;"
+                                    <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền" class="goal-input goal-amount-input"
                                         oninput="formatInputLive(this); previewGoalVND()">
                                 </div>
                                 <span class="goal-vnd-preview" id="goalVndPreview"></span>
-                            </label>
-                            <label class="goal-field goal-month-field">
+                            </div>
+                            <div class="goal-field goal-month-field">
                                 <span>Thời hạn (tùy chọn)</span>
                                 <input type="number" id="goalMonths" placeholder="Số tháng (tùy chọn)" class="goal-input" min="1"
                                     max="120">
-                            </label>
-                            <button onclick="addSavingsGoal()" class="goal-add-btn"><i class="icon-svg" data-lucide="plus"></i> <span>Thêm</span></button>
+                            </div>
+                            <div class="goal-field goal-btn-field">
+                                <button onclick="addSavingsGoal()" class="goal-add-btn"><i class="icon-svg" data-lucide="plus"></i> <span>Thêm</span></button>
+                            </div>
                         </div>
                         <div id="goalsList"></div>
                     </div>
@@ -498,7 +500,7 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v47 (Form Alignment Fix)</strong></p>
+                                        <p>Phiên bản: <strong>v48 (Goal Form Layout Fix)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới khi đẩy code lên Git.</p>
                                     </div>
                                     <div class="settings-option-control">
@@ -619,7 +621,7 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=47"></script>
+    <script src="app.js?v=48"></script>
 </body>
 
 </html>

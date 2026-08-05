@@ -3317,12 +3317,12 @@ body {
 
 .goal-form {
     display: grid;
-    grid-template-columns: minmax(220px, 1.1fr) minmax(240px, 1.2fr) minmax(130px, 0.6fr) auto;
-    gap: 10px;
+    grid-template-columns: minmax(180px, 1.1fr) minmax(240px, 1.3fr) minmax(130px, 0.7fr) auto;
+    gap: 12px;
     align-items: start;
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+    border-radius: 10px;
     background: rgba(8, 9, 13, 0.42);
     border: 1px solid rgba(255, 255, 255, 0.055);
 }
@@ -3339,6 +3339,9 @@ body {
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
+    height: 16px;
+    display: flex;
+    align-items: center;
 }
 
 .goal-amount-wrapper {
@@ -3346,16 +3349,58 @@ body {
     gap: 6px;
 }
 
+.goal-amount-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+
+.goal-currency-select {
+    width: 86px !important;
+    min-width: 86px !important;
+    flex-shrink: 0 !important;
+    height: 42px !important;
+    padding: 0 6px !important;
+    font-weight: 700 !important;
+    font-size: 0.82rem !important;
+    border-radius: var(--radius-xs);
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+}
+
+.goal-currency-select:focus {
+    border-color: var(--accent-primary);
+}
+
+.goal-amount-input {
+    flex: 1 !important;
+    min-width: 0 !important;
+    height: 42px !important;
+}
+
 .goal-vnd-preview {
     min-height: 15px;
     font-size: 0.7rem;
-    color: var(--accent-money);
+    font-weight: 600;
+    color: var(--accent-teal);
+    margin-top: 2px;
+}
+
+.goal-btn-field {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .goal-add-btn {
     height: 42px;
-    margin-top: 20px;
-    padding: 0 16px;
+    margin-top: 22px;
+    padding: 0 18px;
     border-radius: 7px;
     background: var(--accent-money);
     color: #04110f;
@@ -3364,6 +3409,7 @@ body {
     justify-content: center;
     gap: 8px;
     font-size: 0.86rem;
+    font-weight: 700;
 }
 
 .goal-add-btn:hover {
@@ -3516,13 +3562,14 @@ body {
     }
 
     .goal-form {
-        grid-template-columns: 1fr;
-        padding: 10px;
+        grid-template-columns: 1fr !important;
+        padding: 10px !important;
+        gap: 10px !important;
     }
 
     .goal-add-btn {
-        width: 100%;
-        margin-top: 0;
+        width: 100% !important;
+        margin-top: 4px !important;
     }
 
     .goal-item {
