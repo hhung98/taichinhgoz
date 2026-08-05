@@ -950,7 +950,7 @@ function renderBudgetHealth() {
     }
     const sr = income > 0 ? (income - expense) / income : 0;
     const now = new Date(), ck = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const cb = monthlyBudget[ck] || {}, cl = Math.round(Number(cb.income || 0) * 0.40), ce = Number(cb.expense || 0);
+    const cb = monthlyBudget[ck] || {}, cl = Math.round(Number(cb.income || 0) * ((budgetRatios.livingPct || 40) / 100)), ce = Number(cb.expense || 0);
     const ba = cl > 0 ? Math.max(0, 1 - (ce / cl - 1)) : 1;
     let score = Math.max(0, Math.min(100, Math.round(sr * 60 + ba * 40)));
     let grade, label, icon, color;
@@ -971,21 +971,51 @@ function renderBudgetHealth() {
 
 // ===== Savings Goals =====
 function previewGoalVND() {
-    const raw = parseRawValue(document.getElementById('goalAmount').value);
-    const krw = raw || 0;
+    const currency = document.getElementById('goalCurrency')?.value || 'KRW';
+    const raw = parseRawValue(document.getElementById('goalAmount')?.value);
+    const amount = raw || 0;
     const r = exchangeRate || 18.5;
-    document.getElementById('goalVndPreview').textContent = krw ? `≈ ${fmtFull(Math.round(krw * r))} ₫` : '';
+    const previewEl = document.getElementById('goalVndPreview');
+    if (!previewEl) return;
+
+    if (!amount) {
+        previewEl.textContent = '';
+        return;
+    }
+
+    if (currency === 'KRW') {
+        previewEl.textContent = `≈ ${fmtFull(Math.round(amount * r))} ₫`;
+    } else {
+        previewEl.textContent = `≈ ${fmtFull(Math.round(amount / r))} ₩`;
+    }
 }
 
 async function addSavingsGoal() {
     const name = document.getElementById('goalName').value.trim();
-    const amountKRW = parseRawValue(document.getElementById('goalAmount').value);
-    const months = parseInt(document.getElementById('goalMonths').value);
-    if (!name || !amountKRW || !months) { showToast('Điền đầy đủ mục tiêu!', 'error'); return; }
+    const currency = document.getElementById('goalCurrency')?.value || 'KRW';
+    const rawAmount = parseRawValue(document.getElementById('goalAmount').value);
+    const monthsInput = document.getElementById('goalMonths').value.trim();
+    const months = monthsInput ? parseInt(monthsInput, 10) : null;
+
+    if (!name || !rawAmount) {
+        showToast('Vui lòng nhập tên và số tiền mục tiêu!', 'error');
+        return;
+    }
+
+    const r = exchangeRate || 18.5;
+    let amountKRW, amountVND;
+    if (currency === 'VND') {
+        amountVND = rawAmount;
+        amountKRW = Math.round(rawAmount / r);
+    } else {
+        amountKRW = rawAmount;
+        amountVND = Math.round(rawAmount * r);
+    }
 
     try {
         const goal = await saveGoal(name, amountKRW, months);
-        goal.amountVND = Math.round(amountKRW * (exchangeRate || 18.5));
+        goal.currency = currency;
+        goal.amountVND = amountVND;
         savingsGoals.push(goal);
         document.getElementById('goalName').value = '';
         document.getElementById('goalAmount').value = '';
@@ -993,7 +1023,7 @@ async function addSavingsGoal() {
         const preview = document.getElementById('goalVndPreview');
         if (preview) preview.textContent = '';
         renderSavingsGoals();
-        showToast(`Mục tiêu "${name}" đã thêm!`, 'success');
+        showToast(`Mục tiêu "${name}" đã được thêm!`, 'success');
     } catch (err) {
         showToast('Lỗi lưu mục tiêu: ' + err.message, 'error');
     }
@@ -1015,20 +1045,33 @@ function renderSavingsGoals() {
     if (!container) return;
     if (!savingsGoals.length) { container.innerHTML = ''; return; }
     const { balanceKRW } = getAllTimeTotals();
-    const balance = Math.round(balanceKRW * (exchangeRate || 18.5));
     const r = exchangeRate || 18.5;
+    const balanceVND = Math.round(balanceKRW * r);
 
     container.innerHTML = savingsGoals.map(g => {
         const targetVND = g.amountVND || Math.round(g.amountKRW * r);
-        const pct = Math.min(100, Math.max(0, Math.round((balance / targetVND) * 100)));
-        const monthlyNeeded = Math.round(g.amountKRW / g.months);
+        const targetKRW = g.amountKRW || Math.round(targetVND / r);
+        const pct = Math.min(100, Math.max(0, Math.round((balanceVND / targetVND) * 100)));
+
+        const amountDisplay = g.currency === 'VND'
+            ? `${fmtVND(targetVND)} (≈ ${fmtKRW(targetKRW)})`
+            : `${fmtKRW(targetKRW)} (≈ ${fmtVND(targetVND)})`;
+
+        const durationHtml = g.months && g.months > 0
+            ? `<span class="goal-meta">${iconMarkup('calendar-clock')} ${g.months} tháng</span>`
+            : `<span class="goal-meta">${iconMarkup('calendar-clock')} Tự do</span>`;
+
+        const monthlyHtml = g.months && g.months > 0
+            ? `<span class="goal-meta">${iconMarkup('circle-dollar-sign')} ${g.currency === 'VND' ? fmtVND(Math.round(targetVND / g.months)) : fmtKRW(Math.round(targetKRW / g.months))}/tháng</span>`
+            : '';
+
         return `<div class="goal-item">
             <div class="goal-info">
                 <div class="goal-name">${iconMarkup('target')} ${escapeHtml(g.name)}</div>
                 <div class="goal-details">
-                    <span class="goal-meta">${iconMarkup('banknote')} ${fmtKRW(g.amountKRW)} (${fmtVND(targetVND)})</span>
-                    <span class="goal-meta">${iconMarkup('calendar-clock')} ${g.months} tháng</span>
-                    <span class="goal-meta">${iconMarkup('circle-dollar-sign')} ${fmtKRW(monthlyNeeded)}/tháng</span>
+                    <span class="goal-meta">${iconMarkup('banknote')} ${amountDisplay}</span>
+                    ${durationHtml}
+                    ${monthlyHtml}
                 </div>
                 <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%;${pct >= 100 ? 'background:linear-gradient(90deg,#2dd4bf,#5eead4);' : ''}"></div></div>
             </div>
@@ -1851,7 +1894,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=45').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=46').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now

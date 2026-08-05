@@ -99,7 +99,7 @@ async function loadGoals() {
         id: g.id,
         name: g.name,
         amountKRW: Number(g.amount_krw),
-        months: g.months_duration,
+        months: g.months_duration ? Number(g.months_duration) : null,
         createdAt: g.created_at
     }));
 }
@@ -111,7 +111,7 @@ async function saveGoal(name, amountKRW, months) {
             user_id: currentUser.id,
             name,
             amount_krw: amountKRW,
-            months_duration: months
+            months_duration: months || null
         })
         .select()
         .single();
@@ -120,7 +120,7 @@ async function saveGoal(name, amountKRW, months) {
         id: data.id,
         name: data.name,
         amountKRW: Number(data.amount_krw),
-        months: data.months_duration,
+        months: data.months_duration ? Number(data.months_duration) : null,
         createdAt: data.created_at
     };
 }

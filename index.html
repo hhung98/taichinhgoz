@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function() {
-            const CURRENT_VER = 'v45';
+            const CURRENT_VER = 'v46';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=45">
+    <link rel="stylesheet" href="style.css?v=46">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -287,13 +287,19 @@
                             </label>
                             <label class="goal-field goal-amount-wrapper">
                                 <span>Số tiền</span>
-                                <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền (₩ KRW)" class="goal-input"
-                                    oninput="formatInputLive(this); previewGoalVND()">
+                                <div style="display: flex; gap: 6px; align-items: center; width: 100%;">
+                                    <select id="goalCurrency" class="goal-input" style="width: 85px; flex-shrink: 0; padding: 0 6px; font-weight: 700;" onchange="previewGoalVND()">
+                                        <option value="KRW">₩ KRW</option>
+                                        <option value="VND">₫ VND</option>
+                                    </select>
+                                    <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền" class="goal-input" style="flex: 1;"
+                                        oninput="formatInputLive(this); previewGoalVND()">
+                                </div>
                                 <span class="goal-vnd-preview" id="goalVndPreview"></span>
                             </label>
                             <label class="goal-field goal-month-field">
-                                <span>Thời hạn</span>
-                                <input type="number" id="goalMonths" placeholder="Số tháng" class="goal-input" min="1"
+                                <span>Thời hạn (tùy chọn)</span>
+                                <input type="number" id="goalMonths" placeholder="Số tháng (tùy chọn)" class="goal-input" min="1"
                                     max="120">
                             </label>
                             <button onclick="addSavingsGoal()" class="goal-add-btn"><i class="icon-svg" data-lucide="plus"></i> <span>Thêm</span></button>
@@ -492,7 +498,7 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v45 (Waterfall Cascade)</strong></p>
+                                        <p>Phiên bản: <strong>v46 (Mobile UI & Goals Upgrade)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới khi đẩy code lên Git.</p>
                                     </div>
                                     <div class="settings-option-control">
@@ -613,7 +619,7 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=45"></script>
+    <script src="app.js?v=46"></script>
 </body>
 
 </html>

@@ -3680,12 +3680,46 @@ body {
         gap: 10px;
     }
 
+    .exchange-rates {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        width: 100%;
+    }
+
     .exchange-bar-rate {
-        padding: 11px;
+        padding: 10px 8px !important;
+        min-width: 0 !important;
+        overflow: hidden;
+    }
+
+    .exchange-bar-flag {
+        font-size: 0.68rem !important;
+        gap: 4px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .exchange-bar-value {
-        font-size: 1.16rem;
+        font-size: clamp(1.05rem, 4vw, 1.22rem) !important;
+        margin-top: 4px !important;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .exchange-bar-sub {
+        font-size: 0.66rem !important;
+        margin-top: 3px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .exchange-status {
+        margin-top: 4px !important;
+        font-size: 0.64rem !important;
+        white-space: nowrap;
     }
 
     .converter-card {
