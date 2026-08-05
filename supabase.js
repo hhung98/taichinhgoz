@@ -99,19 +99,20 @@ async function loadGoals() {
         id: g.id,
         name: g.name,
         amountKRW: Number(g.amount_krw),
-        months: g.months_duration ? Number(g.months_duration) : null,
+        months: g.months_duration ? Number(g.months_duration) : 0,
         createdAt: g.created_at
     }));
 }
 
 async function saveGoal(name, amountKRW, months) {
+    const monthsVal = (months && Number(months) > 0) ? Number(months) : 0;
     const { data, error } = await supabaseClient
         .from('savings_goals')
         .insert({
             user_id: currentUser.id,
             name,
             amount_krw: amountKRW,
-            months_duration: months || null
+            months_duration: monthsVal
         })
         .select()
         .single();
@@ -120,7 +121,7 @@ async function saveGoal(name, amountKRW, months) {
         id: data.id,
         name: data.name,
         amountKRW: Number(data.amount_krw),
-        months: data.months_duration ? Number(data.months_duration) : null,
+        months: data.months_duration ? Number(data.months_duration) : 0,
         createdAt: data.created_at
     };
 }

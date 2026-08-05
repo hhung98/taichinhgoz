@@ -995,7 +995,7 @@ async function addSavingsGoal() {
     const currency = document.getElementById('goalCurrency')?.value || 'KRW';
     const rawAmount = parseRawValue(document.getElementById('goalAmount').value);
     const monthsInput = document.getElementById('goalMonths').value.trim();
-    const months = monthsInput ? parseInt(monthsInput, 10) : null;
+    const months = monthsInput ? parseInt(monthsInput, 10) : 0;
 
     if (!name || !rawAmount) {
         showToast('Vui lòng nhập tên và số tiền mục tiêu!', 'error');
@@ -1894,7 +1894,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=50').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=51').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
