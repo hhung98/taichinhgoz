@@ -3498,8 +3498,24 @@ body {
     background: linear-gradient(90deg, #2dd4bf, #5eead4);
 }
 
-.goal-pct {
+.goal-pct-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.goal-pct-val {
     color: var(--accent-money);
+    font-variant-numeric: tabular-nums;
+}
+
+.goal-remaining-sub {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    opacity: 0.9;
     font-variant-numeric: tabular-nums;
 }
 

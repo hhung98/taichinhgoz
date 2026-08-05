@@ -1065,6 +1065,18 @@ function renderSavingsGoals() {
             ? `<span class="goal-meta">${iconMarkup('circle-dollar-sign')} ${g.currency === 'VND' ? fmtVND(Math.round(targetVND / g.months)) : fmtKRW(Math.round(targetKRW / g.months))}/tháng</span>`
             : '';
 
+        const remainingVND = Math.max(0, targetVND - balanceVND);
+        const remainingKRW = Math.max(0, targetKRW - balanceKRW);
+
+        let remainingText = '';
+        if (pct >= 100 || (remainingVND <= 0 && remainingKRW <= 0)) {
+            remainingText = '(🎉 Hoàn thành)';
+        } else if (g.currency === 'VND') {
+            remainingText = `(${fmtVND(remainingVND)} ≈ ${fmtKRW(remainingKRW)})`;
+        } else {
+            remainingText = `(${fmtKRW(remainingKRW)} ≈ ${fmtVND(remainingVND)})`;
+        }
+
         return `<div class="goal-item">
             <div class="goal-info">
                 <div class="goal-name">${iconMarkup('target')} ${escapeHtml(g.name)}</div>
@@ -1075,7 +1087,10 @@ function renderSavingsGoals() {
                 </div>
                 <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%;${pct >= 100 ? 'background:linear-gradient(90deg,#2dd4bf,#5eead4);' : ''}"></div></div>
             </div>
-            <div class="goal-pct">${pct}%</div>
+            <div class="goal-pct-box">
+                <span class="goal-pct-val">${pct}%</span>
+                <span class="goal-remaining-sub">${remainingText}</span>
+            </div>
             <button class="goal-delete" onclick="deleteSavingsGoal('${g.id}')" title="Xóa">${iconMarkup('trash-2')}</button>
         </div>`;
     }).join('');
@@ -1894,7 +1909,7 @@ function registerSW() {
         }, 1000);
     });
 
-    navigator.serviceWorker.register('sw.js?v=53').then(reg => {
+    navigator.serviceWorker.register('sw.js?v=54').then(reg => {
         swRegistration = reg;
 
         // Check if an update is waiting right now
