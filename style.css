@@ -719,7 +719,7 @@ body.dark .header-tab-btn.active {
     gap: 4px;
 }
 
-.goal-amount-wrapper .goal-input {
+.goal-amount-wrapper .goal-amount-input {
     width: 100%;
 }
 
@@ -3350,17 +3350,17 @@ body {
 }
 
 .goal-amount-box {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    min-width: 0;
+    display: grid !important;
+    grid-template-columns: 88px 1fr !important;
+    gap: 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .goal-currency-select {
-    width: 86px !important;
-    min-width: 86px !important;
-    flex-shrink: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
     height: 42px !important;
     padding: 0 6px !important;
     font-weight: 700 !important;
@@ -3371,6 +3371,7 @@ body {
     color: var(--text-primary);
     cursor: pointer;
     outline: none;
+    box-sizing: border-box !important;
 }
 
 .goal-currency-select:focus {
@@ -3378,9 +3379,10 @@ body {
 }
 
 .goal-amount-input {
-    flex: 1 !important;
+    width: 100% !important;
     min-width: 0 !important;
     height: 42px !important;
+    box-sizing: border-box !important;
 }
 
 .goal-vnd-preview {
