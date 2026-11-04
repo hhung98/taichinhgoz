@@ -1970,7 +1970,20 @@ function renderBudgetOverviewChart() {
                 const isKeyPoint = i === latestIndex || (cfg.key === 'income' && i === peakIndex);
                 dotsSvg += `<circle cx="${point.x}" cy="${point.y}" r="${isKeyPoint ? 4.6 : 3.5}" class="budget-flow-dot budget-flow-dot-${cfg.cls}"/>`;
                 if (vals[i] !== 0) {
-                    const labelY = cfg.key === 'balance' ? point.y + 16 : (cfg.key === 'expense' ? point.y - 8 : point.y - 12);
+                    let labelY;
+                    if (cfg.key === 'balance') {
+                        labelY = vals[i] >= 0 ? point.y + 16 : point.y - 10;
+                    } else if (cfg.key === 'expense') {
+                        const incVal = series.income[i] || 0;
+                        const expVal = vals[i];
+                        if (incVal > 0 && Math.abs(incVal - expVal) < range * 0.12) {
+                            labelY = point.y + 14;
+                        } else {
+                            labelY = point.y - 10;
+                        }
+                    } else {
+                        labelY = point.y - 12;
+                    }
                     labelsSvg += `<text x="${Math.min(W - 34, Math.max(34, point.x))}" y="${Math.max(14, Math.min(H - 14, labelY))}" text-anchor="middle" class="budget-flow-value budget-flow-value-${cfg.cls}">${fmtCompact(vals[i])}</text>`;
                 }
             }
@@ -1992,11 +2005,6 @@ function renderBudgetOverviewChart() {
     }
 
     container.innerHTML = `<div class="budget-flow-chart">
-        <div class="budget-flow-legend">
-            <span class="income">Thu nhập</span>
-            <span class="expense">Chi tiêu</span>
-            <span class="balance">Còn lại</span>
-        </div>
         <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" class="line-chart-svg budget-flow-svg" role="img" aria-label="Biểu đồ thu nhập, chi tiêu và còn lại theo tháng">
             ${defsSvg}
             ${gridSvg}
@@ -2141,14 +2149,8 @@ function drawPie(containerId, data) {
 }
 
 function getAllocationLegendHTML(data) {
-    const total = data.reduce((sum, item) => sum + item.value, 0);
-    return data.map(item => {
-        const percent = total > 0 ? Math.round((item.value / total) * 100) : 0;
-        return `<div class="pie-legend-item allocation-legend-item">
-            <span class="legend-dot" style="background:${item.color}"></span>
-            ${item.label}: <strong>${percent}%</strong>
-        </div>`;
-    }).join('');
+    // Redundant text removed - percentage and details are already clearly shown in bar headings
+    return '';
 }
 
 function drawAllocationBars(containerId, data) {
@@ -2161,8 +2163,16 @@ function drawAllocationBars(containerId, data) {
         return;
     }
 
+    const cur = window.displayCurrency || 'KRW';
     const rows = data.map(item => {
         const percent = Math.round((item.value / total) * 100);
+        const convertedVal = (typeof window.convertCurrency === 'function')
+            ? window.convertCurrency(item.value, 'KRW', cur)
+            : item.value;
+        const displayVal = (typeof window.fmtDisplayCur === 'function')
+            ? window.fmtDisplayCur(convertedVal, cur)
+            : `${fmtFull(Math.round(convertedVal))} ${cur}`;
+
         return `<div class="allocation-bar-row">
             <div class="allocation-bar-heading">
                 <span><i style="background:${item.color}"></i>${item.label}</span>
@@ -2171,7 +2181,7 @@ function drawAllocationBars(containerId, data) {
             <div class="allocation-bar-track">
                 <div class="allocation-bar-fill" style="--bar-width:${percent}%; --bar-color:${item.color}"></div>
             </div>
-            <div class="allocation-bar-value">${fmtFull(item.value)} KRW</div>
+            <div class="allocation-bar-value">${displayVal}</div>
         </div>`;
     }).join('');
 
@@ -2198,12 +2208,16 @@ renderPieCharts = function () {
         allExpense += Number(data.expense || 0);
     });
 
+    // Dynamic ratios based on user-configured 50-30-20 or custom ratios
+    const restPct = (budgetRatios.reservePct + budgetRatios.investPct) || 50;
+    const resRatio = restPct > 0 ? (budgetRatios.reservePct / restPct) : 0.6;
+
     const yearlyBalance = Math.max(0, yearlyIncome - yearlyExpense);
-    const yearlyReserve = Math.round(yearlyBalance * (2 / 3));
-    const yearlyInvest = yearlyBalance - yearlyReserve;
+    const yearlyReserve = Math.round(yearlyBalance * resRatio);
+    const yearlyInvest = Math.max(0, yearlyBalance - yearlyReserve);
     const allBalance = Math.max(0, allIncome - allExpense);
-    const allReserve = Math.round(allBalance * (2 / 3));
-    const allInvest = allBalance - allReserve;
+    const allReserve = Math.round(allBalance * resRatio);
+    const allInvest = Math.max(0, allBalance - allReserve);
 
     const yearlyData = [
         { label: 'Chi tiêu', value: yearlyExpense, color: '#fb7185' },
@@ -2221,8 +2235,8 @@ renderPieCharts = function () {
 
     const yearlyLegend = document.getElementById('pieLegendYearly');
     const allTimeLegend = document.getElementById('pieLegendAllTime');
-    if (yearlyLegend) yearlyLegend.innerHTML = getAllocationLegendHTML(yearlyData);
-    if (allTimeLegend) allTimeLegend.innerHTML = getAllocationLegendHTML(allTimeData);
+    if (yearlyLegend) yearlyLegend.innerHTML = '';
+    if (allTimeLegend) allTimeLegend.innerHTML = '';
 };
 
 // ===== Export CSV =====

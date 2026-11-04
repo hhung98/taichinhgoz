@@ -160,3 +160,4 @@
     window.CountUp = CountUp;
     window.countUp = CountUp;
 })(window);
+

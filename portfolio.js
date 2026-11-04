@@ -20,6 +20,7 @@ const DEFAULT_PORTFOLIO_ASSETS = [
 let portfolioAssets = [];
 let currentAssetFilter = 'all'; // 'all', 'crypto', 'stock_vn', 'cash'
 let displayCurrency = localStorage.getItem('goz_display_currency') || 'KRW';
+window.displayCurrency = displayCurrency;
 let isPrivacyMode = localStorage.getItem('goz_privacy_mode') === 'true';
 let chartViewMode = 'combo'; // 'combo', 'bar', 'line'
 
@@ -52,6 +53,7 @@ function fmtDisplayCur(val, cur = displayCurrency) {
 // Currency Selector
 window.setDisplayCurrency = function (cur) {
     displayCurrency = cur;
+    window.displayCurrency = cur;
     localStorage.setItem('goz_display_currency', cur);
     ['curBtnVND', 'curBtnKRW', 'curBtnUSD'].forEach(id => {
         const el = document.getElementById(id);
@@ -69,6 +71,7 @@ window.setDisplayCurrency = function (cur) {
     if (typeof window.invalidateTabCache === "function") window.invalidateTabCache();
     renderPortfolio();
     updateOverviewCards();
+    if (typeof window.renderPieCharts === 'function') window.renderPieCharts();
     if (typeof window.showToast === 'function') window.showToast('Đã đổi đơn vị hiển thị: ' + cur, 'info');
 };
 
@@ -267,6 +270,7 @@ async function loadPortfolioData() {
     // Set initial currency toggle button active
     const savedCur = localStorage.getItem('goz_display_currency') || 'KRW';
     displayCurrency = savedCur;
+    window.displayCurrency = savedCur;
     ['curBtnVND', 'curBtnKRW', 'curBtnUSD'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
