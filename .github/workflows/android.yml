@@ -32,12 +32,13 @@ jobs:
       - name: Build APK (Automatic)
         run: |
           # 1. Chấp nhận tất cả các điều khoản Android SDK
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           
-          # 2. Chạy Build với mật khẩu từ GitHub Secrets
-          # --password: Mật khẩu keystore
-          # --keypassword: Mật khẩu key
-          bubblewrap build --password "${{ secrets.KEYSTORE_PASSWORD }}" --keypassword "${{ secrets.KEY_PASSWORD }}"
+          # 2. Cấu hình tự động đường dẫn JDK & Android SDK để Bubblewrap chạy non-interactive (không dừng hỏi Y/n)
+          bubblewrap updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="$ANDROID_HOME"
+          
+          # 3. Chạy Build APK với mật khẩu từ GitHub Secrets
+          bubblewrap build --skipConfig --password "${{ secrets.KEYSTORE_PASSWORD }}" --keypassword "${{ secrets.KEY_PASSWORD }}"
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
