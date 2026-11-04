@@ -8021,11 +8021,16 @@ select.goal-currency-select option {
     font-size: 0.82rem;
     font-weight: 700;
     color: var(--text-secondary);
-    min-width: 130px;
+    min-width: 95px;
+    max-width: 130px;
+    flex-shrink: 0;
 }
 
 .asset-text-field {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
     padding: 8px 12px;
     border-radius: 8px;
     border: 1px solid var(--border);
@@ -8046,7 +8051,16 @@ select.goal-currency-select option {
     display: flex;
     align-items: center;
     gap: 6px;
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input-with-action .asset-text-field {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
 }
 
 .btn-fetch-price {
@@ -8601,14 +8615,41 @@ select.goal-currency-select option {
     }
 
     .portfolio-hero-header {
+        display: flex !important;
         flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 8px !important;
+        align-items: stretch !important;
+        gap: 10px !important;
     }
 
-    .portfolio-hero-header > div {
+    .portfolio-hero-kicker-group {
         width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
         justify-content: space-between !important;
+    }
+
+    .portfolio-hero-header .currency-toggle-group {
+        width: 100% !important;
+        display: flex !important;
+        gap: 4px !important;
+        padding: 3px !important;
+        height: 36px !important;
+        box-sizing: border-box !important;
+        border-radius: 10px !important;
+    }
+
+    .portfolio-hero-header .currency-toggle-group .cur-btn {
+        flex: 1 1 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 0 !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        border-radius: 7px !important;
     }
 
     .portfolio-hero-amount {
@@ -8693,13 +8734,79 @@ select.goal-currency-select option {
         font-size: 0.95rem !important;
     }
 
-    /* Global Modal Responsiveness */
+    /* Global Modal Responsiveness & Input Overflow Prevention */
+    .ratio-modal-card,
+    .asset-modal-card,
     .asset-modal,
     .goz-confirm-modal {
-        max-width: calc(100vw - 28px) !important;
-        margin: 14px auto !important;
-        padding: 16px !important;
-        border-radius: 16px !important;
+        width: min(440px, calc(100vw - 24px)) !important;
+        max-width: calc(100vw - 24px) !important;
+        margin: 12px auto !important;
+        padding: 16px 14px !important;
+        border-radius: 18px !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    .ratio-modal-body {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+    }
+
+    .ratio-item-row {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        padding: 8px 10px !important;
+    }
+
+    .asset-field-label {
+        min-width: 80px !important;
+        max-width: 110px !important;
+        flex-shrink: 0 !important;
+        font-size: 0.78rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .asset-text-field {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 7px 10px !important;
+        font-size: 0.85rem !important;
+    }
+
+    .input-with-action {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    .input-with-action .asset-text-field {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .btn-fetch-price {
+        flex-shrink: 0 !important;
+        width: 32px !important;
+        height: 32px !important;
     }
 }
 

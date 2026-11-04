@@ -2393,25 +2393,33 @@ function animateTabWaterfall(pane) {
     if (!pane) return;
     if (typeof gsap === 'undefined') return;
 
-    // 1. Look for explicit waterfall items or sections/cards (Jinil-landing-page pattern)
-    let targets = Array.from(
-        pane.querySelectorAll('.waterfall-item, section, .card-item, .panel, .overview-header-bar, .exchange-tri-grid, .overview-stats-grid, .overview-charts-grid, [data-waterfall]')
-    );
+    // 1. Look for explicit waterfall items first (highest priority, Jinil B2B Portal pattern)
+    let targets = Array.from(pane.querySelectorAll('.waterfall-item, [data-waterfall]'));
 
-    // 2. If no explicit targets found, inspect direct children
+    // 2. If no explicit targets found, smart-select discrete functional components instead of large outer wrappers
     if (targets.length === 0) {
-        const directChildren = Array.from(pane.children);
-        const firstChild = directChildren[0];
-        if (firstChild && firstChild.children && firstChild.children.length > 0) {
-            targets = Array.from(firstChild.children);
+        if (pane.id === 'tab-budget') {
+            targets = Array.from(pane.querySelectorAll('.panel-header, .budget-dash-item, .budget-table-container, .table-legend'));
+        } else if (pane.id === 'tab-overview') {
+            targets = Array.from(pane.querySelectorAll('.overview-header-bar, .exchange-tri-grid, .overview-stats-grid, .overview-charts-grid'));
+        } else if (pane.id === 'tab-assets') {
+            targets = Array.from(pane.querySelectorAll('.portfolio-hero-card, .asset-section-card'));
         } else {
-            targets = directChildren;
+            // General fallback: inspect children of section wrapper so we never animate a giant slab
+            const wrapper = pane.querySelector('section, .panel');
+            if (wrapper && wrapper.children && wrapper.children.length > 0) {
+                targets = Array.from(wrapper.children);
+            } else {
+                targets = Array.from(pane.children);
+            }
         }
     }
 
-    // Limit to 8 targets max for silky 60 FPS performance (from Jinil B2B Portal)
+    // Limit to 8 targets max for silky 60-120 FPS performance (from Jinil B2B Portal)
     targets = targets.filter(el => {
         if (!el) return false;
+        // Never animate outer container sections as a single mass
+        if (el.classList.contains('budget-section') || el.classList.contains('panel-header-actions')) return false;
         const disp = window.getComputedStyle(el).display;
         return disp !== 'none' && !el.classList.contains('pin-overlay') && !el.classList.contains('auth-overlay');
     }).slice(0, 8);
@@ -2421,18 +2429,18 @@ function animateTabWaterfall(pane) {
     // Kill any in-flight tweens on targets to prevent frame drops on rapid tab switching
     gsap.killTweensOf(targets);
 
-    // Hardware-accelerated fromTo cascade
+    // Hardware-accelerated fromTo cascade with silky Jinil B2B physics (subtle 10px lift, 240ms duration, 25ms stagger)
     gsap.fromTo(
         targets,
         {
-            y: 16,
+            y: 10,
             autoAlpha: 0,
         },
         {
             y: 0,
             autoAlpha: 1,
-            duration: 0.28,
-            stagger: 0.03,
+            duration: 0.24,
+            stagger: 0.025,
             ease: 'power2.out',
             force3D: true,
             clearProps: 'transform,opacity,visibility',

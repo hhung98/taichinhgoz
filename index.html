@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function () {
-            const CURRENT_VER = 'v76';
+            const CURRENT_VER = 'v77';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=76">
+    <link rel="stylesheet" href="style.css?v=77">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -624,7 +624,7 @@
             <!-- TAB 3: NGÂN SÁCH 12 THÁNG -->
             <div id="tab-budget" class="tab-pane animate-tab-content">
                 <section class="budget-section panel" id="budgetSection" aria-label="Bảng ngân sách 12 tháng">
-                    <div class="panel-header">
+                    <div class="panel-header waterfall-item">
                         <h2 class="panel-title"><i class="icon-svg" data-lucide="calendar-range"></i> Ngân Sách 12 Tháng
                         </h2>
                         <div class="panel-header-actions" style="display: flex; gap: 10px; align-items: center;">
@@ -640,28 +640,28 @@
 
                     <!-- KRW Dashboard Summary above table -->
                     <div class="budget-dashboard" id="budgetDashboard">
-                        <div class="budget-dash-item income-dash">
+                        <div class="budget-dash-item income-dash waterfall-item">
                             <span class="dash-label"><i class="icon-svg" data-lucide="trending-up"></i> Tổng Thu
                                 nhập</span>
                             <span class="dash-value" id="dashTotalIncome">0 ₩</span>
                         </div>
-                        <div class="budget-dash-item expense-dash">
+                        <div class="budget-dash-item expense-dash waterfall-item">
                             <span class="dash-label"><i class="icon-svg" data-lucide="trending-down"></i> Tổng Chi
                                 tiêu</span>
                             <span class="dash-value" id="dashTotalExpense">0 ₩</span>
                         </div>
-                        <div class="budget-dash-item balance-dash">
+                        <div class="budget-dash-item balance-dash waterfall-item">
                             <span class="dash-label"><i class="icon-svg" data-lucide="wallet-cards"></i> Còn lại</span>
                             <span class="dash-value" id="dashTotalBalance">0 ₩</span>
                         </div>
-                        <div class="budget-dash-item savings-dash">
+                        <div class="budget-dash-item savings-dash waterfall-item">
                             <span class="dash-label"><i class="icon-svg" data-lucide="target"></i> Tỉ lệ tiết
                                 kiệm</span>
                             <span class="dash-value" id="dashSavingsRate">0%</span>
                         </div>
                     </div>
 
-                    <div class="budget-table-container">
+                    <div class="budget-table-container waterfall-item">
                         <table class="monthly-table">
                             <thead>
                                 <tr>
@@ -688,7 +688,7 @@
                             <tfoot id="budgetTableFoot"></tfoot>
                         </table>
                     </div>
-                    <div class="table-legend">
+                    <div class="table-legend waterfall-item">
                         <div class="table-legend-item">
                             <div class="table-legend-dot" style="background:#74b9ff"></div> <span id="legendLiving">Sinh
                                 hoạt 40%</span>
@@ -1054,9 +1054,9 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js?v=70"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="gsap.min.js?v=76"></script>
-    <script src="app.js?v=70"></script>
-    <script src="portfolio.js?v=70"></script>
+    <script src="gsap.min.js?v=77"></script>
+    <script src="app.js?v=77"></script>
+    <script src="portfolio.js?v=77"></script>
 </body>
 
 </html>
