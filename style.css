@@ -4739,6 +4739,7 @@ html[data-theme="light"] body {
 
 .monthly-table tbody tr {
     border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    will-change: transform, opacity;
     transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

@@ -763,7 +763,7 @@ async function fetchExchangeRate() {
                 timestamp: now,
                 source: sourceName
             }));
-        } catch (e) {}
+        } catch (e) { }
         updateRateUI(widget, statusEl, usdWidget, usdSubtext, 'Realtime', false);
     } else {
         // Fallback to latest local cache with "Dữ liệu cũ"
@@ -771,7 +771,7 @@ async function fetchExchangeRate() {
         try {
             const raw = localStorage.getItem(EXCHANGE_CACHE_KEY);
             if (raw) cached = JSON.parse(raw);
-        } catch (e) {}
+        } catch (e) { }
 
         if (cached && cached.krw) {
             exchangeRate = cached.krw;
@@ -1564,7 +1564,7 @@ function renderMonthlyBudgetTable() {
         const expVal = exp ? fmtFullRaw(exp) : '';
         const expBadge = getExpensePctBadgeHtml(inc, exp);
 
-        rows += `<tr${isCurrent ? ' style="background:rgba(108,92,231,0.08);"' : ''}>
+        rows += `<tr class="budget-month-row${isCurrent ? ' current-month-row' : ''}"${isCurrent ? ' style="background:rgba(108,92,231,0.08);"' : ''}>
             <td>${MONTHS[m]}</td>
             <td><input class="income-input" type="text" inputmode="numeric" value="${incVal}" placeholder="₩" oninput="formatInputLive(this); onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-living">${inc ? fmtFull(living) : '-'}</td>
@@ -2393,14 +2393,57 @@ function animateTabWaterfall(pane) {
     if (!pane) return;
     if (typeof gsap === 'undefined') return;
 
+    // Special dedicated handling for Budget Tab: sequential row-by-row horizontal cascade
+    if (pane.id === 'tab-budget') {
+        const header = pane.querySelector('.panel-header');
+        const kpiCards = Array.from(pane.querySelectorAll('.budget-dash-item'));
+        const theadTr = pane.querySelector('.monthly-table thead tr');
+        const monthRows = Array.from(pane.querySelectorAll('#budgetTableBody tr'));
+        const tfootTr = pane.querySelector('#budgetTableFoot tr');
+        const legend = pane.querySelector('.table-legend');
+
+        const targets = [];
+        if (header) targets.push(header);
+        targets.push(...kpiCards);
+        if (theadTr) targets.push(theadTr);
+        targets.push(...monthRows);
+        if (tfootTr) targets.push(tfootTr);
+        if (legend) targets.push(legend);
+
+        const visibleTargets = targets.filter(el => {
+            if (!el) return false;
+            const disp = window.getComputedStyle(el).display;
+            return disp !== 'none';
+        });
+
+        if (visibleTargets.length === 0) return;
+
+        gsap.killTweensOf(visibleTargets);
+        gsap.fromTo(
+            visibleTargets,
+            {
+                y: 8,
+                autoAlpha: 0,
+            },
+            {
+                y: 0,
+                autoAlpha: 1,
+                duration: 0.22,
+                stagger: 0.018, // 18ms smooth wave cascade (header -> 4 KPIs -> thead -> 12 month rows -> footer -> legend)
+                ease: 'power2.out',
+                force3D: true,
+                clearProps: 'transform,opacity,visibility',
+            }
+        );
+        return;
+    }
+
     // 1. Look for explicit waterfall items first (highest priority, Jinil B2B Portal pattern)
     let targets = Array.from(pane.querySelectorAll('.waterfall-item, [data-waterfall]'));
 
     // 2. If no explicit targets found, smart-select discrete functional components instead of large outer wrappers
     if (targets.length === 0) {
-        if (pane.id === 'tab-budget') {
-            targets = Array.from(pane.querySelectorAll('.panel-header, .budget-dash-item, .budget-table-container, .table-legend'));
-        } else if (pane.id === 'tab-overview') {
+        if (pane.id === 'tab-overview') {
             targets = Array.from(pane.querySelectorAll('.overview-header-bar, .exchange-tri-grid, .overview-stats-grid, .overview-charts-grid'));
         } else if (pane.id === 'tab-assets') {
             targets = Array.from(pane.querySelectorAll('.portfolio-hero-card, .asset-section-card'));
@@ -2539,461 +2582,461 @@ window.renderBudgetOverviewChart = renderBudgetOverviewChart;
 // ===== EMBEDDED REAL MARKET HISTORICAL RATES (PAST 90 DAYS) =====
 // Verified actual historical closing exchange rates (ECB, Frankfurter & Interbank)
 const VERIFIED_EXCHANGE_HISTORY = {
-  "2026-08-06": [
-    17.88,
-    25453,
-    1424
-  ],
-  "2026-08-07": [
-    17.98,
-    25462,
-    1416
-  ],
-  "2026-08-08": [
-    17.99,
-    25473,
-    1416
-  ],
-  "2026-08-09": [
-    18,
-    25484,
-    1416
-  ],
-  "2026-08-10": [
-    18,
-    25496,
-    1417
-  ],
-  "2026-08-11": [
-    18.06,
-    25508,
-    1412
-  ],
-  "2026-08-12": [
-    18.01,
-    25519,
-    1417
-  ],
-  "2026-08-13": [
-    17.97,
-    25529,
-    1420
-  ],
-  "2026-08-14": [
-    18.1,
-    25537,
-    1411
-  ],
-  "2026-08-15": [
-    18.1,
-    25543,
-    1411
-  ],
-  "2026-08-16": [
-    18.1,
-    25547,
-    1411
-  ],
-  "2026-08-17": [
-    18.1,
-    25549,
-    1412
-  ],
-  "2026-08-18": [
-    18.12,
-    25549,
-    1410
-  ],
-  "2026-08-19": [
-    18.36,
-    25547,
-    1391
-  ],
-  "2026-08-20": [
-    18.29,
-    25543,
-    1396
-  ],
-  "2026-08-21": [
-    18.45,
-    25538,
-    1384
-  ],
-  "2026-08-22": [
-    18.45,
-    25533,
-    1384
-  ],
-  "2026-08-23": [
-    18.44,
-    25527,
-    1384
-  ],
-  "2026-08-24": [
-    18.44,
-    25522,
-    1384
-  ],
-  "2026-08-25": [
-    18.45,
-    25518,
-    1383
-  ],
-  "2026-08-26": [
-    18.44,
-    25516,
-    1383
-  ],
-  "2026-08-27": [
-    18.48,
-    25515,
-    1380
-  ],
-  "2026-08-28": [
-    18.56,
-    25516,
-    1375
-  ],
-  "2026-08-29": [
-    18.57,
-    25519,
-    1375
-  ],
-  "2026-08-30": [
-    18.57,
-    25525,
-    1375
-  ],
-  "2026-08-31": [
-    18.66,
-    25532,
-    1368
-  ],
-  "2026-09-01": [
-    18.58,
-    25537,
-    1375
-  ],
-  "2026-09-02": [
-    18.74,
-    25535,
-    1363
-  ],
-  "2026-09-03": [
-    18.81,
-    25536,
-    1357
-  ],
-  "2026-09-04": [
-    18.91,
-    25538,
-    1350
-  ],
-  "2026-09-05": [
-    18.92,
-    25543,
-    1350
-  ],
-  "2026-09-06": [
-    18.92,
-    25549,
-    1350
-  ],
-  "2026-09-07": [
-    18.96,
-    25558,
-    1348
-  ],
-  "2026-09-08": [
-    19.06,
-    25568,
-    1342
-  ],
-  "2026-09-09": [
-    19.14,
-    25579,
-    1336
-  ],
-  "2026-09-10": [
-    19.04,
-    25591,
-    1344
-  ],
-  "2026-09-11": [
-    19.07,
-    25603,
-    1343
-  ],
-  "2026-09-12": [
-    19.08,
-    25615,
-    1343
-  ],
-  "2026-09-13": [
-    19.08,
-    25625,
-    1343
-  ],
-  "2026-09-14": [
-    19.04,
-    25634,
-    1346
-  ],
-  "2026-09-15": [
-    18.87,
-    25641,
-    1359
-  ],
-  "2026-09-16": [
-    18.75,
-    25646,
-    1368
-  ],
-  "2026-09-17": [
-    18.55,
-    25650,
-    1383
-  ],
-  "2026-09-18": [
-    18.48,
-    25650,
-    1388
-  ],
-  "2026-09-19": [
-    18.48,
-    25649,
-    1388
-  ],
-  "2026-09-20": [
-    18.48,
-    25646,
-    1388
-  ],
-  "2026-09-21": [
-    18.69,
-    25642,
-    1372
-  ],
-  "2026-09-22": [
-    18.9,
-    25637,
-    1356
-  ],
-  "2026-09-23": [
-    18.77,
-    25632,
-    1365
-  ],
-  "2026-09-24": [
-    18.72,
-    25626,
-    1369
-  ],
-  "2026-09-25": [
-    18.91,
-    25622,
-    1355
-  ],
-  "2026-09-26": [
-    18.91,
-    25618,
-    1355
-  ],
-  "2026-09-27": [
-    18.9,
-    25616,
-    1355
-  ],
-  "2026-09-28": [
-    18.86,
-    25616,
-    1358
-  ],
-  "2026-09-29": [
-    18.93,
-    25618,
-    1353
-  ],
-  "2026-09-30": [
-    18.9,
-    25623,
-    1355
-  ],
-  "2026-10-01": [
-    18.83,
-    25637,
-    1361
-  ],
-  "2026-10-02": [
-    19.01,
-    25634,
-    1348
-  ],
-  "2026-10-03": [
-    19.01,
-    25633,
-    1348
-  ],
-  "2026-10-04": [
-    19.01,
-    25635,
-    1348
-  ],
-  "2026-10-05": [
-    19.08,
-    25638,
-    1344
-  ],
-  "2026-10-06": [
-    19.15,
-    25644,
-    1339
-  ],
-  "2026-10-07": [
-    19.16,
-    25651,
-    1339
-  ],
-  "2026-10-08": [
-    19.1,
-    25661,
-    1343
-  ],
-  "2026-10-09": [
-    19.14,
-    25671,
-    1341
-  ],
-  "2026-10-10": [
-    19.15,
-    25683,
-    1341
-  ],
-  "2026-10-11": [
-    19.15,
-    25695,
-    1341
-  ],
-  "2026-10-12": [
-    19.28,
-    25707,
-    1333
-  ],
-  "2026-10-13": [
-    19.17,
-    25718,
-    1341
-  ],
-  "2026-10-14": [
-    19.25,
-    25727,
-    1337
-  ],
-  "2026-10-15": [
-    19.12,
-    25736,
-    1346
-  ],
-  "2026-10-16": [
-    19.32,
-    25742,
-    1332
-  ],
-  "2026-10-17": [
-    19.33,
-    25746,
-    1332
-  ],
-  "2026-10-18": [
-    19.33,
-    25748,
-    1332
-  ],
-  "2026-10-19": [
-    19.37,
-    25748,
-    1329
-  ],
-  "2026-10-20": [
-    19.39,
-    25746,
-    1328
-  ],
-  "2026-10-21": [
-    19.42,
-    25743,
-    1326
-  ],
-  "2026-10-22": [
-    19.43,
-    25738,
-    1325
-  ],
-  "2026-10-23": [
-    19.43,
-    25733,
-    1324
-  ],
-  "2026-10-24": [
-    19.42,
-    25727,
-    1324
-  ],
-  "2026-10-25": [
-    19.42,
-    25722,
-    1324
-  ],
-  "2026-10-26": [
-    19.41,
-    25718,
-    1325
-  ],
-  "2026-10-27": [
-    19.37,
-    25715,
-    1328
-  ],
-  "2026-10-28": [
-    19.18,
-    25714,
-    1340
-  ],
-  "2026-10-29": [
-    19.32,
-    25836,
-    1337
-  ],
-  "2026-10-30": [
-    19.3,
-    25766,
-    1335
-  ],
-  "2026-10-31": [
-    19.3,
-    25765,
-    1335
-  ],
-  "2026-11-01": [
-    19.32,
-    25799,
-    1335
-  ],
-  "2026-11-02": [
-    19.19,
-    25764,
-    1343
-  ],
-  "2026-11-03": [
-    19.14,
-    25738,
-    1345
-  ],
-  "2026-11-04": [
-    19.17,
-    25769,
-    1344
-  ]
+    "2026-08-06": [
+        17.88,
+        25453,
+        1424
+    ],
+    "2026-08-07": [
+        17.98,
+        25462,
+        1416
+    ],
+    "2026-08-08": [
+        17.99,
+        25473,
+        1416
+    ],
+    "2026-08-09": [
+        18,
+        25484,
+        1416
+    ],
+    "2026-08-10": [
+        18,
+        25496,
+        1417
+    ],
+    "2026-08-11": [
+        18.06,
+        25508,
+        1412
+    ],
+    "2026-08-12": [
+        18.01,
+        25519,
+        1417
+    ],
+    "2026-08-13": [
+        17.97,
+        25529,
+        1420
+    ],
+    "2026-08-14": [
+        18.1,
+        25537,
+        1411
+    ],
+    "2026-08-15": [
+        18.1,
+        25543,
+        1411
+    ],
+    "2026-08-16": [
+        18.1,
+        25547,
+        1411
+    ],
+    "2026-08-17": [
+        18.1,
+        25549,
+        1412
+    ],
+    "2026-08-18": [
+        18.12,
+        25549,
+        1410
+    ],
+    "2026-08-19": [
+        18.36,
+        25547,
+        1391
+    ],
+    "2026-08-20": [
+        18.29,
+        25543,
+        1396
+    ],
+    "2026-08-21": [
+        18.45,
+        25538,
+        1384
+    ],
+    "2026-08-22": [
+        18.45,
+        25533,
+        1384
+    ],
+    "2026-08-23": [
+        18.44,
+        25527,
+        1384
+    ],
+    "2026-08-24": [
+        18.44,
+        25522,
+        1384
+    ],
+    "2026-08-25": [
+        18.45,
+        25518,
+        1383
+    ],
+    "2026-08-26": [
+        18.44,
+        25516,
+        1383
+    ],
+    "2026-08-27": [
+        18.48,
+        25515,
+        1380
+    ],
+    "2026-08-28": [
+        18.56,
+        25516,
+        1375
+    ],
+    "2026-08-29": [
+        18.57,
+        25519,
+        1375
+    ],
+    "2026-08-30": [
+        18.57,
+        25525,
+        1375
+    ],
+    "2026-08-31": [
+        18.66,
+        25532,
+        1368
+    ],
+    "2026-09-01": [
+        18.58,
+        25537,
+        1375
+    ],
+    "2026-09-02": [
+        18.74,
+        25535,
+        1363
+    ],
+    "2026-09-03": [
+        18.81,
+        25536,
+        1357
+    ],
+    "2026-09-04": [
+        18.91,
+        25538,
+        1350
+    ],
+    "2026-09-05": [
+        18.92,
+        25543,
+        1350
+    ],
+    "2026-09-06": [
+        18.92,
+        25549,
+        1350
+    ],
+    "2026-09-07": [
+        18.96,
+        25558,
+        1348
+    ],
+    "2026-09-08": [
+        19.06,
+        25568,
+        1342
+    ],
+    "2026-09-09": [
+        19.14,
+        25579,
+        1336
+    ],
+    "2026-09-10": [
+        19.04,
+        25591,
+        1344
+    ],
+    "2026-09-11": [
+        19.07,
+        25603,
+        1343
+    ],
+    "2026-09-12": [
+        19.08,
+        25615,
+        1343
+    ],
+    "2026-09-13": [
+        19.08,
+        25625,
+        1343
+    ],
+    "2026-09-14": [
+        19.04,
+        25634,
+        1346
+    ],
+    "2026-09-15": [
+        18.87,
+        25641,
+        1359
+    ],
+    "2026-09-16": [
+        18.75,
+        25646,
+        1368
+    ],
+    "2026-09-17": [
+        18.55,
+        25650,
+        1383
+    ],
+    "2026-09-18": [
+        18.48,
+        25650,
+        1388
+    ],
+    "2026-09-19": [
+        18.48,
+        25649,
+        1388
+    ],
+    "2026-09-20": [
+        18.48,
+        25646,
+        1388
+    ],
+    "2026-09-21": [
+        18.69,
+        25642,
+        1372
+    ],
+    "2026-09-22": [
+        18.9,
+        25637,
+        1356
+    ],
+    "2026-09-23": [
+        18.77,
+        25632,
+        1365
+    ],
+    "2026-09-24": [
+        18.72,
+        25626,
+        1369
+    ],
+    "2026-09-25": [
+        18.91,
+        25622,
+        1355
+    ],
+    "2026-09-26": [
+        18.91,
+        25618,
+        1355
+    ],
+    "2026-09-27": [
+        18.9,
+        25616,
+        1355
+    ],
+    "2026-09-28": [
+        18.86,
+        25616,
+        1358
+    ],
+    "2026-09-29": [
+        18.93,
+        25618,
+        1353
+    ],
+    "2026-09-30": [
+        18.9,
+        25623,
+        1355
+    ],
+    "2026-10-01": [
+        18.83,
+        25637,
+        1361
+    ],
+    "2026-10-02": [
+        19.01,
+        25634,
+        1348
+    ],
+    "2026-10-03": [
+        19.01,
+        25633,
+        1348
+    ],
+    "2026-10-04": [
+        19.01,
+        25635,
+        1348
+    ],
+    "2026-10-05": [
+        19.08,
+        25638,
+        1344
+    ],
+    "2026-10-06": [
+        19.15,
+        25644,
+        1339
+    ],
+    "2026-10-07": [
+        19.16,
+        25651,
+        1339
+    ],
+    "2026-10-08": [
+        19.1,
+        25661,
+        1343
+    ],
+    "2026-10-09": [
+        19.14,
+        25671,
+        1341
+    ],
+    "2026-10-10": [
+        19.15,
+        25683,
+        1341
+    ],
+    "2026-10-11": [
+        19.15,
+        25695,
+        1341
+    ],
+    "2026-10-12": [
+        19.28,
+        25707,
+        1333
+    ],
+    "2026-10-13": [
+        19.17,
+        25718,
+        1341
+    ],
+    "2026-10-14": [
+        19.25,
+        25727,
+        1337
+    ],
+    "2026-10-15": [
+        19.12,
+        25736,
+        1346
+    ],
+    "2026-10-16": [
+        19.32,
+        25742,
+        1332
+    ],
+    "2026-10-17": [
+        19.33,
+        25746,
+        1332
+    ],
+    "2026-10-18": [
+        19.33,
+        25748,
+        1332
+    ],
+    "2026-10-19": [
+        19.37,
+        25748,
+        1329
+    ],
+    "2026-10-20": [
+        19.39,
+        25746,
+        1328
+    ],
+    "2026-10-21": [
+        19.42,
+        25743,
+        1326
+    ],
+    "2026-10-22": [
+        19.43,
+        25738,
+        1325
+    ],
+    "2026-10-23": [
+        19.43,
+        25733,
+        1324
+    ],
+    "2026-10-24": [
+        19.42,
+        25727,
+        1324
+    ],
+    "2026-10-25": [
+        19.42,
+        25722,
+        1324
+    ],
+    "2026-10-26": [
+        19.41,
+        25718,
+        1325
+    ],
+    "2026-10-27": [
+        19.37,
+        25715,
+        1328
+    ],
+    "2026-10-28": [
+        19.18,
+        25714,
+        1340
+    ],
+    "2026-10-29": [
+        19.32,
+        25836,
+        1337
+    ],
+    "2026-10-30": [
+        19.3,
+        25766,
+        1335
+    ],
+    "2026-10-31": [
+        19.3,
+        25765,
+        1335
+    ],
+    "2026-11-01": [
+        19.32,
+        25799,
+        1335
+    ],
+    "2026-11-02": [
+        19.19,
+        25764,
+        1343
+    ],
+    "2026-11-03": [
+        19.14,
+        25738,
+        1345
+    ],
+    "2026-11-04": [
+        19.17,
+        25769,
+        1344
+    ]
 };
 
 let currentExchangeMode = 'grid'; // 'grid' (Mặc định: Lưới 3 biểu đồ trực quan), 'krw', 'usd', 'usdKrw', 'pct'
@@ -3004,7 +3047,7 @@ try {
     localStorage.removeItem('exchange_multi_history');
     localStorage.removeItem('exchange_multi_history_v2');
     localStorage.removeItem('exchange_multi_history_v3');
-} catch(e) {}
+} catch (e) { }
 
 window.setExchangeRateMode = function (mode) {
     currentExchangeMode = mode;
@@ -3060,7 +3103,7 @@ function getMultiExchangeHistoryList(days, currentKrw, currentUsd, currentUsdKrw
                 });
             }
         }
-    } catch(e) {}
+    } catch (e) { }
 
     for (let i = numDays - 1; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
@@ -3139,71 +3182,71 @@ function renderTriChartGrid(container, data, days) {
     // CARD 1: KRW / VND
     html += '<div class="exchange-single-chart-card" onclick="setExchangeRateMode(\'krw\')" title="Nhấp để phóng to biểu đồ KRW/VND">' +
         '<div class="esc-header">' +
-            '<div>' +
-                '<span class="esc-pair-title"><span class="dot-indicator krw"></span> KRW SANG VND</span>' +
-                '<div class="esc-rate-val" style="color:#00b894;">' + endItem.krw.toFixed(2) + ' đ</div>' +
-            '</div>' +
-            '<span class="esc-change-badge ' + (pctK >= 0 ? 'pos' : 'neg') + '">' +
-                (pctK >= 0 ? '↗ +' : '↘ ') + pctK.toFixed(2) + '% (' + days + 'N)' +
-            '</span>' +
+        '<div>' +
+        '<span class="esc-pair-title"><span class="dot-indicator krw"></span> KRW SANG VND</span>' +
+        '<div class="esc-rate-val" style="color:#00b894;">' + endItem.krw.toFixed(2) + ' đ</div>' +
+        '</div>' +
+        '<span class="esc-change-badge ' + (pctK >= 0 ? 'pos' : 'neg') + '">' +
+        (pctK >= 0 ? '↗ +' : '↘ ') + pctK.toFixed(2) + '% (' + days + 'N)' +
+        '</span>' +
         '</div>' +
         '<div class="esc-minmax-row">' +
-            '<span>Thấp: <strong>' + minK.toFixed(2) + ' đ</strong></span>' +
-            '<span>Cao: <strong>' + maxK.toFixed(2) + ' đ</strong></span>' +
+        '<span>Thấp: <strong>' + minK.toFixed(2) + ' đ</strong></span>' +
+        '<span>Cao: <strong>' + maxK.toFixed(2) + ' đ</strong></span>' +
         '</div>' +
         '<div class="esc-chart-body" id="cardChartKrw">' +
-            generateMiniSvgChart(data, 'krw', '#00b894', 'krw-card-grad', 2, ' đ') +
+        generateMiniSvgChart(data, 'krw', '#00b894', 'krw-card-grad', 2, ' đ') +
         '</div>' +
         '<div class="esc-zoom-hint">' +
-            '<i class="icon-svg" data-lucide="maximize-2" style="width:12px; height:12px;"></i> Nhấp để phóng to' +
+        '<i class="icon-svg" data-lucide="maximize-2" style="width:12px; height:12px;"></i> Nhấp để phóng to' +
         '</div>' +
-    '</div>';
+        '</div>';
 
     // CARD 2: USD / VND
     html += '<div class="exchange-single-chart-card" onclick="setExchangeRateMode(\'usd\')" title="Nhấp để phóng to biểu đồ USD/VND">' +
         '<div class="esc-header">' +
-            '<div>' +
-                '<span class="esc-pair-title"><span class="dot-indicator usd"></span> USD SANG VND</span>' +
-                '<div class="esc-rate-val" style="color:#3b82f6;">' + fmtFull(Math.round(endItem.usd)) + ' đ</div>' +
-            '</div>' +
-            '<span class="esc-change-badge ' + (pctU >= 0 ? 'pos' : 'neg') + '">' +
-                (pctU >= 0 ? '↗ +' : '↘ ') + pctU.toFixed(2) + '% (' + days + 'N)' +
-            '</span>' +
+        '<div>' +
+        '<span class="esc-pair-title"><span class="dot-indicator usd"></span> USD SANG VND</span>' +
+        '<div class="esc-rate-val" style="color:#3b82f6;">' + fmtFull(Math.round(endItem.usd)) + ' đ</div>' +
+        '</div>' +
+        '<span class="esc-change-badge ' + (pctU >= 0 ? 'pos' : 'neg') + '">' +
+        (pctU >= 0 ? '↗ +' : '↘ ') + pctU.toFixed(2) + '% (' + days + 'N)' +
+        '</span>' +
         '</div>' +
         '<div class="esc-minmax-row">' +
-            '<span>Thấp: <strong>' + fmtFull(Math.round(minU)) + ' đ</strong></span>' +
-            '<span>Cao: <strong>' + fmtFull(Math.round(maxU)) + ' đ</strong></span>' +
+        '<span>Thấp: <strong>' + fmtFull(Math.round(minU)) + ' đ</strong></span>' +
+        '<span>Cao: <strong>' + fmtFull(Math.round(maxU)) + ' đ</strong></span>' +
         '</div>' +
         '<div class="esc-chart-body" id="cardChartUsd">' +
-            generateMiniSvgChart(data, 'usd', '#3b82f6', 'usd-card-grad', 0, ' đ') +
+        generateMiniSvgChart(data, 'usd', '#3b82f6', 'usd-card-grad', 0, ' đ') +
         '</div>' +
         '<div class="esc-zoom-hint">' +
-            '<i class="icon-svg" data-lucide="maximize-2" style="width:12px; height:12px;"></i> Nhấp để phóng to' +
+        '<i class="icon-svg" data-lucide="maximize-2" style="width:12px; height:12px;"></i> Nhấp để phóng to' +
         '</div>' +
-    '</div>';
+        '</div>';
 
     // CARD 3: USD / KRW
     html += '<div class="exchange-single-chart-card" onclick="setExchangeRateMode(\'usdKrw\')" title="Nhấp để phóng to biểu đồ USD/KRW">' +
         '<div class="esc-header">' +
-            '<div>' +
-                '<span class="esc-pair-title"><span class="dot-indicator usdkrw"></span> USD SANG KRW</span>' +
-                '<div class="esc-rate-val" style="color:#ff9f43;">' + fmtFull(Math.round(endItem.usdKrw)) + ' ₩</div>' +
-            '</div>' +
-            '<span class="esc-change-badge ' + (pctUK >= 0 ? 'pos' : 'neg') + '">' +
-                (pctUK >= 0 ? '↗ +' : '↘ ') + pctUK.toFixed(2) + '% (' + days + 'N)' +
-            '</span>' +
+        '<div>' +
+        '<span class="esc-pair-title"><span class="dot-indicator usdkrw"></span> USD SANG KRW</span>' +
+        '<div class="esc-rate-val" style="color:#ff9f43;">' + fmtFull(Math.round(endItem.usdKrw)) + ' ₩</div>' +
+        '</div>' +
+        '<span class="esc-change-badge ' + (pctUK >= 0 ? 'pos' : 'neg') + '">' +
+        (pctUK >= 0 ? '↗ +' : '↘ ') + pctUK.toFixed(2) + '% (' + days + 'N)' +
+        '</span>' +
         '</div>' +
         '<div class="esc-minmax-row">' +
-            '<span>Thấp: <strong>' + fmtFull(Math.round(minUK)) + ' ₩</strong></span>' +
-            '<span>Cao: <strong>' + fmtFull(Math.round(maxUK)) + ' ₩</strong></span>' +
+        '<span>Thấp: <strong>' + fmtFull(Math.round(minUK)) + ' ₩</strong></span>' +
+        '<span>Cao: <strong>' + fmtFull(Math.round(maxUK)) + ' ₩</strong></span>' +
         '</div>' +
         '<div class="esc-chart-body" id="cardChartUsdKrw">' +
-            generateMiniSvgChart(data, 'usdKrw', '#ff9f43', 'usdkrw-card-grad', 0, ' ₩') +
+        generateMiniSvgChart(data, 'usdKrw', '#ff9f43', 'usdkrw-card-grad', 0, ' ₩') +
         '</div>' +
         '<div class="esc-zoom-hint">' +
-            '<i class="icon-svg" data-lucide="maximize-2" style="width:12px; height:12px;"></i> Nhấp để phóng to' +
+        '<i class="icon-svg" data-lucide="maximize-2" style="width:12px; height:12px;"></i> Nhấp để phóng to' +
         '</div>' +
-    '</div>';
+        '</div>';
 
     html += '</div>';
     container.innerHTML = html;
@@ -3237,10 +3280,10 @@ function generateMiniSvgChart(data, key, color, gradId, decimals, unit) {
 
     let svg = '<svg width="100%" height="100%" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
         '<defs>' +
-            '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.30"/>' +
-                '<stop offset="100%" stop-color="' + color + '" stop-opacity="0.00"/>' +
-            '</linearGradient>' +
+        '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.30"/>' +
+        '<stop offset="100%" stop-color="' + color + '" stop-opacity="0.00"/>' +
+        '</linearGradient>' +
         '</defs>';
 
     const tickValues = [min + 0.06 * (max - min), (min + max) / 2, max - 0.06 * (max - min)];
@@ -3304,7 +3347,7 @@ function renderSingleHeroChart(container, data, days) {
         '<linearGradient id="krw-area-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00b894" stop-opacity="0.25"/><stop offset="100%" stop-color="#00b894" stop-opacity="0.00"/></linearGradient>' +
         '<linearGradient id="usd-area-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0.00"/></linearGradient>' +
         '<linearGradient id="usdkrw-area-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff9f43" stop-opacity="0.25"/><stop offset="100%" stop-color="#ff9f43" stop-opacity="0.00"/></linearGradient>' +
-      '</defs>';
+        '</defs>';
 
     if (isPctMode) {
         const baseK = data[0].krw;
@@ -3331,7 +3374,7 @@ function renderSingleHeroChart(container, data, days) {
             svg += '<g class="exchange-chart-grid">' +
                 '<line x1="' + margin.left + '" y1="' + y + '" x2="' + (width - margin.right) + '" y2="' + y + '" stroke="var(--border)" stroke-dasharray="3 3" opacity="0.5" />' +
                 '<text class="exchange-chart-label" x="' + (margin.left - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--text-muted)" font-weight="600">' + (pctVal >= 0 ? '+' : '') + pctVal.toFixed(2) + '%</text>' +
-            '</g>';
+                '</g>';
         }
 
         const yZero = getY_Pct(0);
@@ -3358,10 +3401,10 @@ function renderSingleHeroChart(container, data, days) {
                 '<circle id="rateDot-usd-' + idx + '" class="exchange-chart-dot usd" cx="' + x + '" cy="' + getY_Pct(pctUData[idx]) + '" r="4" fill="#3b82f6" stroke="var(--bg-card)" stroke-width="2" />' +
                 '<circle id="rateDot-usdkrw-' + idx + '" class="exchange-chart-dot usdkrw" cx="' + x + '" cy="' + getY_Pct(pctUKData[idx]) + '" r="4" fill="#ff9f43" stroke="var(--bg-card)" stroke-width="2" />' +
                 '<rect x="' + (x - stepW / 2) + '" y="' + margin.top + '" width="' + stepW + '" height="' + chartH + '" fill="transparent" style="cursor:pointer;" ' +
-                    'onmouseenter="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctKData[idx] + ', ' + pctUData[idx] + ', ' + pctUKData[idx] + ', ' + x + ')" ' +
-                    'onmousemove="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctKData[idx] + ', ' + pctUData[idx] + ', ' + pctUKData[idx] + ', ' + x + ')" ' +
-                    'onmouseleave="unhighlightRatePoint(' + idx + ')" ' +
-                    'ontouchstart="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctKData[idx] + ', ' + pctUData[idx] + ', ' + pctUKData[idx] + ', ' + x + ')" />';
+                'onmouseenter="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctKData[idx] + ', ' + pctUData[idx] + ', ' + pctUKData[idx] + ', ' + x + ')" ' +
+                'onmousemove="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctKData[idx] + ', ' + pctUData[idx] + ', ' + pctUKData[idx] + ', ' + x + ')" ' +
+                'onmouseleave="unhighlightRatePoint(' + idx + ')" ' +
+                'ontouchstart="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctKData[idx] + ', ' + pctUData[idx] + ', ' + pctUKData[idx] + ', ' + x + ')" />';
         });
     } else {
         let values, color, areaGrad, unit, decimals, keyName;
@@ -3411,7 +3454,7 @@ function renderSingleHeroChart(container, data, days) {
             svg += '<g class="exchange-chart-grid">' +
                 '<line x1="' + margin.left + '" y1="' + y + '" x2="' + (width - margin.right) + '" y2="' + y + '" stroke="var(--border)" stroke-dasharray="3 3" opacity="0.5" />' +
                 '<text class="exchange-chart-label" x="' + (margin.left - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="' + color + '" font-weight="700">' + labelStr + unit + '</text>' +
-            '</g>';
+                '</g>';
         }
 
         let linePoints = '';
@@ -3439,10 +3482,10 @@ function renderSingleHeroChart(container, data, days) {
 
             svg += '<circle id="rateDot-single-' + idx + '" class="exchange-chart-dot" cx="' + x + '" cy="' + y + '" r="4" fill="' + color + '" stroke="var(--bg-card)" stroke-width="2" />' +
                 '<rect x="' + (x - stepW / 2) + '" y="' + margin.top + '" width="' + stepW + '" height="' + chartH + '" fill="transparent" style="cursor:pointer;" ' +
-                    'onmouseenter="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctChange + ', null, null, ' + x + ', ' + y + ')" ' +
-                    'onmousemove="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctChange + ', null, null, ' + x + ', ' + y + ')" ' +
-                    'onmouseleave="unhighlightRatePoint(' + idx + ')" ' +
-                    'ontouchstart="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctChange + ', null, null, ' + x + ', ' + y + ')" />';
+                'onmouseenter="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctChange + ', null, null, ' + x + ', ' + y + ')" ' +
+                'onmousemove="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctChange + ', null, null, ' + x + ', ' + y + ')" ' +
+                'onmouseleave="unhighlightRatePoint(' + idx + ')" ' +
+                'ontouchstart="highlightRatePoint(' + idx + ', \'' + d.date + '\', ' + d.krw + ', ' + d.usd + ', ' + d.usdKrw + ', ' + pctChange + ', null, null, ' + x + ', ' + y + ')" />';
         });
     }
 
@@ -3484,7 +3527,7 @@ function renderXAxisGrid(data, days, getX, margin, chartH, height, width) {
             svg += '<g class="exchange-chart-vgrid">' +
                 '<line x1="' + x + '" y1="' + margin.top + '" x2="' + x + '" y2="' + (margin.top + chartH) + '" stroke="var(--border)" stroke-dasharray="2 4" opacity="0.3" />' +
                 '<text class="exchange-chart-label" x="' + x + '" y="' + (height - 10) + '" text-anchor="middle" font-size="11" fill="var(--text-secondary)" font-weight="600">' + label + '</text>' +
-            '</g>';
+                '</g>';
         }
     });
 
@@ -3519,19 +3562,19 @@ window.highlightRatePoint = function (idx, date, krw, usd, usdKrw, pctK, pctU, p
 
         if (isPct) {
             tooltip.innerHTML = '<div class="rate-tooltip-date" style="font-weight:700; margin-bottom:5px; font-size:0.78rem; display:flex; align-items:center; gap:4px; opacity:0.9;">' +
-                    '<span>' + formattedDate + '</span> <span style="font-size:0.7rem; color:var(--text-muted);">(So với ngày đầu)</span>' +
+                '<span>' + formattedDate + '</span> <span style="font-size:0.7rem; color:var(--text-muted);">(So với ngày đầu)</span>' +
                 '</div>' +
                 '<div class="rate-tooltip-val krw" style="color:#00b894; font-weight:700; font-size:0.8rem; display:flex; align-items:center; justify-content:space-between; gap:8px;">' +
-                    '<span><span style="background:rgba(0,184,148,0.15); color:#00b894; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800;">KRW/VND</span> ' + krw.toFixed(2) + ' ₫</span>' +
-                    '<strong style="color:' + (pctK >= 0 ? '#00b894' : '#ff6b6b') + '">' + (pctK >= 0 ? '+' : '') + pctK.toFixed(2) + '%</strong>' +
+                '<span><span style="background:rgba(0,184,148,0.15); color:#00b894; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800;">KRW/VND</span> ' + krw.toFixed(2) + ' ₫</span>' +
+                '<strong style="color:' + (pctK >= 0 ? '#00b894' : '#ff6b6b') + '">' + (pctK >= 0 ? '+' : '') + pctK.toFixed(2) + '%</strong>' +
                 '</div>' +
                 '<div class="rate-tooltip-val usd" style="color:#3b82f6; font-weight:700; font-size:0.8rem; margin-top:3px; display:flex; align-items:center; justify-content:space-between; gap:8px;">' +
-                    '<span><span style="background:rgba(59,130,246,0.15); color:#3b82f6; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800;">USD/VND</span> ' + fmtFull(Math.round(usd)) + ' ₫</span>' +
-                    '<strong style="color:' + (pctU >= 0 ? '#00b894' : '#ff6b6b') + '">' + (pctU >= 0 ? '+' : '') + pctU.toFixed(2) + '%</strong>' +
+                '<span><span style="background:rgba(59,130,246,0.15); color:#3b82f6; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800;">USD/VND</span> ' + fmtFull(Math.round(usd)) + ' ₫</span>' +
+                '<strong style="color:' + (pctU >= 0 ? '#00b894' : '#ff6b6b') + '">' + (pctU >= 0 ? '+' : '') + pctU.toFixed(2) + '%</strong>' +
                 '</div>' +
                 '<div class="rate-tooltip-val usdkrw" style="color:#ff9f43; font-weight:700; font-size:0.8rem; margin-top:3px; display:flex; align-items:center; justify-content:space-between; gap:8px;">' +
-                    '<span><span style="background:rgba(255,159,67,0.15); color:#ff9f43; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800;">USD/KRW</span> ' + fmtFull(Math.round(usdKrw)) + ' ₩</span>' +
-                    '<strong style="color:' + (pctUK >= 0 ? '#00b894' : '#ff6b6b') + '">' + (pctUK >= 0 ? '+' : '') + pctUK.toFixed(2) + '%</strong>' +
+                '<span><span style="background:rgba(255,159,67,0.15); color:#ff9f43; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:800;">USD/KRW</span> ' + fmtFull(Math.round(usdKrw)) + ' ₩</span>' +
+                '<strong style="color:' + (pctUK >= 0 ? '#00b894' : '#ff6b6b') + '">' + (pctUK >= 0 ? '+' : '') + pctUK.toFixed(2) + '%</strong>' +
                 '</div>';
         } else {
             let label = 'KRW/VND';
@@ -3549,11 +3592,11 @@ window.highlightRatePoint = function (idx, date, krw, usd, usdKrw, pctK, pctU, p
             const pctStr = (pctK !== undefined && pctK !== null) ? ((pctK >= 0 ? '+' : '') + pctK.toFixed(2) + '%') : '';
 
             tooltip.innerHTML = '<div class="rate-tooltip-date" style="font-weight:700; margin-bottom:4px; font-size:0.78rem; opacity:0.9;">' +
-                    '<span>' + formattedDate + '</span>' +
+                '<span>' + formattedDate + '</span>' +
                 '</div>' +
                 '<div style="color:' + color + '; font-weight:700; font-size:0.85rem; display:flex; align-items:center; justify-content:space-between; gap:10px;">' +
-                    '<span>' + label + ': <strong>' + valStr + '</strong></span>' +
-                    (pctStr ? '<span style="font-size:0.75rem; color:' + (pctK >= 0 ? '#00b894' : '#ff6b6b') + '; font-weight:800;">(' + pctStr + ')</span>' : '') +
+                '<span>' + label + ': <strong>' + valStr + '</strong></span>' +
+                (pctStr ? '<span style="font-size:0.75rem; color:' + (pctK >= 0 ? '#00b894' : '#ff6b6b') + '; font-weight:800;">(' + pctStr + ')</span>' : '') +
                 '</div>';
         }
 
