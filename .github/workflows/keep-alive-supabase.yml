@@ -1,0 +1,25 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Chạy vào 00:00 UTC mỗi 3 ngày (Supabase tạm ngưng sau 7 ngày không hoạt động)
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # Cho phép bấm Run workflow thủ công để kiểm tra bất kỳ lúc nào
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database via REST API
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpdnlwa3N2dmpoZ2FxenpjbmRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MDY1NjYsImV4cCI6MjA4NzM4MjU2Nn0.2I_OUb0qTMWPLSYdaDEsUaDE_AeDYHqQawvNAEk8xkg' }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpdnlwa3N2dmpoZ2FxenpjbmRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MDY1NjYsImV4cCI6MjA4NzM4MjU2Nn0.2I_OUb0qTMWPLSYdaDEsUaDE_AeDYHqQawvNAEk8xkg' }}" \
+            "https://aivypksvvjhgaqzzcndb.supabase.co/rest/v1/profiles?select=count")
+          
+          echo "Supabase HTTP Response Status: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "SUCCESS: Supabase project is awake and responding perfectly!"
+          else
+            echo "WARNING: Expected 200, got $STATUS"
+          fi
