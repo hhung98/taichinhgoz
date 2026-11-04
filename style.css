@@ -9304,7 +9304,17 @@ select.goal-currency-select option {
     flex-shrink: 0 !important;
 }
 
+.asset-modal-card .crypto-input-wrapper {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    position: relative !important;
+}
+
 .asset-modal-card .asset-text-field {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
     border: none !important;
     background: transparent !important;
     box-shadow: none !important;
@@ -9337,4 +9347,27 @@ select.goal-currency-select option {
     gap: 6px !important;
     font-size: 0.85rem !important;
     margin-top: 10px !important;
+}
+
+/* Remove browser number spinner up/down arrows in fintech modals */
+.asset-modal-card input[type=number]::-webkit-inner-spin-button,
+.asset-modal-card input[type=number]::-webkit-outer-spin-button,
+.ratio-modal-card input[type=number]::-webkit-inner-spin-button,
+.ratio-modal-card input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.asset-modal-card input[type=number],
+.ratio-modal-card input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.portfolio-ribbon-track .ribbon-bar {
+    cursor: pointer;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s;
+}
+
+.portfolio-ribbon-track .ribbon-bar:hover {
+    filter: brightness(1.15);
 }

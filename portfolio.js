@@ -630,7 +630,7 @@ function updateOverviewCards() {
     const balKRWEl = document.getElementById('balanceKRW');
     if (totalBalEl) {
         if (typeof window.CountUp === 'function') {
-            window.CountUp(totalBalEl, { to: netWorthInDisplay, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+            window.CountUp(totalBalEl, { to: netWorthInDisplay, currency: displayCurrency, duration: 0.45, replayOnHover: true });
         } else {
             totalBalEl.textContent = fmtDisplayCur(netWorthInDisplay);
         }
@@ -649,7 +649,7 @@ function updateOverviewCards() {
     if (totalIncEl) {
         const incInDisplay = convertCurrency(incKRW, 'KRW', displayCurrency);
         if (typeof window.CountUp === 'function') {
-            window.CountUp(totalIncEl, { to: incInDisplay, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+            window.CountUp(totalIncEl, { to: incInDisplay, currency: displayCurrency, duration: 0.45, replayOnHover: true });
         } else {
             totalIncEl.textContent = fmtDisplayCur(incInDisplay);
         }
@@ -664,7 +664,7 @@ function updateOverviewCards() {
     if (totalExpEl) {
         const expInDisplay = convertCurrency(expKRW, 'KRW', displayCurrency);
         if (typeof window.CountUp === 'function') {
-            window.CountUp(totalExpEl, { to: expInDisplay, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+            window.CountUp(totalExpEl, { to: expInDisplay, currency: displayCurrency, duration: 0.45, replayOnHover: true });
         } else {
             totalExpEl.textContent = fmtDisplayCur(expInDisplay);
         }
@@ -684,7 +684,7 @@ function updateOverviewCards() {
     if (netSavingsEl) {
         const netInDisplay = convertCurrency(balanceKRW, 'KRW', displayCurrency);
         if (typeof window.CountUp === 'function') {
-            window.CountUp(netSavingsEl, { to: netInDisplay, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+            window.CountUp(netSavingsEl, { to: netInDisplay, currency: displayCurrency, duration: 0.45, replayOnHover: true });
         } else {
             netSavingsEl.textContent = fmtDisplayCur(netInDisplay);
         }
@@ -761,7 +761,7 @@ window.renderPortfolio = function () {
 
     if (heroTotalEl) {
         if (typeof window.CountUp === 'function') {
-            window.CountUp(heroTotalEl, { to: grandTotal, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+            window.CountUp(heroTotalEl, { to: grandTotal, currency: displayCurrency, duration: 0.5, replayOnHover: true });
         } else {
             heroTotalEl.textContent = fmtDisplayCur(grandTotal);
         }
@@ -769,21 +769,21 @@ window.renderPortfolio = function () {
     if (heroSubEl) heroSubEl.innerHTML = formatCrossCurrenciesHTML(grandTotal, displayCurrency);
     if (heroCashEl) {
         if (typeof window.CountUp === 'function') {
-            window.CountUp(heroCashEl, { to: cashTotalInCur, currency: displayCurrency, duration: 0.85 });
+            window.CountUp(heroCashEl, { to: cashTotalInCur, currency: displayCurrency, duration: 0.5 });
         } else {
             heroCashEl.textContent = fmtDisplayCur(cashTotalInCur);
         }
     }
     if (heroCryptoEl) {
         if (typeof window.CountUp === 'function') {
-            window.CountUp(heroCryptoEl, { to: cryptoTotalInCur, currency: displayCurrency, duration: 0.85 });
+            window.CountUp(heroCryptoEl, { to: cryptoTotalInCur, currency: displayCurrency, duration: 0.5 });
         } else {
             heroCryptoEl.textContent = fmtDisplayCur(cryptoTotalInCur);
         }
     }
     if (heroStockEl) {
         if (typeof window.CountUp === 'function') {
-            window.CountUp(heroStockEl, { to: stockTotalInCur, currency: displayCurrency, duration: 0.85 });
+            window.CountUp(heroStockEl, { to: stockTotalInCur, currency: displayCurrency, duration: 0.5 });
         } else {
             heroStockEl.textContent = fmtDisplayCur(stockTotalInCur);
         }
@@ -1123,7 +1123,7 @@ const POPULAR_CRYPTO_LIST = [
     { s: 'BTC', n: 'Bitcoin', r: 1 },
     { s: 'ETH', n: 'Ethereum', r: 2 },
     { s: 'USDT', n: 'Tether USD', r: 3 },
-    { s: 'BNB', n: 'BNB', r: 4 },
+    { s: 'BNB', n: 'Binance Coin', r: 4 },
     { s: 'SOL', n: 'Solana', r: 5 },
     { s: 'XRP', n: 'XRP', r: 6 },
     { s: 'DOGE', n: 'Dogecoin', r: 7 },

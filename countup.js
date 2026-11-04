@@ -26,12 +26,14 @@
     function parseNumericValue(text) {
         if (!text || typeof text !== 'string') return 0;
         const isUSD = text.includes('$');
-        let cleaned = text.replace(/[^0-9.-]/g, '');
-        if (!isUSD) {
-            // In VN / KRW formats, dot is thousands separator
-            cleaned = text.replace(/\./g, '').replace(/,/g, '.').replace(/[^0-9.-]/g, '');
+        if (isUSD) {
+            const cleaned = text.replace(/[^0-9.-]/g, '');
+            const val = parseFloat(cleaned);
+            return isNaN(val) ? 0 : val;
         }
-        const val = parseFloat(cleaned);
+        // VN & KRW are integer currency values: dots and commas are thousand separators
+        const cleaned = text.replace(/[^0-9-]/g, '');
+        const val = parseInt(cleaned, 10);
         return isNaN(val) ? 0 : val;
     }
 
@@ -77,7 +79,7 @@
             : parseNumericValue(el.textContent);
         const fromVal = Number(options.from !== undefined ? options.from : prevVal);
 
-        const duration = typeof options.duration === 'number' ? options.duration : 0.85; // 850ms smooth roll
+        const duration = typeof options.duration === 'number' ? options.duration : 0.45; // 450ms snappy & smooth roll
         const delay = (options.delay || 0) * 1000;
         const easing = options.easing || 'easeOut';
         const easeFn = EASINGS[easing] || EASINGS.easeOut;

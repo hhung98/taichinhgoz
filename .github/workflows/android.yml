@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'twa-manifest.json'
+      - '.github/workflows/android.yml'
+      - 'manifest.json'
   workflow_dispatch: # Cho phép nhấn nút chạy thủ công trên GitHub Actions
 
 jobs:
