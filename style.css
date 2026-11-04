@@ -9097,3 +9097,15 @@ select.goal-currency-select option {
     opacity: 1;
     color: var(--accent-primary);
 }
+
+/* ===== React Bits CountUp Numeric Typography & Transition ===== */
+.count-up-text,
+.metric-value,
+.portfolio-hero-amount,
+.sub-card-val,
+.stat-current-val,
+.dash-value {
+    font-variant-numeric: tabular-nums !important;
+    letter-spacing: -0.015em;
+    user-select: text;
+}

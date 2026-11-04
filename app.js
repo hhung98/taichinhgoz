@@ -1055,11 +1055,18 @@ function animateVal(id, val) {
     const el = document.getElementById(id);
     if (!el) return;
     if (el.textContent === val) return;
-    el.style.transform = 'scale(0.97)';
+
+    if (typeof window.CountUp === 'function' && typeof val === 'string' && /\d/.test(val)) {
+        if (val.endsWith('%')) {
+            const num = parseFloat(val);
+            if (!isNaN(num)) {
+                window.CountUp(el, { to: num, prefix: '', suffix: '%', decimals: 0, duration: 0.75 });
+                return;
+            }
+        }
+    }
+
     el.textContent = val;
-    requestAnimationFrame(() => {
-        el.style.transform = 'scale(1)';
-    });
 }
 
 function renderFinancialInsight() {

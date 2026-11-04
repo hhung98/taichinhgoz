@@ -578,7 +578,11 @@ function updateOverviewCards() {
     const totalBalEl = document.getElementById('totalBalance');
     const balKRWEl = document.getElementById('balanceKRW');
     if (totalBalEl) {
-        totalBalEl.textContent = fmtDisplayCur(netWorthInDisplay);
+        if (typeof window.CountUp === 'function') {
+            window.CountUp(totalBalEl, { to: netWorthInDisplay, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+        } else {
+            totalBalEl.textContent = fmtDisplayCur(netWorthInDisplay);
+        }
         totalBalEl.style.color = netWorthInDisplay < 0 ? 'var(--accent-red)' : 'var(--text-primary)';
     }
     if (balKRWEl) {
@@ -593,7 +597,11 @@ function updateOverviewCards() {
     const incKRWEl = document.getElementById('incomeKRW');
     if (totalIncEl) {
         const incInDisplay = convertCurrency(incKRW, 'KRW', displayCurrency);
-        totalIncEl.textContent = fmtDisplayCur(incInDisplay);
+        if (typeof window.CountUp === 'function') {
+            window.CountUp(totalIncEl, { to: incInDisplay, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+        } else {
+            totalIncEl.textContent = fmtDisplayCur(incInDisplay);
+        }
     }
     if (incKRWEl) {
         incKRWEl.innerHTML = formatCrossCurrenciesHTML(incKRW, 'KRW');
@@ -604,7 +612,11 @@ function updateOverviewCards() {
     const expKRWEl = document.getElementById('expenseKRW');
     if (totalExpEl) {
         const expInDisplay = convertCurrency(expKRW, 'KRW', displayCurrency);
-        totalExpEl.textContent = fmtDisplayCur(expInDisplay);
+        if (typeof window.CountUp === 'function') {
+            window.CountUp(totalExpEl, { to: expInDisplay, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+        } else {
+            totalExpEl.textContent = fmtDisplayCur(expInDisplay);
+        }
     }
     if (expKRWEl) {
         expKRWEl.innerHTML = formatCrossCurrenciesHTML(expKRW, 'KRW');
@@ -620,7 +632,11 @@ function updateOverviewCards() {
     const netSavingsSubEl = document.getElementById('netSavingsSub');
     if (netSavingsEl) {
         const netInDisplay = convertCurrency(balanceKRW, 'KRW', displayCurrency);
-        netSavingsEl.textContent = fmtDisplayCur(netInDisplay);
+        if (typeof window.CountUp === 'function') {
+            window.CountUp(netSavingsEl, { to: netInDisplay, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+        } else {
+            netSavingsEl.textContent = fmtDisplayCur(netInDisplay);
+        }
         netSavingsEl.style.color = balanceKRW < 0 ? 'var(--accent-red)' : '';
     }
     if (netSavingsSubEl) {
@@ -692,11 +708,35 @@ window.renderPortfolio = function () {
     const heroStockEl = document.getElementById('heroStockTotal');
     const countBadge = document.getElementById('assetTotalCountBadge');
 
-    if (heroTotalEl) heroTotalEl.textContent = fmtDisplayCur(grandTotal);
+    if (heroTotalEl) {
+        if (typeof window.CountUp === 'function') {
+            window.CountUp(heroTotalEl, { to: grandTotal, currency: displayCurrency, duration: 0.85, replayOnHover: true });
+        } else {
+            heroTotalEl.textContent = fmtDisplayCur(grandTotal);
+        }
+    }
     if (heroSubEl) heroSubEl.innerHTML = formatCrossCurrenciesHTML(grandTotal, displayCurrency);
-    if (heroCashEl) heroCashEl.textContent = fmtDisplayCur(cashTotalInCur);
-    if (heroCryptoEl) heroCryptoEl.textContent = fmtDisplayCur(cryptoTotalInCur);
-    if (heroStockEl) heroStockEl.textContent = fmtDisplayCur(stockTotalInCur);
+    if (heroCashEl) {
+        if (typeof window.CountUp === 'function') {
+            window.CountUp(heroCashEl, { to: cashTotalInCur, currency: displayCurrency, duration: 0.85 });
+        } else {
+            heroCashEl.textContent = fmtDisplayCur(cashTotalInCur);
+        }
+    }
+    if (heroCryptoEl) {
+        if (typeof window.CountUp === 'function') {
+            window.CountUp(heroCryptoEl, { to: cryptoTotalInCur, currency: displayCurrency, duration: 0.85 });
+        } else {
+            heroCryptoEl.textContent = fmtDisplayCur(cryptoTotalInCur);
+        }
+    }
+    if (heroStockEl) {
+        if (typeof window.CountUp === 'function') {
+            window.CountUp(heroStockEl, { to: stockTotalInCur, currency: displayCurrency, duration: 0.85 });
+        } else {
+            heroStockEl.textContent = fmtDisplayCur(stockTotalInCur);
+        }
+    }
     if (countBadge) countBadge.textContent = portfolioAssets.length + ' Mục tài sản';
 
     const elCashPct = document.getElementById('heroCashPct');
