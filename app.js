@@ -1,6 +1,18 @@
 // ===== State =====
-let monthlyBudget = {};
-let savingsGoals = [];
+let monthlyBudget = (() => {
+    try {
+        const stored = localStorage.getItem('goz_cached_budget');
+        if (stored) return JSON.parse(stored);
+    } catch (e) { }
+    return {};
+})();
+let savingsGoals = (() => {
+    try {
+        const stored = localStorage.getItem('goz_cached_goals');
+        if (stored) return JSON.parse(stored);
+    } catch (e) { }
+    return [];
+})();
 let budgetYear = new Date().getFullYear();
 let exchangeRate = null;
 let usdRate = null;
@@ -465,54 +477,73 @@ async function handleAuthChange(event, session) {
     }
 }
 
+function setDefaultDate() {
+    const now = new Date();
+    const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    const dayName = days[now.getDay()];
+    const formatted = `${dayName}, ${now.getDate()} tháng ${now.getMonth() + 1}, ${now.getFullYear()}`;
+
+    const dateMobile = document.getElementById('currentDate');
+    const dateDesktop = document.getElementById('currentDateDesktop');
+    if (dateMobile) dateMobile.textContent = formatted;
+    if (dateDesktop) dateDesktop.textContent = formatted;
+}
+
 async function showApp() {
+    // 1. Enter web immediately - never block user with full-page loading overlay
     document.getElementById('authOverlay').style.display = 'none';
-    checkPinState();
-    document.getElementById('loadingOverlay').style.display = 'flex';
+    const loadingEl = document.getElementById('loadingOverlay');
+    if (loadingEl) loadingEl.style.display = 'none';
     document.getElementById('appWrapper').style.display = 'block';
 
-    // Update user badge
-    try {
-        const profile = await getProfile();
-        const name = profile?.full_name || currentUser.email?.split('@')[0] || 'User';
-        document.getElementById('userName').textContent = name;
-    } catch (e) {
-        document.getElementById('userName').textContent = currentUser.email?.split('@')[0] || 'User';
-    }
-
-    // Load data from Supabase
-    try {
-        monthlyBudget = applyDemoBudgetIfEmpty(await loadBudgets());
-        savingsGoals = enrichGoalsWithMeta(await loadGoals());
-        if (typeof window.loadPortfolioData === 'function') {
-            await window.loadPortfolioData();
-        }
-    } catch (e) {
-        console.error('Load data error:', e);
-        showToast('Lỗi tải dữ liệu: ' + e.message, 'error');
-        monthlyBudget = {};
-        savingsGoals = [];
-    }
-
-    function setDefaultDate() {
-        const now = new Date();
-        const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-        const dayName = days[now.getDay()];
-        const formatted = `${dayName}, ${now.getDate()} tháng ${now.getMonth() + 1}, ${now.getFullYear()}`;
-
-        const dateMobile = document.getElementById('currentDate');
-        const dateDesktop = document.getElementById('currentDateDesktop');
-        if (dateMobile) dateMobile.textContent = formatted;
-        if (dateDesktop) dateDesktop.textContent = formatted;
-    }
-
-    document.getElementById('loadingOverlay').style.display = 'none';
+    checkPinState();
     setDefaultDate();
+
+    // 2. Immediate instant hydration with cached data
+    if (currentUser) {
+        const cachedName = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
+        const nameEl = document.getElementById('userName');
+        if (nameEl) nameEl.textContent = cachedName;
+    }
+
     renderAll();
     switchTab('overview');
     fetchExchangeRate();
     setInterval(fetchExchangeRate, 1980000);
     registerSW();
+
+    // 3. Silent background synchronization with Supabase (non-blocking)
+    (async () => {
+        try {
+            const profile = await getProfile();
+            const name = profile?.full_name || currentUser?.email?.split('@')[0] || 'User';
+            const nameEl = document.getElementById('userName');
+            if (nameEl) nameEl.textContent = name;
+        } catch (e) { }
+
+        try {
+            const [budgets, goals] = await Promise.all([
+                loadBudgets(),
+                loadGoals()
+            ]);
+            monthlyBudget = applyDemoBudgetIfEmpty(budgets);
+            savingsGoals = enrichGoalsWithMeta(goals);
+
+            try {
+                localStorage.setItem('goz_cached_budget', JSON.stringify(monthlyBudget));
+                localStorage.setItem('goz_cached_goals', JSON.stringify(savingsGoals));
+            } catch (e) { }
+
+            if (typeof window.loadPortfolioData === 'function') {
+                await window.loadPortfolioData();
+            }
+
+            // Silently refresh UI components with latest cloud data
+            renderAll();
+        } catch (e) {
+            console.error('Background sync error:', e);
+        }
+    })();
 }
 
 function showAuth() {

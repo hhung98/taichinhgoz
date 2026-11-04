@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function () {
-            const CURRENT_VER = 'v78';
+            const CURRENT_VER = 'v79';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=78">
+    <link rel="stylesheet" href="style.css?v=79">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -120,12 +120,12 @@
     </div>
 
     <!-- LOADING OVERLAY -->
-    <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-overlay" id="loadingOverlay" style="display:none">
         <div class="loading-spinner"></div>
         <p>Đang tải...</p>
     </div>
 
-    <div class="app-wrapper" id="appWrapper" style="display:none">
+    <div class="app-wrapper" id="appWrapper">
         <!-- TOP HEADER (UNIFIED DASHBOARD NAVIGATION & CONTROLS) -->
         <header class="app-top-header" id="appTopHeader" role="banner">
             <div class="header-inner">
@@ -1054,9 +1054,9 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js?v=70"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="gsap.min.js?v=78"></script>
-    <script src="app.js?v=78"></script>
-    <script src="portfolio.js?v=78"></script>
+    <script src="gsap.min.js?v=79"></script>
+    <script src="app.js?v=79"></script>
+    <script src="portfolio.js?v=79"></script>
 </body>
 
 </html>
