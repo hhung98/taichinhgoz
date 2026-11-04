@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function () {
-            const CURRENT_VER = 'v81';
+            const CURRENT_VER = 'v82';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=81">
+    <link rel="stylesheet" href="style.css?v=82">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -449,6 +449,13 @@
                     <div class="portfolio-hero-main">
                         <h2 class="portfolio-hero-amount" id="portfolioHeroTotal">7,178,599 ₩</h2>
                         <div class="portfolio-hero-sub" id="portfolioHeroSub"></div>
+                        <div class="portfolio-hero-pnl-wrap" id="portfolioHeroPnl"></div>
+                    </div>
+                    <!-- CONTINUOUS ASSET ALLOCATION RIBBON -->
+                    <div class="portfolio-ribbon-track" id="portfolioRibbonTrack" title="Tỷ lệ phân bổ danh mục tài sản">
+                        <div class="ribbon-bar cash" id="ribbonBarCash" style="width: 0%;" title="Tiền mặt"></div>
+                        <div class="ribbon-bar crypto" id="ribbonBarCrypto" style="width: 0%;" title="Crypto"></div>
+                        <div class="ribbon-bar stock" id="ribbonBarStock" style="width: 0%;" title="Cổ phiếu VN"></div>
                     </div>
                     <div class="portfolio-hero-breakdown">
                         <div class="portfolio-sub-card cash" onclick="setAssetFilter('cash')" title="Lọc xem Tiền mặt">
@@ -486,6 +493,28 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- ASSET TOOLBAR & SEARCH -->
+                <div class="asset-toolbar-wrap">
+                    <div class="asset-search-box">
+                        <i class="icon-svg" data-lucide="search"></i>
+                        <input type="text" id="assetSearchInput" placeholder="Tìm tài sản (BTC, FPT, Tiền mặt...)" oninput="filterAndSortAssets()">
+                        <button type="button" class="btn-clear-search" id="assetSearchClearBtn" onclick="clearAssetSearch()" style="display:none;" title="Xóa tìm kiếm">✕</button>
+                    </div>
+                    <div class="asset-toolbar-right">
+                        <select id="assetSortSelect" class="asset-sort-select" onchange="filterAndSortAssets()" title="Sắp xếp danh mục">
+                            <option value="val_desc">Giá trị: Cao → Thấp</option>
+                            <option value="val_asc">Giá trị: Thấp → Cao</option>
+                            <option value="pnl_desc">Lãi nhiều nhất</option>
+                            <option value="pnl_asc">Lỗ nhiều nhất</option>
+                            <option value="name_asc">Tên: A → Z</option>
+                        </select>
+                        <button class="asset-sync-btn" id="assetSyncBtn" onclick="syncAllLiveAssetPrices()" title="Lấy giá live mới nhất từ Binance và thị trường chứng khoán">
+                            <i class="icon-svg" data-lucide="refresh-cw" id="assetSyncIcon"></i>
+                            <span>Cập nhật giá</span>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- ASSET FILTERS BAR -->
                 <div class="asset-filters-bar">
@@ -1054,10 +1083,10 @@
     <div class="toast" id="toast"></div>
     <script src="supabase.js?v=70"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="gsap.min.js?v=81"></script>
-    <script src="countup.js?v=81"></script>
-    <script src="app.js?v=81"></script>
-    <script src="portfolio.js?v=81"></script>
+    <script src="gsap.min.js?v=82"></script>
+    <script src="countup.js?v=82"></script>
+    <script src="app.js?v=82"></script>
+    <script src="portfolio.js?v=82"></script>
 </body>
 
 </html>

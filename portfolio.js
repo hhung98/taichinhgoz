@@ -117,6 +117,53 @@ window.setAssetFilter = function (filter) {
     if (secCash) secCash.style.display = (filter === 'all' || filter === 'cash') ? 'block' : 'none';
 };
 
+let assetSearchQuery = '';
+let assetSortMode = 'val_desc';
+
+window.filterAndSortAssets = function () {
+    const searchInput = document.getElementById('assetSearchInput');
+    const clearBtn = document.getElementById('assetSearchClearBtn');
+    const sortSelect = document.getElementById('assetSortSelect');
+
+    assetSearchQuery = (searchInput?.value || '').trim().toLowerCase();
+    if (clearBtn) clearBtn.style.display = assetSearchQuery ? 'inline-flex' : 'none';
+    if (sortSelect) assetSortMode = sortSelect.value || 'val_desc';
+
+    renderPortfolio();
+};
+
+window.clearAssetSearch = function () {
+    const searchInput = document.getElementById('assetSearchInput');
+    if (searchInput) searchInput.value = '';
+    window.filterAndSortAssets();
+};
+
+window.syncAllLiveAssetPrices = async function () {
+    const icon = document.getElementById('assetSyncIcon');
+    const btn = document.getElementById('assetSyncBtn');
+    if (icon) icon.classList.add('spinning');
+    if (btn) btn.disabled = true;
+
+    try {
+        await Promise.allSettled([
+            refreshCryptoPrices(),
+            refreshStockPrices()
+        ]);
+        renderPortfolio();
+        updateOverviewCards();
+        if (typeof window.showToast === 'function') {
+            window.showToast('Đã đồng bộ giá trực tiếp từ Binance & VN Stock!', 'success');
+        }
+    } catch (e) {
+        console.warn('Sync prices error:', e);
+    } finally {
+        setTimeout(() => {
+            if (icon) icon.classList.remove('spinning');
+            if (btn) btn.disabled = false;
+        }, 600);
+    }
+};
+
 // Chart Mode Selector
 window.chartViewMode = localStorage.getItem('goz_chart_mode') || 'line';
 window.setChartTypeMode = function (mode) {
@@ -776,6 +823,77 @@ window.renderPortfolio = function () {
         elStockNote.textContent = `${sign}${pct.toFixed(1)}% (${sign}${diffM})`;
     }
 
+    // Update Continuous Asset Allocation Ribbon
+    const elRibbonCash = document.getElementById('ribbonBarCash');
+    const elRibbonCrypto = document.getElementById('ribbonBarCrypto');
+    const elRibbonStock = document.getElementById('ribbonBarStock');
+    if (elRibbonCash) {
+        elRibbonCash.style.width = cashPct + '%';
+        elRibbonCash.setAttribute('title', `Tiền mặt: ${cashPct}% (${fmtDisplayCur(cashTotalInCur)})`);
+    }
+    if (elRibbonCrypto) {
+        elRibbonCrypto.style.width = cryptoPct + '%';
+        elRibbonCrypto.setAttribute('title', `Crypto: ${cryptoPct}% (${fmtDisplayCur(cryptoTotalInCur)})`);
+    }
+    if (elRibbonStock) {
+        elRibbonStock.style.width = stockPct + '%';
+        elRibbonStock.setAttribute('title', `Cổ phiếu VN: ${stockPct}% (${fmtDisplayCur(stockTotalInCur)})`);
+    }
+
+    // Calculate Total Portfolio Investment Return (Crypto + Stocks)
+    const totalInvestValInDisplay = cryptoTotalInCur + stockTotalInCur;
+    const costCryptoInDisplay = convertCurrency(cryptoCostUSD, 'USD', displayCurrency);
+    const costStockInDisplay = convertCurrency(stockCostVND, 'VND', displayCurrency);
+    const totalInvestCostInDisplay = costCryptoInDisplay + costStockInDisplay;
+    const totalInvestNetReturn = totalInvestValInDisplay - totalInvestCostInDisplay;
+    const totalInvestReturnPct = totalInvestCostInDisplay > 0 ? (totalInvestNetReturn / totalInvestCostInDisplay) * 100 : 0;
+    const isInvestPos = totalInvestNetReturn >= 0;
+    const investSign = isInvestPos ? '+' : '';
+
+    const heroPnlEl = document.getElementById('portfolioHeroPnl');
+    if (heroPnlEl) {
+        if (totalInvestCostInDisplay > 0) {
+            heroPnlEl.innerHTML = `
+                <span class="portfolio-pnl-pill ${isInvestPos ? 'pos' : 'neg'}">
+                    <i class="icon-svg" data-lucide="${isInvestPos ? 'trending-up' : 'trending-down'}"></i>
+                    <span>Lợi nhuận đầu tư: <strong>${investSign}${totalInvestReturnPct.toFixed(2)}%</strong> (${investSign}${fmtDisplayCur(totalInvestNetReturn)})</span>
+                </span>
+            `;
+        } else {
+            heroPnlEl.innerHTML = '';
+        }
+    }
+
+    // Filter and Sort Assets based on Search & Sort Toolbar
+    const sortAndFilterItems = (items) => {
+        let result = items;
+        if (assetSearchQuery) {
+            result = result.filter(item => {
+                const sym = (item.symbol || '').toLowerCase();
+                const name = (item.name || '').toLowerCase();
+                const curr = (item.currency || '').toLowerCase();
+                return sym.includes(assetSearchQuery) || name.includes(assetSearchQuery) || curr.includes(assetSearchQuery);
+            });
+        }
+        return result.sort((a, b) => {
+            if (assetSortMode === 'val_asc') return a.valInDisplay - b.valInDisplay;
+            if (assetSortMode === 'val_desc') return b.valInDisplay - a.valInDisplay;
+            if (assetSortMode === 'name_asc') return (a.symbol || a.name || '').localeCompare(b.symbol || b.name || '');
+            if (assetSortMode === 'pnl_desc' || assetSortMode === 'pnl_asc') {
+                const pnlA = a.type === 'crypto' ? (a.costUSD > 0 ? (a.valUSD - a.costUSD) / a.costUSD : 0)
+                    : (a.type === 'stock_vn' ? (a.costVND > 0 ? (a.valVND - a.costVND) / a.costVND : 0) : 0);
+                const pnlB = b.type === 'crypto' ? (b.costUSD > 0 ? (b.valUSD - b.costUSD) / b.costUSD : 0)
+                    : (b.type === 'stock_vn' ? (b.costVND > 0 ? (b.valVND - b.costVND) / b.costVND : 0) : 0);
+                return assetSortMode === 'pnl_desc' ? pnlB - pnlA : pnlA - pnlB;
+            }
+            return b.valInDisplay - a.valInDisplay;
+        });
+    };
+
+    const displayCryptoItems = sortAndFilterItems([...cryptoItems]);
+    const displayStockItems = sortAndFilterItems([...stockItems]);
+    const displayCashItems = sortAndFilterItems([...cashItems]);
+
     // Update Filter Counts
     const elCountAll = document.getElementById('filterCountAll');
     const elCountCrypto = document.getElementById('filterCountCrypto');
@@ -826,32 +944,43 @@ window.renderPortfolio = function () {
     // Render Crypto List
     const cryptoList = document.getElementById('cryptoListContainer');
     if (cryptoList) {
-        if (cryptoItems.length === 0) {
-            cryptoList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Chưa có đồng coin nào. Bấm <strong>+ Thêm Coin</strong> để thêm.</div>';
+        if (displayCryptoItems.length === 0) {
+            cryptoList.innerHTML = assetSearchQuery
+                ? '<div class="asset-empty-search">Không tìm thấy đồng coin nào khớp với từ khóa.</div>'
+                : '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Chưa có đồng coin nào. Bấm <strong>+ Thêm Coin</strong> để thêm.</div>';
         } else {
-            cryptoList.innerHTML = cryptoItems.map(c => {
+            cryptoList.innerHTML = displayCryptoItems.map(c => {
                 const diff = c.valUSD - c.costUSD;
                 const pct = c.costUSD > 0 ? (diff / c.costUSD) * 100 : 0;
                 const isPos = diff >= 0;
                 const badgeClass = c.symbol.toLowerCase();
                 const sign = isPos ? '+' : '';
                 const usdSign = isPos ? '+$' : '-$';
+
+                const sym = (c.symbol || '').trim();
+                let displayName = (c.name || '').trim();
+                if (!displayName || displayName.toUpperCase() === sym.toUpperCase()) {
+                    const pop = POPULAR_CRYPTO_LIST.find(p => p.s.toUpperCase() === sym.toUpperCase());
+                    displayName = pop ? pop.n : '';
+                }
+                const hasSubtitle = displayName && displayName.toUpperCase() !== sym.toUpperCase();
+
                 return `
                     <div class="asset-item-row">
                         <div class="asset-item-left">
                             <div class="asset-badge crypto-badge ${badgeClass}">
-                                <span class="badge-symbol-text">${escapeHtml(c.symbol)}</span>
+                                <span class="badge-symbol-text">${escapeHtml(sym)}</span>
                             </div>
                             <div class="asset-info">
                                 <div class="asset-title-line">
-                                    <span class="asset-symbol-strong">${escapeHtml(c.symbol)}</span>
-                                    <span class="asset-name-muted">${escapeHtml(c.name)}</span>
+                                    <span class="asset-symbol-strong">${escapeHtml(sym)}</span>
+                                    ${hasSubtitle ? `<span class="asset-name-muted">${escapeHtml(displayName)}</span>` : ''}
                                     <span class="asset-price-pill" title="Giá thời gian thực">
                                         $${Number(c.current_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                                     </span>
                                 </div>
                                 <div class="asset-meta-line">
-                                    <span>Nắm giữ: <strong>${Number(c.amount).toLocaleString('en-US')} ${escapeHtml(c.symbol)}</strong></span>
+                                    <span>Nắm giữ: <strong>${Number(c.amount).toLocaleString('en-US')} ${escapeHtml(sym)}</strong></span>
                                     <span class="meta-dot">•</span>
                                     <span>Giá mua: <strong>$${Number(c.buy_price).toLocaleString('en-US', { maximumFractionDigits: 4 })}</strong></span>
                                 </div>
@@ -879,10 +1008,12 @@ window.renderPortfolio = function () {
     // Render Stocks List
     const stockList = document.getElementById('stockListContainer');
     if (stockList) {
-        if (stockItems.length === 0) {
-            stockList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Chưa có cổ phiếu nào. Bấm <strong>+ Thêm Cổ Phiếu</strong> để thêm.</div>';
+        if (displayStockItems.length === 0) {
+            stockList.innerHTML = assetSearchQuery
+                ? '<div class="asset-empty-search">Không tìm thấy cổ phiếu nào khớp với từ khóa.</div>'
+                : '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Chưa có cổ phiếu nào. Bấm <strong>+ Thêm Cổ Phiếu</strong> để thêm.</div>';
         } else {
-            stockList.innerHTML = stockItems.map(s => {
+            stockList.innerHTML = displayStockItems.map(s => {
                 const diff = s.valVND - s.costVND;
                 const pct = s.costVND > 0 ? (diff / s.costVND) * 100 : 0;
                 const isPos = diff >= 0;
@@ -932,10 +1063,12 @@ window.renderPortfolio = function () {
     // Render Cash List
     const cashList = document.getElementById('cashListContainer');
     if (cashList) {
-        if (cashItems.length === 0) {
-            cashList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Chưa có tài khoản tiền mặt nào. Bấm <strong>+ Thêm Tiền Mặt</strong> để thêm.</div>';
+        if (displayCashItems.length === 0) {
+            cashList.innerHTML = assetSearchQuery
+                ? '<div class="asset-empty-search">Không tìm thấy tài khoản tiền mặt nào khớp với từ khóa.</div>'
+                : '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Chưa có tài khoản tiền mặt nào. Bấm <strong>+ Thêm Tiền Mặt</strong> để thêm.</div>';
         } else {
-            cashList.innerHTML = cashItems.map(k => {
+            cashList.innerHTML = displayCashItems.map(k => {
                 const badgeSymbol = k.currency === 'KRW' ? '₩' : (k.currency === 'VND' ? '₫' : '$');
                 return `
                     <div class="asset-item-row">
@@ -1028,6 +1161,10 @@ const POPULAR_CRYPTO_LIST = [
     { s: 'WIF', n: 'dogwifhat', r: 39 },
     { s: 'BONK', n: 'Bonk', r: 40 },
     { s: 'FLOKI', n: 'Floki', r: 41 },
+    { s: 'ENA', n: 'Ethena', r: 42 },
+    { s: 'PYTH', n: 'Pyth Network', r: 43 },
+    { s: 'PENDLE', n: 'Pendle', r: 44 },
+    { s: 'SEI', n: 'Sei', r: 45 },
     { s: 'SEI', n: 'Sei', r: 42 },
     { s: 'AAVE', n: 'Aave', r: 43 },
     { s: 'ALGO', n: 'Algorand', r: 44 },
@@ -1315,14 +1452,15 @@ window.calcCryptoModalPreview = function () {
     const costUSD = amt * buy;
     const diffUSD = valUSD - costUSD;
     const pct = costUSD > 0 ? (diffUSD / costUSD) * 100 : 0;
-    const valKRW = convertCurrency(valUSD, 'USD', 'KRW');
+    const activeCur = window.displayCurrency || 'KRW';
+    const valInActiveCur = convertCurrency(valUSD, 'USD', activeCur);
 
     const prevVal = document.getElementById('cryptoPreviewVal');
     const prevKRW = document.getElementById('cryptoPreviewKRW');
     const prevPnL = document.getElementById('cryptoPreviewPnL');
 
     if (prevVal) prevVal.textContent = '$' + valUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    if (prevKRW) prevKRW.textContent = Math.round(valKRW).toLocaleString('vi-VN') + ' ₩';
+    if (prevKRW) prevKRW.textContent = fmtDisplayCur(valInActiveCur, activeCur);
     if (prevPnL) {
         const sign = diffUSD >= 0 ? '+' : '';
         const usdSign = diffUSD >= 0 ? '+$' : '-$';
@@ -1496,14 +1634,15 @@ window.calcStockModalPreview = function () {
     const costVND = amt * buy;
     const diffVND = valVND - costVND;
     const pct = costVND > 0 ? (diffVND / costVND) * 100 : 0;
-    const valKRW = convertCurrency(valVND, 'VND', 'KRW');
+    const activeCur = window.displayCurrency || 'KRW';
+    const valInActiveCur = convertCurrency(valVND, 'VND', activeCur);
 
     const prevVal = document.getElementById('stockPreviewVal');
     const prevKRW = document.getElementById('stockPreviewKRW');
     const prevPnL = document.getElementById('stockPreviewPnL');
 
     if (prevVal) prevVal.textContent = Math.round(valVND).toLocaleString('vi-VN') + ' ₫';
-    if (prevKRW) prevKRW.textContent = Math.round(valKRW).toLocaleString('vi-VN') + ' ₩';
+    if (prevKRW) prevKRW.textContent = fmtDisplayCur(valInActiveCur, activeCur);
     if (prevPnL) {
         const sign = diffVND >= 0 ? '+' : '';
         prevPnL.textContent = sign + pct.toFixed(2) + '% (' + sign + Math.round(diffVND).toLocaleString('vi-VN') + ' đ)';
