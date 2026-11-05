@@ -21,6 +21,7 @@ let portfolioAssets = [];
 let currentAssetFilter = 'all'; // 'all', 'crypto', 'stock_vn', 'cash'
 let displayCurrency = localStorage.getItem('goz_display_currency') || 'KRW';
 window.displayCurrency = displayCurrency;
+window.updateOverviewCards = updateOverviewCards;
 let isPrivacyMode = localStorage.getItem('goz_privacy_mode') === 'true';
 let chartViewMode = 'combo'; // 'combo', 'bar', 'line'
 

@@ -25,9 +25,9 @@
 
     function parseNumericValue(text) {
         if (!text || typeof text !== 'string') return 0;
-        const isUSD = text.includes('$');
+        const isUSD = text.includes('$') || window.displayCurrency === 'USD';
         if (isUSD) {
-            const cleaned = text.replace(/[^0-9.-]/g, '');
+            const cleaned = text.replace(/,/g, '').replace(/[^0-9.-]/g, '');
             const val = parseFloat(cleaned);
             return isNaN(val) ? 0 : val;
         }
@@ -37,11 +37,11 @@
         return isNaN(val) ? 0 : val;
     }
 
-    function formatNumber(val, { currency = 'VND', decimals, separator, prefix, suffix }) {
+    function formatNumber(val, { currency, decimals, separator, prefix, suffix } = {}) {
         if (window.isPrivacyMode) return '••••••••';
 
         const num = Number(val) || 0;
-        const cur = currency ? currency.toUpperCase() : 'VND';
+        const cur = (currency || window.displayCurrency || 'VND').toUpperCase();
 
         // Auto defaults based on currency
         const dec = decimals !== undefined ? decimals : (cur === 'USD' ? 2 : 0);
@@ -73,22 +73,32 @@
             return;
         }
 
+        const currency = options.currency || window.displayCurrency || 'VND';
+        const decimals = options.decimals;
+        const separator = options.separator;
+        const prefix = options.prefix;
+        const suffix = options.suffix;
+
+        // Check if currency has changed since previous run on this element
+        const currencyChanged = el._countUpCurrency !== undefined && el._countUpCurrency !== currency;
+        el._countUpCurrency = currency;
+
         const toVal = Number(options.to !== undefined ? options.to : parseNumericValue(el.textContent));
         const prevVal = el._countUpCurrentVal !== undefined
             ? el._countUpCurrentVal
             : parseNumericValue(el.textContent);
-        const fromVal = Number(options.from !== undefined ? options.from : prevVal);
+
+        // When currency switches (e.g. VND -> USD), start from 0 instead of interpolating dissimilar currency units
+        const fromVal = currencyChanged ? 0 : Number(options.from !== undefined ? options.from : prevVal);
 
         const duration = typeof options.duration === 'number' ? options.duration : 0.45; // 450ms snappy & smooth roll
         const delay = (options.delay || 0) * 1000;
         const easing = options.easing || 'easeOut';
         const easeFn = EASINGS[easing] || EASINGS.easeOut;
 
-        const currency = options.currency || window.displayCurrency || 'VND';
-        const decimals = options.decimals;
-        const separator = options.separator;
-        const prefix = options.prefix;
-        const suffix = options.suffix;
+        // Always store latest options on the element so hover replay always uses fresh state & currency
+        el._countUpOptions = { ...options, currency };
+        el._countUpTargetVal = toVal;
 
         // Cancel previous running animation on this element to prevent collisions
         if (_activeAnimations.has(el)) {
@@ -96,16 +106,22 @@
             _activeAnimations.delete(el);
         }
 
-        // Setup hover replay if requested
+        // Setup hover replay if requested (reads latest options and dynamic currency dynamically)
         if (options.replayOnHover && !el._hasHoverReplay) {
             el._hasHoverReplay = true;
             el.addEventListener('mouseenter', () => {
                 if (window.isPrivacyMode) return;
-                CountUp(el, { ...options, from: 0, to: el._countUpTargetVal !== undefined ? el._countUpTargetVal : toVal, duration: 0.65 });
+                const latestOpts = el._countUpOptions || {};
+                const activeCur = window.displayCurrency || latestOpts.currency || 'VND';
+                CountUp(el, {
+                    ...latestOpts,
+                    currency: activeCur,
+                    from: 0,
+                    to: el._countUpTargetVal !== undefined ? el._countUpTargetVal : toVal,
+                    duration: 0.45
+                });
             });
         }
-
-        el._countUpTargetVal = toVal;
 
         // If reduced motion is requested, render immediately
         if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
@@ -162,4 +178,3 @@
     window.CountUp = CountUp;
     window.countUp = CountUp;
 })(window);
-
