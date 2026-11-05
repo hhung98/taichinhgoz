@@ -836,20 +836,32 @@ body.dark .header-tab-btn.active {
     text-align: right;
 }
 
-.goal-delete {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: rgba(255, 107, 107, 0.1);
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 0.7rem;
-    color: var(--accent-red);
-    transition: var(--transition);
+/* .goal-delete styled above */
+
+.goal-delete:active {
+    transform: scale(0.94);
 }
 
-.goal-delete:hover {
-    background: rgba(255, 107, 107, 0.2);
+.goal-delete svg,
+.goal-delete .icon-svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    stroke-width: 2.6;
+    display: block;
+}
+
+[data-theme="light"] .goal-delete {
+    background: #fee2e2;
+    border: 1px solid #f87171;
+    color: #dc2626;
+}
+
+[data-theme="light"] .goal-delete:hover {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
 }
 
 /* BUDGET TABLE */

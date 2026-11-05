@@ -699,6 +699,7 @@ function updateRateUI(widget, statusEl, usdWidget, usdSubtext, statusLabel, isSt
 
     if (typeof window.renderPortfolio === 'function') window.renderPortfolio();
     if (typeof window.updateOverviewCards === 'function') window.updateOverviewCards();
+    renderSavingsGoals();
     updateExchangeMetaUI();
 }
 
@@ -1293,7 +1294,7 @@ async function addSavingsGoal() {
         return;
     }
 
-    const r = exchangeRate || 18.5;
+    const r = (exchangeRate && exchangeRate > 0) ? exchangeRate : 19.18;
     let amountKRW, amountVND;
     if (currency === 'VND') {
         amountVND = rawAmount;
@@ -1306,9 +1307,14 @@ async function addSavingsGoal() {
     try {
         const goal = await saveGoal(name, amountKRW, months);
         goal.currency = currency;
-        goal.amountVND = amountVND;
-        goal.amountKRW = amountKRW;
-        saveGoalMeta(goal.id, { currency, amountVND, amountKRW });
+        if (currency === 'VND') {
+            goal.amountVND = amountVND;
+            delete goal.amountKRW; // Gốc VND: amountKRW luôn tính động theo tỷ giá
+        } else {
+            goal.amountKRW = amountKRW;
+            delete goal.amountVND; // Gốc KRW: amountVND luôn tính động theo tỷ giá
+        }
+        saveGoalMeta(goal.id, { currency, amountVND: goal.amountVND, amountKRW: goal.amountKRW });
         savingsGoals.push(goal);
         document.getElementById('goalName').value = '';
         document.getElementById('goalAmount').value = '';
@@ -1337,12 +1343,23 @@ async function deleteSavingsGoal(id) {
 function toggleGoalCurrency(id) {
     const g = savingsGoals.find(item => item.id === id);
     if (!g) return;
-    const r = exchangeRate || 18.5;
+    const r = (window.exchangeRate && window.exchangeRate > 0) ? window.exchangeRate : 19.18;
     const currentCurr = g.currency === 'VND' ? 'VND' : 'KRW';
     const newCurr = currentCurr === 'VND' ? 'KRW' : 'VND';
     g.currency = newCurr;
-    if (!g.amountVND && g.amountKRW) g.amountVND = Math.round(g.amountKRW * r);
-    if (!g.amountKRW && g.amountVND) g.amountKRW = Math.round(g.amountVND / r);
+
+    if (newCurr === 'KRW') {
+        // Đổi sang gốc KRW: lấy giá trị tương đương KRW theo tỷ giá hiện tại và ghim làm gốc KRW mới
+        const currentVND = g.amountVND || (g.amountKRW ? Math.round(g.amountKRW * r) : (g.amount_krw ? Math.round(g.amount_krw * r) : 0));
+        g.amountKRW = r > 0 ? Math.round(currentVND / r) : 0;
+        delete g.amountVND;
+    } else {
+        // Đổi sang gốc VND: lấy giá trị tương đương VND theo tỷ giá hiện tại và ghim làm gốc VND mới
+        const currentKRW = g.amountKRW || g.amount_krw || (g.amountVND ? Math.round(g.amountVND / r) : 0);
+        g.amountVND = Math.round(currentKRW * r);
+        delete g.amountKRW;
+    }
+
     saveGoalMeta(id, { currency: newCurr, amountVND: g.amountVND, amountKRW: g.amountKRW });
     renderSavingsGoals();
     showToast(`Đã đổi mục tiêu "${g.name}" sang gốc ${newCurr}`, 'info');
@@ -1354,13 +1371,26 @@ function renderSavingsGoals() {
     if (!container) return;
     if (!savingsGoals.length) { container.innerHTML = ''; return; }
     const { balanceKRW } = getAllTimeTotals();
-    const r = exchangeRate || 18.5;
+    const r = (window.exchangeRate && window.exchangeRate > 0) ? window.exchangeRate : 19.18;
     const balanceVND = Math.round(balanceKRW * r);
 
     container.innerHTML = savingsGoals.map(g => {
         const isVND = g.currency === 'VND';
-        const targetVND = g.amountVND || Math.round((g.amountKRW || 0) * r);
-        const targetKRW = g.amountKRW || Math.round((g.amountVND || 0) / r);
+        let targetVND = 0;
+        let targetKRW = 0;
+
+        if (isVND) {
+            // Khi đặt gốc là VND: Giữ nguyên cố định số tiền gốc VND anh nhập (vd: 1.000.000.000 ₫)
+            targetVND = Number(g.amountVND) || (g.amount_krw ? Math.round(g.amount_krw * r) : (g.amountKRW ? Math.round(g.amountKRW * r) : 0));
+            // Vế sau quy đổi tương đương KRW luôn tính động theo tỷ giá thời gian thực
+            targetKRW = r > 0 ? Math.round(targetVND / r) : 0;
+        } else {
+            // Khi đặt gốc là KRW: Giữ nguyên cố định số tiền gốc KRW anh nhập (vd: 50.000.000 ₩)
+            targetKRW = Number(g.amountKRW) || Number(g.amount_krw) || (g.amountVND ? Math.round(g.amountVND / r) : 0);
+            // Vế sau quy đổi tương đương VND luôn tính động theo tỷ giá thời gian thực
+            targetVND = Math.round(targetKRW * r);
+        }
+
         const pct = isVND
             ? (targetVND > 0 ? Math.min(100, Math.max(0, Math.round((balanceVND / targetVND) * 100))) : 0)
             : (targetKRW > 0 ? Math.min(100, Math.max(0, Math.round((balanceKRW / targetKRW) * 100))) : 0);
@@ -1377,16 +1407,17 @@ function renderSavingsGoals() {
             ? `<span class="goal-meta">${iconMarkup('circle-dollar-sign')} ${isVND ? fmtVND(Math.round(targetVND / g.months)) : fmtKRW(Math.round(targetKRW / g.months))}/tháng</span>`
             : '';
 
-        const remainingVND = Math.max(0, targetVND - balanceVND);
-        const remainingKRW = Math.max(0, targetKRW - balanceKRW);
-
         let remainingText = '';
-        if (pct >= 100 || (remainingVND <= 0 && remainingKRW <= 0)) {
+        if (pct >= 100) {
             remainingText = '(🎉 Hoàn thành)';
         } else if (isVND) {
-            remainingText = `(${fmtVND(remainingVND)} ≈ ${fmtKRW(remainingKRW)})`;
+            const remVND = Math.max(0, targetVND - balanceVND);
+            const remKRW = r > 0 ? Math.round(remVND / r) : 0;
+            remainingText = `(${fmtVND(remVND)} ≈ ${fmtKRW(remKRW)})`;
         } else {
-            remainingText = `(${fmtKRW(remainingKRW)} ≈ ${fmtVND(remainingVND)})`;
+            const remKRW = Math.max(0, targetKRW - balanceKRW);
+            const remVND = Math.round(remKRW * r);
+            remainingText = `(${fmtKRW(remKRW)} ≈ ${fmtVND(remVND)})`;
         }
 
         return `<div class="goal-item">
@@ -1405,9 +1436,16 @@ function renderSavingsGoals() {
                 <span class="goal-pct-val">${pct}%</span>
                 <span class="goal-remaining-sub">${remainingText}</span>
             </div>
-            <button class="goal-delete" onclick="deleteSavingsGoal('${g.id}')" title="Xóa">${iconMarkup('trash-2')}</button>
+            <button class="goal-delete" onclick="deleteSavingsGoal('${g.id}')" title="Xóa mục tiêu" aria-label="Xóa mục tiêu">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
         </div>`;
     }).join('');
+
+    refreshIcons();
 }
 
 // ===== Budget Table =====

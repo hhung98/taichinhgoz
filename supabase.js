@@ -109,6 +109,15 @@ async function loadGoals() {
 
 async function saveGoal(name, amountKRW, months) {
     const monthsVal = (months && Number(months) > 0) ? Number(months) : 0;
+    if (!currentUser || !currentUser.id) {
+        return {
+            id: 'goal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+            name,
+            amountKRW: Number(amountKRW),
+            months: monthsVal,
+            createdAt: new Date().toISOString()
+        };
+    }
     const { data, error } = await supabaseClient
         .from('savings_goals')
         .insert({
@@ -130,6 +139,7 @@ async function saveGoal(name, amountKRW, months) {
 }
 
 async function deleteGoalFromDB(goalId) {
+    if (!currentUser || !currentUser.id) return;
     const { error } = await supabaseClient
         .from('savings_goals')
         .delete()
