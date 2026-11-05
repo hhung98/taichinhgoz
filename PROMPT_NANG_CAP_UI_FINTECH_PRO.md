@@ -51,3 +51,4 @@
 
 ## 5. ĐỒNG BỘ CACHE-BUSTER & HIỆU NĂNG TỐI ĐA
 - Nâng toàn bộ script (`app.js`, `portfolio.js`, `countup.js`, `gsap.min.js`, `style.css`) lên cùng version cache-buster mới nhất để máy người dùng tự động làm mới tức thì.
+
