@@ -1066,7 +1066,9 @@ window.renderPortfolio = function () {
                                 <img src="https://assets.coincap.io/assets/icons/${sym.toLowerCase()}@2x.png"
                                      alt="${escapeHtml(sym)}"
                                      class="asset-coin-icon"
-                                     loading="lazy"
+                                     width="40"
+                                     height="40"
+                                     loading="eager"
                                      onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${sym.toLowerCase()}.png'; this.onerror=()=>{this.style.display='none'; const s=this.nextElementSibling; if(s) s.style.display='flex';};">
                                 <span class="badge-symbol-text" style="display:none;">${escapeHtml(sym)}</span>
                             </div>

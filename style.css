@@ -9512,10 +9512,12 @@ select.goal-currency-select option {
 
 /* ===== Gold Investment Module (Đầu Tư Vàng) ===== */
 .asset-badge.gold-badge {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(217, 119, 6, 0.12));
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.15));
     color: #f59e0b;
-    border-color: rgba(245, 158, 11, 0.35);
-    font-size: 1.25rem;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    font-size: 0.95rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
 }
 
 .asset-cat-icon.gold {
@@ -9523,8 +9525,14 @@ select.goal-currency-select option {
     color: #f59e0b;
 }
 
+.portfolio-sub-card.gold {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .portfolio-sub-card.gold:hover {
     border-color: #f59e0b;
+    box-shadow: 0 8px 24px -6px rgba(245, 158, 11, 0.2);
+    transform: translateY(-2px);
 }
 
 .sub-card-fill.gold-fill {
@@ -9533,6 +9541,68 @@ select.goal-currency-select option {
 
 .ribbon-bar.gold {
     background: #f59e0b;
+}
+
+/* Live Pulse Indicator for Real-time Market Feeds */
+.live-pulse-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: livePulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+@keyframes livePulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* Micro-Interactions on Overview Summary KPI Cards */
+.summary-card {
+    transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.24s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.24s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.25);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.summary-card:active {
+    transform: scale(0.985);
+}
+
+/* Mobile Bottom Navigation Gem Indicator */
+.mobile-bottom-nav a.active {
+    color: var(--accent-primary) !important;
+    position: relative;
+}
+
+.mobile-bottom-nav a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--accent-primary);
+    box-shadow: 0 0 8px var(--accent-primary-glow);
 }
 
 @media (max-width: 992px) {
