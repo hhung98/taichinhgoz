@@ -8,6 +8,8 @@ const DEFAULT_PORTFOLIO_ASSETS = [
     { id: 'def_eth', type: 'crypto', symbol: 'ETH', name: 'Ethereum', amount: 1.2, buy_price: 2950, current_price: 2249.55, currency: 'USD' },
     { id: 'def_sol', type: 'crypto', symbol: 'SOL', name: 'Solana', amount: 15, buy_price: 142, current_price: 91.74, currency: 'USD' },
     { id: 'def_usdt', type: 'crypto', symbol: 'USDT', name: 'Tether USD', amount: 1250, buy_price: 1.0, current_price: 1.0, currency: 'USD' },
+    // Gold Investment (Thị trường Vàng Việt Nam)
+    { id: 'def_sjc', type: 'gold', symbol: 'SJC', code: 'SJL1L10', name: 'Vàng miếng SJC 9999', unit: 'chi', amount: 5, buy_price: 13800000, current_price: 14240000, currency: 'VND' },
     // Stocks VN (Matching Image 2)
     { id: 'def_fpt', type: 'stock_vn', symbol: 'FPT', name: 'Tập đoàn FPT (Công nghệ)', amount: 680, buy_price: 125000, current_price: 58200, currency: 'VND' },
     { id: 'def_hpg', type: 'stock_vn', symbol: 'HPG', name: 'Tập đoàn Hòa Phát (Thép)', amount: 1200, buy_price: 31000, current_price: 28400, currency: 'VND' },
@@ -101,7 +103,7 @@ window.togglePrivacyMode = function () {
 // Filter Category Tabs
 window.setAssetFilter = function (filter) {
     currentAssetFilter = filter;
-    ['all', 'crypto', 'stock_vn', 'cash'].forEach(f => {
+    ['all', 'crypto', 'stock_vn', 'gold', 'cash'].forEach(f => {
         const pill = document.getElementById('filter-asset-' + f);
         if (pill) {
             if (f === filter) pill.classList.add('active');
@@ -111,10 +113,12 @@ window.setAssetFilter = function (filter) {
 
     const secCrypto = document.getElementById('sectionCrypto');
     const secStocks = document.getElementById('sectionStocks');
+    const secGold = document.getElementById('sectionGold');
     const secCash = document.getElementById('sectionCash');
 
     if (secCrypto) secCrypto.style.display = (filter === 'all' || filter === 'crypto') ? 'block' : 'none';
     if (secStocks) secStocks.style.display = (filter === 'all' || filter === 'stock_vn') ? 'block' : 'none';
+    if (secGold) secGold.style.display = (filter === 'all' || filter === 'gold') ? 'block' : 'none';
     if (secCash) secCash.style.display = (filter === 'all' || filter === 'cash') ? 'block' : 'none';
 };
 
@@ -148,12 +152,13 @@ window.syncAllLiveAssetPrices = async function () {
     try {
         await Promise.allSettled([
             refreshCryptoPrices(),
-            refreshStockPrices()
+            refreshStockPrices(),
+            refreshGoldPrices()
         ]);
         renderPortfolio();
         updateOverviewCards();
         if (typeof window.showToast === 'function') {
-            window.showToast('Đã đồng bộ giá trực tiếp từ Binance & VN Stock!', 'success');
+            window.showToast('Đã đồng bộ giá trực tiếp từ Binance, Cổ phiếu & Vàng VN!', 'success');
         }
     } catch (e) {
         console.warn('Sync prices error:', e);
@@ -312,6 +317,23 @@ async function loadPortfolioData() {
         }
     });
     if (hasUpdatedIds && hasLoadedLocal) {
+        savePortfolioToLocal();
+    }
+
+    // Ensure default gold asset exists if no gold is present
+    if (portfolioAssets.length > 0 && !portfolioAssets.some(a => a.type === 'gold')) {
+        portfolioAssets.push({
+            id: generateAssetUUID(),
+            type: 'gold',
+            symbol: 'SJC',
+            code: 'SJL1L10',
+            name: 'Vàng miếng SJC 9999',
+            unit: 'chi',
+            amount: 5,
+            buy_price: 13800000,
+            current_price: 14240000,
+            currency: 'VND'
+        });
         savePortfolioToLocal();
     }
 
@@ -528,6 +550,9 @@ function getPortfolioTotals() {
     let stockTotalInCur = 0;
     let stockCostVND = 0;
     let stockValVND = 0;
+    let goldTotalInCur = 0;
+    let goldCostVND = 0;
+    let goldValVND = 0;
 
     portfolioAssets.forEach(a => {
         const amt = Number(a.amount) || 0;
@@ -548,26 +573,35 @@ function getPortfolioTotals() {
             stockCostVND += costVND;
             const valInDisplay = convertCurrency(valVND, 'VND', displayCurrency);
             stockTotalInCur += valInDisplay;
+        } else if (a.type === 'gold') {
+            const valVND = amt * cur;
+            const costVND = amt * buy;
+            goldValVND += valVND;
+            goldCostVND += costVND;
+            const valInDisplay = convertCurrency(valVND, 'VND', displayCurrency);
+            goldTotalInCur += valInDisplay;
         } else if (a.type === 'cash') {
             const valInDisplay = convertCurrency(amt, a.currency || 'KRW', displayCurrency);
             cashTotalInCur += valInDisplay;
         }
     });
 
-    const grandTotal = cashTotalInCur + cryptoTotalInCur + stockTotalInCur;
+    const grandTotal = cashTotalInCur + cryptoTotalInCur + stockTotalInCur + goldTotalInCur;
     return {
         grandTotal,
         cashTotalInCur,
         cryptoTotalInCur,
         stockTotalInCur,
+        goldTotalInCur,
         cryptoCostUSD,
         cryptoValUSD,
         stockCostVND,
-        stockValVND
+        stockValVND,
+        goldCostVND,
+        goldValVND
     };
 }
 
-// Format cross-currency sub-values for intuitive multi-currency display
 function formatCrossCurrenciesHTML(amount, sourceCur = 'KRW') {
     if (isPrivacyMode) {
         return '<span class="metric-sub-val">≈ ••••••••</span><span class="metric-sub-val">≈ ••••••••</span>';
@@ -716,14 +750,18 @@ window.renderPortfolio = function () {
         cashTotalInCur,
         cryptoTotalInCur,
         stockTotalInCur,
+        goldTotalInCur,
         cryptoCostUSD,
         cryptoValUSD,
         stockCostVND,
-        stockValVND
+        stockValVND,
+        goldCostVND,
+        goldValVND
     } = getPortfolioTotals();
 
     const cryptoItems = [];
     const stockItems = [];
+    const goldItems = [];
     const cashItems = [];
 
     portfolioAssets.forEach(a => {
@@ -741,6 +779,11 @@ window.renderPortfolio = function () {
             const costVND = amt * buy;
             const valInDisplay = convertCurrency(valVND, 'VND', displayCurrency);
             stockItems.push({ ...a, valVND, costVND, valInDisplay });
+        } else if (a.type === 'gold') {
+            const valVND = amt * cur;
+            const costVND = amt * buy;
+            const valInDisplay = convertCurrency(valVND, 'VND', displayCurrency);
+            goldItems.push({ ...a, valVND, costVND, valInDisplay });
         } else if (a.type === 'cash') {
             const valInDisplay = convertCurrency(amt, a.currency || 'KRW', displayCurrency);
             cashItems.push({ ...a, valInDisplay });
@@ -751,13 +794,15 @@ window.renderPortfolio = function () {
     const grandTotalVal = grandTotal > 0 ? grandTotal : 1;
     const cashPct = Math.round((cashTotalInCur / grandTotalVal) * 100);
     const cryptoPct = Math.round((cryptoTotalInCur / grandTotalVal) * 100);
-    const stockPct = Math.max(0, 100 - cashPct - cryptoPct);
+    const stockPct = Math.round((stockTotalInCur / grandTotalVal) * 100);
+    const goldPct = Math.max(0, 100 - cashPct - cryptoPct - stockPct);
 
     const heroTotalEl = document.getElementById('portfolioHeroTotal');
     const heroSubEl = document.getElementById('portfolioHeroSub');
     const heroCashEl = document.getElementById('heroCashTotal');
     const heroCryptoEl = document.getElementById('heroCryptoTotal');
     const heroStockEl = document.getElementById('heroStockTotal');
+    const heroGoldEl = document.getElementById('heroGoldTotal');
     const countBadge = document.getElementById('assetTotalCountBadge');
 
     if (heroTotalEl) {
@@ -824,10 +869,32 @@ window.renderPortfolio = function () {
         elStockNote.textContent = `${sign}${pct.toFixed(1)}% (${sign}${diffM})`;
     }
 
+    const elGoldPct = document.getElementById('heroGoldPct');
+    const elGoldBar = document.getElementById('heroGoldBar');
+    const elGoldNote = document.getElementById('heroGoldNote');
+    if (heroGoldEl) {
+        if (typeof window.CountUp === 'function') {
+            window.CountUp(heroGoldEl, { to: goldTotalInCur, currency: displayCurrency, duration: 0.5 });
+        } else {
+            heroGoldEl.textContent = fmtDisplayCur(goldTotalInCur);
+        }
+    }
+    if (elGoldPct) elGoldPct.textContent = goldPct + '%';
+    if (elGoldBar) elGoldBar.style.width = goldPct + '%';
+    if (elGoldNote) {
+        const diffVND = goldValVND - goldCostVND;
+        const pct = goldCostVND > 0 ? (diffVND / goldCostVND) * 100 : 0;
+        const sign = diffVND >= 0 ? '+' : '';
+        elGoldNote.className = 'sub-card-note ' + (diffVND >= 0 ? 'pos' : 'neg');
+        const diffM = Math.abs(diffVND) >= 1000000 ? (Math.abs(diffVND) / 1000000).toFixed(1) + 'tr' : Math.round(Math.abs(diffVND)).toLocaleString('vi-VN');
+        elGoldNote.textContent = `${sign}${pct.toFixed(1)}% (${sign}${diffM})`;
+    }
+
     // Update Continuous Asset Allocation Ribbon
     const elRibbonCash = document.getElementById('ribbonBarCash');
     const elRibbonCrypto = document.getElementById('ribbonBarCrypto');
     const elRibbonStock = document.getElementById('ribbonBarStock');
+    const elRibbonGold = document.getElementById('ribbonBarGold');
     if (elRibbonCash) {
         elRibbonCash.style.width = cashPct + '%';
         elRibbonCash.setAttribute('title', `Tiền mặt: ${cashPct}% (${fmtDisplayCur(cashTotalInCur)})`);
@@ -840,12 +907,17 @@ window.renderPortfolio = function () {
         elRibbonStock.style.width = stockPct + '%';
         elRibbonStock.setAttribute('title', `Cổ phiếu VN: ${stockPct}% (${fmtDisplayCur(stockTotalInCur)})`);
     }
+    if (elRibbonGold) {
+        elRibbonGold.style.width = goldPct + '%';
+        elRibbonGold.setAttribute('title', `Vàng: ${goldPct}% (${fmtDisplayCur(goldTotalInCur)})`);
+    }
 
-    // Calculate Total Portfolio Investment Return (Crypto + Stocks)
-    const totalInvestValInDisplay = cryptoTotalInCur + stockTotalInCur;
+    // Calculate Total Portfolio Investment Return (Crypto + Stocks + Gold)
+    const totalInvestValInDisplay = cryptoTotalInCur + stockTotalInCur + goldTotalInCur;
     const costCryptoInDisplay = convertCurrency(cryptoCostUSD, 'USD', displayCurrency);
     const costStockInDisplay = convertCurrency(stockCostVND, 'VND', displayCurrency);
-    const totalInvestCostInDisplay = costCryptoInDisplay + costStockInDisplay;
+    const costGoldInDisplay = convertCurrency(goldCostVND, 'VND', displayCurrency);
+    const totalInvestCostInDisplay = costCryptoInDisplay + costStockInDisplay + costGoldInDisplay;
     const totalInvestNetReturn = totalInvestValInDisplay - totalInvestCostInDisplay;
     const totalInvestReturnPct = totalInvestCostInDisplay > 0 ? (totalInvestNetReturn / totalInvestCostInDisplay) * 100 : 0;
     const isInvestPos = totalInvestNetReturn >= 0;
@@ -881,10 +953,13 @@ window.renderPortfolio = function () {
             if (assetSortMode === 'val_desc') return b.valInDisplay - a.valInDisplay;
             if (assetSortMode === 'name_asc') return (a.symbol || a.name || '').localeCompare(b.symbol || b.name || '');
             if (assetSortMode === 'pnl_desc' || assetSortMode === 'pnl_asc') {
-                const pnlA = a.type === 'crypto' ? (a.costUSD > 0 ? (a.valUSD - a.costUSD) / a.costUSD : 0)
-                    : (a.type === 'stock_vn' ? (a.costVND > 0 ? (a.valVND - a.costVND) / a.costVND : 0) : 0);
-                const pnlB = b.type === 'crypto' ? (b.costUSD > 0 ? (b.valUSD - b.costUSD) / b.costUSD : 0)
-                    : (b.type === 'stock_vn' ? (b.costVND > 0 ? (b.valVND - b.costVND) / b.costVND : 0) : 0);
+                const getPnl = (item) => {
+                    if (item.type === 'crypto') return item.costUSD > 0 ? (item.valUSD - item.costUSD) / item.costUSD : 0;
+                    if (item.type === 'stock_vn' || item.type === 'gold') return item.costVND > 0 ? (item.valVND - item.costVND) / item.costVND : 0;
+                    return 0;
+                };
+                const pnlA = getPnl(a);
+                const pnlB = getPnl(b);
                 return assetSortMode === 'pnl_desc' ? pnlB - pnlA : pnlA - pnlB;
             }
             return b.valInDisplay - a.valInDisplay;
@@ -893,16 +968,19 @@ window.renderPortfolio = function () {
 
     const displayCryptoItems = sortAndFilterItems([...cryptoItems]);
     const displayStockItems = sortAndFilterItems([...stockItems]);
+    const displayGoldItems = sortAndFilterItems([...goldItems]);
     const displayCashItems = sortAndFilterItems([...cashItems]);
 
     // Update Filter Counts
     const elCountAll = document.getElementById('filterCountAll');
     const elCountCrypto = document.getElementById('filterCountCrypto');
     const elCountStocks = document.getElementById('filterCountStocks');
+    const elCountGold = document.getElementById('filterCountGold');
     const elCountCash = document.getElementById('filterCountCash');
     if (elCountAll) elCountAll.textContent = portfolioAssets.length;
     if (elCountCrypto) elCountCrypto.textContent = cryptoItems.length;
     if (elCountStocks) elCountStocks.textContent = stockItems.length;
+    if (elCountGold) elCountGold.textContent = goldItems.length;
     if (elCountCash) elCountCash.textContent = cashItems.length;
 
     // Update Section Subtitles
@@ -930,6 +1008,21 @@ window.renderPortfolio = function () {
         const isPos = diffVND >= 0;
         stockSub.innerHTML = `
             <span class="section-sub-val">Tổng: <strong>${fmtDisplayCur(stockTotalInCur)}</strong></span>
+            <span class="section-pnl-pill ${isPos ? 'pos' : 'neg'}">
+                <i class="icon-svg" data-lucide="${isPos ? 'trending-up' : 'trending-down'}"></i>
+                ${sign}${pct.toFixed(2)}% (${sign}${diffVND.toLocaleString('vi-VN')} ₫)
+            </span>
+        `;
+    }
+
+    const goldSub = document.getElementById('goldSummarySub');
+    if (goldSub) {
+        const diffVND = goldValVND - goldCostVND;
+        const pct = goldCostVND > 0 ? (diffVND / goldCostVND) * 100 : 0;
+        const sign = diffVND >= 0 ? '+' : '';
+        const isPos = diffVND >= 0;
+        goldSub.innerHTML = `
+            <span class="section-sub-val">Tổng: <strong>${fmtDisplayCur(goldTotalInCur)}</strong></span>
             <span class="section-pnl-pill ${isPos ? 'pos' : 'neg'}">
                 <i class="icon-svg" data-lucide="${isPos ? 'trending-up' : 'trending-down'}"></i>
                 ${sign}${pct.toFixed(2)}% (${sign}${diffVND.toLocaleString('vi-VN')} ₫)
@@ -970,7 +1063,12 @@ window.renderPortfolio = function () {
                     <div class="asset-item-row">
                         <div class="asset-item-left">
                             <div class="asset-badge crypto-badge ${badgeClass}">
-                                <span class="badge-symbol-text">${escapeHtml(sym)}</span>
+                                <img src="https://assets.coincap.io/assets/icons/${sym.toLowerCase()}@2x.png"
+                                     alt="${escapeHtml(sym)}"
+                                     class="asset-coin-icon"
+                                     loading="lazy"
+                                     onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${sym.toLowerCase()}.png'; this.onerror=()=>{this.style.display='none'; const s=this.nextElementSibling; if(s) s.style.display='flex';};">
+                                <span class="badge-symbol-text" style="display:none;">${escapeHtml(sym)}</span>
                             </div>
                             <div class="asset-info">
                                 <div class="asset-title-line">
@@ -1053,6 +1151,61 @@ window.renderPortfolio = function () {
                             <div class="asset-actions-block">
                                 <button class="asset-action-btn edit" onclick="openEditStockModal('${s.id}')" title="Sửa thông tin"><i class="icon-svg" data-lucide="pencil"></i></button>
                                 <button class="asset-action-btn delete" onclick="deleteAsset('${s.id}')" title="Xóa tài sản"><i class="icon-svg" data-lucide="trash-2"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    // Render Gold List
+    const goldList = document.getElementById('goldListContainer');
+    if (goldList) {
+        if (displayGoldItems.length === 0) {
+            goldList.innerHTML = assetSearchQuery
+                ? '<div class="asset-empty-search">Không tìm thấy mục vàng nào khớp với từ khóa.</div>'
+                : '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Chưa có vàng đầu tư nào. Bấm <strong>+ Thêm Vàng</strong> để thêm.</div>';
+        } else {
+            goldList.innerHTML = displayGoldItems.map(g => {
+                const diff = g.valVND - g.costVND;
+                const pct = g.costVND > 0 ? (diff / g.costVND) * 100 : 0;
+                const isPos = diff >= 0;
+                const badgeClass = (g.symbol || 'gold').toLowerCase();
+                const sign = isPos ? '+' : '';
+                const unitLabel = g.unit === 'luong' ? 'lượng' : 'chỉ';
+                return `
+                    <div class="asset-item-row">
+                        <div class="asset-item-left">
+                            <div class="asset-badge gold-badge ${badgeClass}">
+                                <span class="badge-symbol-text">${escapeHtml(g.symbol || 'VÀNG')}</span>
+                            </div>
+                            <div class="asset-info">
+                                <div class="asset-title-line">
+                                    <span class="asset-symbol-strong">${escapeHtml(g.symbol || 'VÀNG')}</span>
+                                    <span class="asset-name-muted">${escapeHtml(g.name || 'Vàng')}</span>
+                                    <span class="asset-price-pill" title="Giá vàng thời gian thực (API Việt Nam)">
+                                        ${Number(g.current_price).toLocaleString('vi-VN')} ₫/${unitLabel}
+                                    </span>
+                                </div>
+                                <div class="asset-meta-line">
+                                    <span>Nắm giữ: <strong>${Number(g.amount).toLocaleString('vi-VN')} ${unitLabel}</strong></span>
+                                    <span class="meta-dot">•</span>
+                                    <span>Giá vốn: <strong>${Number(g.buy_price).toLocaleString('vi-VN')} ₫</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="asset-item-right">
+                            <div class="asset-values-block">
+                                <div class="asset-val-main">${fmtDisplayCur(g.valInDisplay)}</div>
+                                <div class="asset-pnl-chip ${isPos ? 'pos' : 'neg'}">
+                                    <i class="icon-svg" data-lucide="${isPos ? 'trending-up' : 'trending-down'}"></i>
+                                    <span>${sign}${pct.toFixed(2)}% (${sign}${diff.toLocaleString('vi-VN')} ₫)</span>
+                                </div>
+                            </div>
+                            <div class="asset-actions-block">
+                                <button class="asset-action-btn edit" onclick="openEditGoldModal('${g.id}')" title="Sửa thông tin"><i class="icon-svg" data-lucide="pencil"></i></button>
+                                <button class="asset-action-btn delete" onclick="deleteAsset('${g.id}')" title="Xóa tài sản"><i class="icon-svg" data-lucide="trash-2"></i></button>
                             </div>
                         </div>
                     </div>
@@ -1969,3 +2122,249 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }, 200);
 });
+
+// ========================================================
+// VIETNAM GOLD PRICE API & MANAGEMENT MODULE
+// ========================================================
+
+const VIETNAM_GOLD_MAP = {
+    'SJL1L10': { name: 'Vàng miếng SJC 9999', brand: 'SJC' },
+    'SJ9999': { name: 'Nhẫn Trơn SJC 99.99', brand: 'SJC' },
+    'BT9999NTT': { name: 'Bảo Tín Minh Châu Nhẫn Tròn Trơn 9999', brand: 'Bảo Tín' },
+    'BTSJC': { name: 'Bảo Tín Minh Châu SJC', brand: 'Bảo Tín' },
+    'PQHN24NTT': { name: 'PNJ Nhẫn Trơn 24K', brand: 'PNJ' },
+    'PQHNVM': { name: 'PNJ Vàng Miếng', brand: 'PNJ' },
+    'DOJINHTV': { name: 'DOJI Nhẫn Hưng Thịnh Vượng', brand: 'DOJI' },
+    'DOHNL': { name: 'DOJI Vàng Miếng Hà Nội', brand: 'DOJI' }
+};
+
+let cachedGoldApiResponse = null;
+let lastGoldFetchTime = 0;
+
+// Fetch Live Gold Price from Vietnam API (giavang.now / SJC / PNJ / DOJI)
+window.fetchLiveGoldPrices = async function () {
+    const now = Date.now();
+    // Cache for 60 seconds to avoid spamming API
+    if (cachedGoldApiResponse && (now - lastGoldFetchTime < 60000)) {
+        return cachedGoldApiResponse;
+    }
+    try {
+        const res = await fetch('https://giavang.now/api/prices');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (data && data.prices) {
+            cachedGoldApiResponse = data;
+            lastGoldFetchTime = now;
+            return data;
+        }
+    } catch (e) {
+        console.warn('Live gold price fetch error:', e.message);
+    }
+    return null;
+};
+
+// Periodically refresh all gold asset prices in user portfolio
+window.refreshGoldPrices = async function () {
+    const goldAssets = portfolioAssets.filter(a => a.type === 'gold');
+    if (goldAssets.length === 0) return;
+    try {
+        const data = await fetchLiveGoldPrices();
+        if (!data || !data.prices) return;
+
+        let hasUpdates = false;
+        goldAssets.forEach(a => {
+            const code = a.code || (a.symbol === 'SJC' ? 'SJL1L10' : (a.symbol || 'SJL1L10'));
+            const pInfo = data.prices[code] || data.prices['SJL1L10'];
+            if (pInfo && pInfo.sell > 0) {
+                // API provides price per luong (1 luong = 10 chi)
+                const pricePerLuong = Number(pInfo.sell);
+                const isLuong = a.unit === 'luong';
+                const unitPrice = isLuong ? pricePerLuong : Math.round(pricePerLuong / 10);
+                if (Math.abs(a.current_price - unitPrice) > 1) {
+                    a.current_price = unitPrice;
+                    hasUpdates = true;
+                }
+            }
+        });
+        if (hasUpdates) {
+            savePortfolioToLocal();
+            renderPortfolio();
+            updateOverviewCards();
+        }
+    } catch (e) {
+        console.warn('refreshGoldPrices warning:', e.message);
+    }
+};
+
+// Modal: Quick chip click
+window.selectGoldChip = function (code, name, brand) {
+    const selCode = document.getElementById('selectGoldCode');
+    const inputName = document.getElementById('inputGoldName');
+    if (selCode) selCode.value = code;
+    if (inputName) inputName.value = name;
+    fetchLiveGoldPriceForModal(code);
+};
+
+window.onGoldCodeChange = function (code) {
+    const inputName = document.getElementById('inputGoldName');
+    if (VIETNAM_GOLD_MAP[code] && inputName) {
+        inputName.value = VIETNAM_GOLD_MAP[code].name;
+    }
+    fetchLiveGoldPriceForModal(code);
+};
+
+window.onGoldUnitChange = function (unit) {
+    const selCode = document.getElementById('selectGoldCode');
+    const code = selCode ? selCode.value : 'SJL1L10';
+    fetchLiveGoldPriceForModal(code);
+};
+
+// Fetch live price specifically for the Gold Modal
+window.fetchLiveGoldPriceForModal = async function (explicitCode) {
+    const selCode = document.getElementById('selectGoldCode');
+    const selUnit = document.getElementById('selectGoldUnit');
+    const inputPrice = document.getElementById('inputGoldCurrentPrice');
+    const code = explicitCode || (selCode ? selCode.value : 'SJL1L10');
+    const unit = selUnit ? selUnit.value : 'chi';
+
+    try {
+        const data = await fetchLiveGoldPrices();
+        if (data && data.prices) {
+            const pInfo = data.prices[code] || data.prices['SJL1L10'];
+            if (pInfo && pInfo.sell > 0) {
+                const pricePerLuong = Number(pInfo.sell);
+                const unitPrice = unit === 'luong' ? pricePerLuong : Math.round(pricePerLuong / 10);
+                if (inputPrice) {
+                    inputPrice.value = unitPrice;
+                    calcGoldModalPreview();
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('fetchLiveGoldPriceForModal error:', e.message);
+    }
+};
+
+// Calculate preview values in Gold Modal
+window.calcGoldModalPreview = function () {
+    const amt = Number(document.getElementById('inputGoldAmount')?.value) || 0;
+    const buy = Number(document.getElementById('inputGoldBuyPrice')?.value) || 0;
+    const cur = Number(document.getElementById('inputGoldCurrentPrice')?.value) || buy;
+
+    const totalVND = amt * cur;
+    const costVND = amt * buy;
+    const diffVND = totalVND - costVND;
+    const pct = costVND > 0 ? (diffVND / costVND) * 100 : 0;
+    const sign = diffVND >= 0 ? '+' : '';
+
+    const prevVal = document.getElementById('goldPreviewVal');
+    const prevKRW = document.getElementById('goldPreviewKRW');
+    const prevPnL = document.getElementById('goldPreviewPnL');
+
+    const totalKRW = convertCurrency(totalVND, 'VND', 'KRW');
+
+    if (prevVal) prevVal.textContent = totalVND.toLocaleString('vi-VN') + ' ₫';
+    if (prevKRW) prevKRW.textContent = Math.round(totalKRW).toLocaleString('vi-VN') + ' ₩';
+    if (prevPnL) {
+        prevPnL.textContent = `${sign}${pct.toFixed(2)}% (${sign}${diffVND.toLocaleString('vi-VN')} ₫)`;
+        prevPnL.style.color = diffVND >= 0 ? 'var(--accent-primary)' : 'var(--accent-red)';
+    }
+};
+
+window.openAddGoldModal = function () {
+    const modal = document.getElementById('assetGoldModal');
+    if (!modal) return;
+    document.getElementById('goldModalTitle').textContent = 'Thêm Vàng Đầu Tư';
+    document.getElementById('editingGoldId').value = '';
+    document.getElementById('selectGoldCode').value = 'SJL1L10';
+    document.getElementById('inputGoldName').value = 'Vàng miếng SJC 9999';
+    document.getElementById('selectGoldUnit').value = 'chi';
+    document.getElementById('inputGoldAmount').value = '';
+    document.getElementById('inputGoldBuyPrice').value = '';
+    document.getElementById('inputGoldCurrentPrice').value = '';
+
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    fetchLiveGoldPriceForModal('SJL1L10');
+    setTimeout(() => {
+        document.getElementById('inputGoldAmount')?.focus();
+    }, 150);
+};
+
+window.openEditGoldModal = function (id) {
+    const asset = portfolioAssets.find(a => a.id === id);
+    if (!asset) return;
+
+    const modal = document.getElementById('assetGoldModal');
+    if (!modal) return;
+    document.getElementById('goldModalTitle').textContent = 'Sửa Thông Tin Vàng';
+    document.getElementById('editingGoldId').value = asset.id;
+    document.getElementById('selectGoldCode').value = asset.code || 'SJL1L10';
+    document.getElementById('inputGoldName').value = asset.name || '';
+    document.getElementById('selectGoldUnit').value = asset.unit || 'chi';
+    document.getElementById('inputGoldAmount').value = asset.amount;
+    document.getElementById('inputGoldBuyPrice').value = asset.buy_price;
+    document.getElementById('inputGoldCurrentPrice').value = asset.current_price;
+
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    calcGoldModalPreview();
+};
+
+window.closeAssetGoldModal = function () {
+    const modal = document.getElementById('assetGoldModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+};
+
+window.saveGoldAsset = async function () {
+    const editingId = document.getElementById('editingGoldId')?.value;
+    const code = document.getElementById('selectGoldCode')?.value || 'SJL1L10';
+    const name = document.getElementById('inputGoldName')?.value.trim() || 'Vàng miếng SJC 9999';
+    const unit = document.getElementById('selectGoldUnit')?.value || 'chi';
+    const amt = Number(document.getElementById('inputGoldAmount')?.value);
+    const buy = Number(document.getElementById('inputGoldBuyPrice')?.value);
+    const cur = Number(document.getElementById('inputGoldCurrentPrice')?.value) || buy;
+
+    if (!amt || amt <= 0) {
+        showToast('Vui lòng nhập số lượng vàng hợp lệ!', 'error');
+        return;
+    }
+    if (isNaN(buy) || buy < 0) {
+        showToast('Vui lòng nhập giá mua vốn hợp lệ!', 'error');
+        return;
+    }
+
+    const assetObj = {
+        id: editingId || generateAssetUUID(),
+        type: 'gold',
+        symbol: code.startsWith('SJ') ? 'SJC' : (code.startsWith('BT') ? 'BTMC' : (code.startsWith('PQ') ? 'PNJ' : 'DOJI')),
+        code: code,
+        name: name,
+        unit: unit,
+        amount: amt,
+        buy_price: buy,
+        current_price: cur,
+        currency: 'VND'
+    };
+
+    if (editingId) {
+        const idx = portfolioAssets.findIndex(a => a.id === editingId);
+        if (idx !== -1) portfolioAssets[idx] = assetObj;
+    } else {
+        portfolioAssets.push(assetObj);
+    }
+
+    savePortfolioToLocal();
+    closeAssetGoldModal();
+    renderPortfolio();
+    updateOverviewCards();
+
+    if (window.currentUser && typeof window.savePortfolioAsset === 'function') {
+        await window.savePortfolioAsset(assetObj);
+    }
+
+    showToast(editingId ? 'Đã cập nhật mục vàng thành công!' : 'Đã thêm vàng vào danh mục đầu tư!', 'success');
+};

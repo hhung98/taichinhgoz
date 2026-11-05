@@ -40,19 +40,15 @@ jobs:
           # 2. Chấp nhận các điều khoản Android SDK licenses
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-          # 3. Tạo sẵn file ~/.bubblewrap/config.json để Bubblewrap KHÔNG chạy Interactive Wizard hỏi Y/n (nguyên nhân gây exit code 130)
-          mkdir -p "$HOME/.bubblewrap"
-          printf '{\n  "jdkPath": "%s",\n  "androidSdkPath": "%s"\n}\n' "$JAVA_HOME" "${ANDROID_HOME:-$ANDROID_SDK_ROOT}" > "$HOME/.bubblewrap/config.json"
-          
+          # 3. Cấu hình Bubblewrap sử dụng JDK 17 và Android SDK có sẵn trên GitHub Runner (không hỏi Interactive)
+          bubblewrap updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+
           echo "=== Bubblewrap Config ==="
           cat "$HOME/.bubblewrap/config.json"
 
-          # 4. Kiểm tra sức khỏe môi trường build
-          bubblewrap doctor
-
       - name: Build APK (Automatic)
         run: |
-          bubblewrap build --skipPwaValidation
+          printf "n\n" | bubblewrap build --skipPwaValidation
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || '123456' }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || '123456' }}

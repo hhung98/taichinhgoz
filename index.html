@@ -21,7 +21,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
         (function () {
-            const CURRENT_VER = 'v84';
+            const CURRENT_VER = 'v85';
             if (localStorage.getItem('goz_app_ver') !== CURRENT_VER) {
                 localStorage.setItem('goz_app_ver', CURRENT_VER);
                 if ('caches' in window) {
@@ -456,6 +456,7 @@
                         <div class="ribbon-bar cash" id="ribbonBarCash" style="width: 0%;" title="Tiền mặt"></div>
                         <div class="ribbon-bar crypto" id="ribbonBarCrypto" style="width: 0%;" title="Crypto"></div>
                         <div class="ribbon-bar stock" id="ribbonBarStock" style="width: 0%;" title="Cổ phiếu VN"></div>
+                        <div class="ribbon-bar gold" id="ribbonBarGold" style="width: 0%;" title="Vàng (Gold)"></div>
                     </div>
                     <div class="portfolio-hero-breakdown">
                         <div class="portfolio-sub-card cash" onclick="setAssetFilter('cash')" title="Lọc xem Tiền mặt">
@@ -490,6 +491,17 @@
                                 <div class="sub-card-fill stock-fill" id="heroStockBar" style="width: 0%;"></div>
                             </div>
                             <div class="sub-card-note" id="heroStockNote">--</div>
+                        </div>
+                        <div class="portfolio-sub-card gold" onclick="setAssetFilter('gold')" title="Lọc xem Đầu tư Vàng">
+                            <div class="sub-card-top">
+                                <span class="sub-card-label"><i class="icon-svg" data-lucide="gem"></i> Vàng</span>
+                                <span class="sub-card-pct" id="heroGoldPct">--%</span>
+                            </div>
+                            <div class="sub-card-val" id="heroGoldTotal">-- ₩</div>
+                            <div class="sub-card-bar">
+                                <div class="sub-card-fill gold-fill" id="heroGoldBar" style="width: 0%;"></div>
+                            </div>
+                            <div class="sub-card-note" id="heroGoldNote">Vàng miếng, 9999</div>
                         </div>
                     </div>
                 </section>
@@ -529,6 +541,10 @@
                     <button class="asset-filter-pill" id="filter-asset-stock_vn" onclick="setAssetFilter('stock_vn')">
                         <i class="icon-svg" data-lucide="trending-up"></i> <span>Cổ Phiếu VN</span>
                         <span class="filter-count-badge" id="filterCountStocks">1</span>
+                    </button>
+                    <button class="asset-filter-pill" id="filter-asset-gold" onclick="setAssetFilter('gold')">
+                        <i class="icon-svg" data-lucide="gem"></i> <span>Vàng (Gold)</span>
+                        <span class="filter-count-badge" id="filterCountGold">0</span>
                     </button>
                     <button class="asset-filter-pill" id="filter-asset-cash" onclick="setAssetFilter('cash')">
                         <i class="icon-svg" data-lucide="wallet"></i> <span>Tiền Mặt</span>
@@ -570,6 +586,23 @@
                         </button>
                     </div>
                     <div class="asset-items-list" id="stockListContainer"></div>
+                </section>
+
+                <!-- SECTION GOLD (VÀNG ĐẦU TƯ) -->
+                <section class="asset-section-card" id="sectionGold">
+                    <div class="asset-section-header">
+                        <div class="asset-section-title-wrap">
+                            <div class="asset-cat-icon gold"><i class="icon-svg" data-lucide="gem"></i></div>
+                            <div>
+                                <h3 class="asset-cat-title">Đầu Tư Vàng (SJC, 9999, PNJ, DOJI)</h3>
+                                <div class="asset-cat-sub" id="goldSummarySub">Tổng: -- ₩</div>
+                            </div>
+                        </div>
+                        <button class="btn-primary-add" onclick="openAddGoldModal()">
+                            <i class="icon-svg" data-lucide="plus"></i> <span>Thêm Vàng</span>
+                        </button>
+                    </div>
+                    <div class="asset-items-list" id="goldListContainer"></div>
                 </section>
 
                 <!-- SECTION CASH -->
@@ -1077,6 +1110,82 @@
             <div class="ratio-modal-actions">
                 <button class="ratio-btn secondary" type="button" onclick="closeAssetCashModal()">Hủy</button>
                 <button class="ratio-btn primary" type="button" onclick="saveCashAsset()">Lưu Tiền Mặt</button>
+            </div>
+        </section>
+    </div>
+    <!-- MODAL 4: THÊM / SỬA VÀNG ĐẦU TƯ -->
+    <div class="goz-confirm-backdrop" id="assetGoldModal" aria-hidden="true"
+        onclick="if(event.target === this) closeAssetGoldModal()">
+        <section class="ratio-modal-card asset-modal-card" role="dialog" aria-modal="true">
+            <div class="ratio-modal-header">
+                <h3 id="goldModalTitle">Thêm Vàng Đầu Tư</h3>
+                <button type="button" class="ratio-modal-close" onclick="closeAssetGoldModal()" title="Đóng">
+                    <i class="icon-svg" data-lucide="x"></i>
+                </button>
+            </div>
+            <p class="ratio-modal-desc">Quản lý vàng vật chất (SJC, Nhẫn 9999, PNJ, DOJI) và tự động cập nhật giá thị trường Việt Nam.</p>
+            <div class="ratio-modal-body">
+                <div class="quick-chips-row">
+                    <span class="quick-chip-label">Gợi ý nhanh:</span>
+                    <button type="button" class="quick-chip" onclick="selectGoldChip('SJL1L10', 'Vàng miếng SJC 9999', 'SJC')">SJC 9999</button>
+                    <button type="button" class="quick-chip" onclick="selectGoldChip('SJ9999', 'Nhẫn Trơn SJC 99.99', 'SJC')">Nhẫn SJC</button>
+                    <button type="button" class="quick-chip" onclick="selectGoldChip('BT9999NTT', 'Bảo Tín 9999', 'Bảo Tín')">Bảo Tín 9999</button>
+                    <button type="button" class="quick-chip" onclick="selectGoldChip('PQHN24NTT', 'Nhẫn Trơn PNJ 24K', 'PNJ')">PNJ 24K</button>
+                    <button type="button" class="quick-chip" onclick="selectGoldChip('DOJINHTV', 'DOJI Hưng Thịnh Vượng', 'DOJI')">DOJI 9999</button>
+                </div>
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Loại vàng</span>
+                    <select id="selectGoldCode" class="asset-text-field" onchange="onGoldCodeChange(this.value)">
+                        <option value="SJL1L10">Vàng miếng SJC 9999</option>
+                        <option value="SJ9999">Nhẫn Trơn SJC 99.99</option>
+                        <option value="BT9999NTT">Bảo Tín Minh Châu Nhẫn Trơn 9999</option>
+                        <option value="BTSJC">Bảo Tín Minh Châu SJC</option>
+                        <option value="PQHN24NTT">PNJ Nhẫn Trơn 24K</option>
+                        <option value="PQHNVM">PNJ Vàng Miếng</option>
+                        <option value="DOJINHTV">DOJI Nhẫn Hưng Thịnh Vượng</option>
+                        <option value="DOHNL">DOJI Vàng Miếng Hà Nội</option>
+                        <option value="OTHER">Vàng 9999 khác</option>
+                    </select>
+                </div>
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Tên hiển thị</span>
+                    <input type="text" id="inputGoldName" placeholder="VD: Vàng miếng SJC 9999" class="asset-text-field">
+                </div>
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Đơn vị tính</span>
+                    <select id="selectGoldUnit" class="asset-text-field" onchange="onGoldUnitChange(this.value)" style="max-width:140px;">
+                        <option value="chi">Chỉ (3.75g)</option>
+                        <option value="luong">Lượng / Cây (10 chỉ)</option>
+                    </select>
+                </div>
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Số lượng nắm giữ</span>
+                    <input type="number" step="any" min="0" id="inputGoldAmount" placeholder="VD: 5"
+                        class="asset-text-field" oninput="calcGoldModalPreview()">
+                </div>
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Giá mua vốn (₫)</span>
+                    <input type="number" step="any" min="0" id="inputGoldBuyPrice" placeholder="VD: 13800000"
+                        class="asset-text-field" oninput="calcGoldModalPreview()">
+                </div>
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Giá thị trường (₫)</span>
+                    <div class="input-with-action">
+                        <input type="number" step="any" min="0" id="inputGoldCurrentPrice" placeholder="VD: 14240000"
+                            class="asset-text-field" oninput="calcGoldModalPreview()">
+                        <button type="button" class="btn-fetch-price" onclick="fetchLiveGoldPriceForModal()"
+                            title="Lấy giá live thị trường Việt Nam"><i class="icon-svg" data-lucide="refresh-cw"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div id="goldModalPreview" class="asset-modal-preview">
+                <div>Tổng giá trị: <strong id="goldPreviewVal">0 ₫</strong> ≈ <strong id="goldPreviewKRW">0 ₩</strong></div>
+                <div>Lợi nhuận: <strong id="goldPreviewPnL">0% (0 ₫)</strong></div>
+            </div>
+            <input type="hidden" id="editingGoldId" value="">
+            <div class="ratio-modal-actions">
+                <button class="ratio-btn secondary" type="button" onclick="closeAssetGoldModal()">Hủy</button>
+                <button class="ratio-btn primary" type="button" onclick="saveGoldAsset()">Lưu Vàng</button>
             </div>
         </section>
     </div>

@@ -542,7 +542,7 @@ body.dark .header-tab-btn.active {
 
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 14px;
     margin-bottom: 14px;
 }
@@ -554,7 +554,7 @@ body.dark .header-tab-btn.active {
 
 @media (min-width: 769px) {
     .summary-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 
     .summary-card:nth-child(4) {
@@ -1752,7 +1752,7 @@ th.th-ratio-clickable * {
 
 .chart-grid-3 {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 18px;
 }
 
@@ -2861,7 +2861,7 @@ th.th-ratio-clickable * {
 
 .pin-numpad {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     max-width: 300px;
     margin: 0 auto;
@@ -5798,7 +5798,7 @@ body.dark .mobile-bottom-nav a.active span {
 
 .exchange-stats-summary {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -7083,7 +7083,7 @@ select.goal-currency-select option {
 
 .converter-inputs-tri {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     margin-top: 4px;
 }
@@ -7512,7 +7512,7 @@ select.goal-currency-select option {
 
 .portfolio-hero-breakdown {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
 }
 
@@ -9370,4 +9370,45 @@ select.goal-currency-select option {
 
 .portfolio-ribbon-track .ribbon-bar:hover {
     filter: brightness(1.15);
+}
+
+/* ===== Crypto Real Coin Logo Image ===== */
+.asset-badge img.asset-coin-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background: var(--bg-card);
+}
+
+/* ===== Gold Investment Module (Đầu Tư Vàng) ===== */
+.asset-badge.gold-badge {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(217, 119, 6, 0.12));
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.35);
+    font-size: 1.25rem;
+}
+
+.asset-cat-icon.gold {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.portfolio-sub-card.gold:hover {
+    border-color: #f59e0b;
+}
+
+.sub-card-fill.gold-fill {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.ribbon-bar.gold {
+    background: #f59e0b;
+}
+
+@media (max-width: 992px) {
+    .portfolio-hero-breakdown {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
 }
