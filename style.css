@@ -9988,3 +9988,656 @@ select.goal-currency-select option {
     border-color: rgba(255, 255, 255, 0.1);
 }
 
+
+
+/* ===== DEBT / LENDING NOTES SECTION ===== */
+.asset-cat-icon.debt {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8b5cf6;
+}
+
+.debt-notes-section {
+    border-top: 2px solid rgba(139, 92, 246, 0.2);
+}
+
+.debt-toolbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--border);
+}
+
+.debt-filter-pills {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.debt-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.debt-pill:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-accent);
+}
+
+.debt-pill.active {
+    background: #0984e3;
+    color: #ffffff;
+    border-color: #0984e3;
+    box-shadow: 0 2px 8px rgba(9, 132, 227, 0.25);
+}
+
+.debt-pill .debt-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.debt-dot.pending { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.5); }
+.debt-dot.lend { background: #00b894; }
+.debt-dot.borrow { background: #e17055; }
+.debt-dot.paid { background: #10b981; }
+
+.debt-pill-num {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.debt-pill.active .debt-pill-num {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+/* KPI Chips */
+.debt-kpi-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.debt-kpi-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+}
+
+.debt-kpi-chip.lend strong { color: #00b894; }
+.debt-kpi-chip.borrow strong { color: #ef4444; }
+.debt-kpi-chip.paid strong { color: #10b981; }
+
+.debt-kpi-chip.lend i { color: #00b894; }
+.debt-kpi-chip.borrow i { color: #ef4444; }
+.debt-kpi-chip.paid i { color: #10b981; }
+
+/* Item Row & Badges */
+.asset-badge.debt-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-align: center;
+    line-height: 1.1;
+    padding: 2px;
+}
+
+.asset-badge.debt-badge.lend-badge {
+    background: rgba(0, 184, 148, 0.12);
+    color: #00b894;
+    border-color: rgba(0, 184, 148, 0.25);
+}
+
+.asset-badge.debt-badge.borrow-badge {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+.debt-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.debt-badge-pill.lend {
+    background: rgba(0, 184, 148, 0.12);
+    color: #00b894;
+}
+
+.debt-badge-pill.borrow {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+.debt-status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.debt-status-tag.pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.debt-status-tag.partial {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.debt-status-tag.paid {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.debt-due-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.debt-due-tag.overdue {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    font-weight: 700;
+    animation: debtPulse 2s infinite ease-in-out;
+}
+
+@keyframes debtPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+.debt-due-tag.duetoday {
+    background: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+    font-weight: 700;
+}
+
+.debt-due-tag.normal {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.debt-note-text {
+    margin-top: 4px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    border-left: 3px solid #8b5cf6;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: fit-content;
+}
+
+.debt-item-row.is-paid {
+    opacity: 0.72;
+    background: rgba(16, 185, 129, 0.03);
+}
+
+.debt-item-row.is-paid:hover {
+    opacity: 1;
+}
+
+.asset-val-main.lend-val {
+    color: #00b894;
+}
+
+.asset-val-main.borrow-val {
+    color: #ef4444;
+}
+
+.asset-val-main.paid-val {
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+.asset-action-btn.toggle-paid {
+    color: #10b981;
+}
+
+.asset-action-btn.toggle-paid:hover {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+.asset-action-btn.toggle-paid.reopen {
+    color: #f59e0b;
+}
+
+.asset-action-btn.toggle-paid.reopen:hover {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+}
+
+/* Modal styling */
+.debt-type-toggle-group {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.debt-type-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.debt-type-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.debt-type-btn#btnDebtTypeLend.active {
+    background: rgba(0, 184, 148, 0.15);
+    color: #00b894;
+    border-color: #00b894;
+    box-shadow: 0 2px 8px rgba(0, 184, 148, 0.2);
+}
+
+.debt-type-btn#btnDebtTypeBorrow.active {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border-color: #ef4444;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+/* Empty State */
+.debt-empty-state {
+    padding: 32px 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.debt-empty-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.debt-empty-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.debt-empty-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    max-width: 380px;
+}
+
+
+/* Fix Modal Close Button Clickability & Priority */
+.ratio-modal-close {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    border: 1px solid var(--border) !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-secondary) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: var(--transition) !important;
+    z-index: 100 !important;
+    position: relative !important;
+    pointer-events: auto !important;
+}
+
+.ratio-modal-close:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.ratio-modal-close * {
+    pointer-events: none !important;
+}
+
+.goz-confirm-backdrop {
+    z-index: 99999 !important;
+}
+
+.ratio-modal-card {
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 100000 !important;
+}
+
+
+/* ===== CUSTOM DROPDOWN: DEBT STATUS (DANH SÁCH RƠI XUỐNG) ===== */
+.debt-status-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.debt-status-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.debt-status-trigger:hover {
+    border-color: var(--border-accent);
+}
+
+.debt-status-dropdown.open .debt-status-trigger {
+    border-color: #0984e3;
+    box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.15);
+}
+
+.status-trigger-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-selected-label {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.status-chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.debt-status-dropdown.open .status-chevron {
+    transform: rotate(180deg);
+    color: #0984e3;
+}
+
+/* Danh sách rơi xuống (Dropdown Menu Card) */
+.debt-status-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 100020;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.24), 0 6px 16px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.debt-status-dropdown.open .debt-status-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.debt-status-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: all 0.15s ease;
+}
+
+.debt-status-option:hover {
+    background: var(--bg-hover);
+}
+
+.debt-status-option.active {
+    background: rgba(9, 132, 227, 0.1);
+    color: #0984e3;
+    font-weight: 700;
+}
+
+.status-opt-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-option-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-option-dot.pending {
+    background: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+}
+
+.status-option-dot.partial {
+    background: #3b82f6;
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
+}
+
+.status-option-dot.paid {
+    background: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+.debt-status-option .check-icon {
+    width: 16px;
+    height: 16px;
+    color: #0984e3;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.debt-status-option.active .check-icon {
+    opacity: 1;
+}
+
+[data-theme="light"] .debt-status-menu {
+    background: #ffffff;
+    box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ===== CUSTOM DROPDOWN: DEBT CURRENCY (SỔ XUỐNG TIỀN TỆ) ===== */
+.debt-currency-dropdown {
+    position: relative;
+    width: 125px;
+    flex-shrink: 0;
+}
+
+.debt-currency-trigger {
+    width: 100%;
+    height: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.debt-currency-trigger:hover {
+    border-color: var(--border-accent);
+}
+
+.debt-currency-dropdown.open .debt-currency-trigger {
+    border-color: #0984e3;
+    box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.15);
+}
+
+.currency-selected-label {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.currency-chevron {
+    width: 15px;
+    height: 15px;
+    color: var(--text-muted);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.debt-currency-dropdown.open .currency-chevron {
+    transform: rotate(180deg);
+    color: #0984e3;
+}
+
+.debt-currency-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 125px;
+    z-index: 100025;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.24), 0 6px 16px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.debt-currency-dropdown.open .debt-currency-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.debt-currency-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    transition: all 0.15s ease;
+}
+
+.debt-currency-option:hover {
+    background: var(--bg-hover);
+}
+
+.debt-currency-option.active {
+    background: rgba(9, 132, 227, 0.1);
+    color: #0984e3;
+}
+
+.debt-currency-option .check-icon {
+    width: 15px;
+    height: 15px;
+    color: #0984e3;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.debt-currency-option.active .check-icon {
+    opacity: 1;
+}
+
+[data-theme="light"] .debt-currency-menu {
+    background: #ffffff;
+    box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.05);
+}

@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=92">
+    <link rel="stylesheet" href="style.css?v=93">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -153,7 +153,7 @@
                     </button>
                     <button class="header-nav-item" onclick="switchTab('assets')" id="h-nav-assets">
                         <span class="nav-item-icon"><i class="icon-svg" data-lucide="wallet"></i></span>
-                        <span class="nav-item-label">Quản Trị Tài Sản</span>
+                        <span class="nav-item-label">Quản Lí Tài Sản</span>
                         <span class="badge-invest-pill">Đầu Tư</span>
                     </button>
                     <button class="header-nav-item" onclick="switchTab('budget')" id="h-nav-budget">
@@ -453,7 +453,7 @@
                 </section>
             </div>
 
-            <!-- TAB 2: QUẢN TRỊ TÀI SẢN -->
+            <!-- TAB 2: QUẢN LÍ TÀI SẢN -->
             <div id="tab-assets" class="tab-pane animate-tab-content">
                 <!-- HERO PORTFOLIO CARD -->
                 <section class="portfolio-hero-card" aria-label="Tổng quan danh mục đầu tư">
@@ -573,6 +573,11 @@
                         <i class="icon-svg" data-lucide="wallet"></i> <span>Tiền Mặt</span>
                         <span class="filter-count-badge" id="filterCountCash">2</span>
                     </button>
+                    <button class="asset-filter-pill" id="filter-asset-debt" onclick="setAssetFilter('debt')">
+                        <i class="icon-svg" data-lucide="hand-coins"></i> <span>Vay & Nợ</span>
+                        <span class="filter-count-badge" id="filterCountDebt">0</span>
+                    </button>
+
                 </div>
 
                 <!-- SECTION CRYPTO -->
@@ -643,6 +648,46 @@
                         </button>
                     </div>
                     <div class="asset-items-list" id="cashListContainer"></div>
+                </section>
+
+                <!-- SECTION DEBT / LENDING NOTES (SỔ GHI CHÚ VAY NỢ & KHOẢN CHƯA HOÀN TRẢ) -->
+                <section class="asset-section-card debt-notes-section" id="sectionDebtNotes">
+                    <div class="asset-section-header">
+                        <div class="asset-section-title-wrap">
+                            <div class="asset-cat-icon debt"><i class="icon-svg" data-lucide="hand-coins"></i></div>
+                            <div>
+                                <h3 class="asset-cat-title">Sổ Ghi Chú & Theo Dõi Vay Nợ</h3>
+                                <div class="asset-cat-sub" id="debtNotesSummarySub">Đang cho vay: 0 ₫ • Đang nợ: 0 ₫</div>
+                            </div>
+                        </div>
+                        <button class="btn-primary-add" onclick="openAddDebtNoteModal()">
+                            <i class="icon-svg" data-lucide="plus"></i> <span>Thêm Ghi Chú Vay Nợ</span>
+                        </button>
+                    </div>
+
+                    <!-- Debt Filter Toolbar & Quick Summary -->
+                    <div class="debt-toolbar-row">
+                        <div class="debt-filter-pills" role="tablist">
+                            <button class="debt-pill active" id="debtFilterAll" onclick="setDebtFilter('all')">
+                                Tất cả <span class="debt-pill-num" id="debtFilterCountAll">0</span>
+                            </button>
+                            <button class="debt-pill" id="debtFilterPending" onclick="setDebtFilter('pending')">
+                                <span class="debt-dot pending"></span> Chưa hoàn trả <span class="debt-pill-num" id="debtFilterCountPending">0</span>
+                            </button>
+                            <button class="debt-pill" id="debtFilterLend" onclick="setDebtFilter('lend')">
+                                <span class="debt-dot lend"></span> Cho vay (Phải thu) <span class="debt-pill-num" id="debtFilterCountLend">0</span>
+                            </button>
+                            <button class="debt-pill" id="debtFilterBorrow" onclick="setDebtFilter('borrow')">
+                                <span class="debt-dot borrow"></span> Đi vay (Cần trả) <span class="debt-pill-num" id="debtFilterCountBorrow">0</span>
+                            </button>
+                            <button class="debt-pill" id="debtFilterPaid" onclick="setDebtFilter('paid')">
+                                <span class="debt-dot paid"></span> Đã thanh toán <span class="debt-pill-num" id="debtFilterCountPaid">0</span>
+                            </button>
+                        </div>
+                        <div class="debt-kpi-bar" id="debtKpiBar"></div>
+                    </div>
+
+                    <div class="asset-items-list debt-items-list" id="debtNotesListContainer"></div>
                 </section>
             </div>
             <!-- TAB 2: LỊCH SỬ TỶ GIÁ -->
@@ -1212,13 +1257,142 @@
             </div>
         </section>
     </div>
-    <div class="toast" id="toast"></div>
-    <script src="supabase.js?v=92"></script>
+
+    <!-- MODAL 5: THÊM / SỬA GHI CHÚ VAY NỢ -->
+    <div class="goz-confirm-backdrop" id="assetDebtNoteModal" aria-hidden="true"
+        onclick="if(event.target === this) closeAssetDebtNoteModal()">
+        <section class="ratio-modal-card asset-modal-card debt-modal-card" role="dialog" aria-modal="true">
+            <div class="ratio-modal-header">
+                <h3 id="debtModalTitle">Thêm Ghi Chú Khoản Vay / Nợ</h3>
+                <button type="button" class="ratio-modal-close" id="btnCloseDebtModal" onclick="closeAssetDebtNoteModal(); event.stopPropagation();" title="Đóng">
+                    <i class="icon-svg" data-lucide="x"></i>
+                </button>
+            </div>
+            <p class="ratio-modal-desc">Ghi chép ai vay tiền hoặc các khoản nợ chưa được hoàn trả để theo dõi và thu hồi thuận tiện.</p>
+            <div class="ratio-modal-body">
+                <!-- Loại: Cho vay vs Đi vay -->
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Phân loại</span>
+                    <div class="debt-type-toggle-group">
+                        <button type="button" class="debt-type-btn active" id="btnDebtTypeLend" onclick="selectDebtType('lend')">
+                            <i class="icon-svg" data-lucide="arrow-up-right"></i> Cho vay (Phải thu)
+                        </button>
+                        <button type="button" class="debt-type-btn" id="btnDebtTypeBorrow" onclick="selectDebtType('borrow')">
+                            <i class="icon-svg" data-lucide="arrow-down-left"></i> Đi vay (Cần trả)
+                        </button>
+                    </div>
+                    <input type="hidden" id="inputDebtType" value="lend">
+                </div>
+
+                <!-- Tên người / Bên liên quan -->
+                <div class="ratio-item-row">
+                    <span class="asset-field-label" id="labelDebtPerson">Người vay tiền</span>
+                    <input type="text" id="inputDebtPerson" placeholder="" class="asset-text-field" required>
+                </div>
+
+                <!-- Số tiền & Tiền tệ -->
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Số tiền</span>
+                    <div style="display:flex; gap:8px; width:100%;">
+                        <input type="number" min="0" step="any" id="inputDebtAmount" placeholder="" class="asset-text-field" style="flex:1;" oninput="calcDebtModalPreview()">
+                        <div class="debt-currency-dropdown" id="debtCurrencyDropdown">
+                            <button type="button" class="debt-currency-trigger" id="debtCurrencyTrigger" onclick="toggleDebtCurrencyDropdown()" aria-expanded="false">
+                                <span class="currency-selected-label" id="debtCurrencySelectedLabel">₫ VND</span>
+                                <i class="icon-svg currency-chevron" data-lucide="chevron-down"></i>
+                            </button>
+                            <div class="debt-currency-menu" id="debtCurrencyMenu">
+                                <div class="debt-currency-option active" data-val="VND" onclick="selectDebtCurrencyOption('VND', '₫ VND')">
+                                    <span class="currency-opt-text">₫ VND</span>
+                                    <i class="icon-svg check-icon" data-lucide="check"></i>
+                                </div>
+                                <div class="debt-currency-option" data-val="KRW" onclick="selectDebtCurrencyOption('KRW', '₩ KRW')">
+                                    <span class="currency-opt-text">₩ KRW</span>
+                                    <i class="icon-svg check-icon" data-lucide="check"></i>
+                                </div>
+                                <div class="debt-currency-option" data-val="USD" onclick="selectDebtCurrencyOption('USD', '$ USD')">
+                                    <span class="currency-opt-text">$ USD</span>
+                                    <i class="icon-svg check-icon" data-lucide="check"></i>
+                                </div>
+                            </div>
+                            <input type="hidden" id="inputDebtCurrency" value="VND">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ngày ghi nhận & Hạn hoàn trả -->
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Ngày ghi nhận</span>
+                    <input type="date" id="inputDebtDate" class="asset-text-field">
+                </div>
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Hạn hoàn trả</span>
+                    <input type="date" id="inputDebtDueDate" class="asset-text-field" placeholder="">
+                </div>
+
+                <!-- Trạng thái hoàn trả -->
+                <!-- Trạng thái hoàn trả (Custom Dropdown) -->
+                <div class="ratio-item-row">
+                    <span class="asset-field-label">Trạng thái</span>
+                    <div class="debt-status-dropdown" id="debtStatusDropdown">
+                        <button type="button" class="debt-status-trigger" id="debtStatusTrigger" onclick="toggleDebtStatusDropdown()" aria-expanded="false">
+                            <span class="status-trigger-content">
+                                <span class="status-option-dot pending" id="debtStatusTriggerDot"></span>
+                                <span class="status-selected-label" id="debtStatusSelectedLabel">Chưa hoàn trả</span>
+                            </span>
+                            <i class="icon-svg status-chevron" data-lucide="chevron-down"></i>
+                        </button>
+                        <div class="debt-status-menu" id="debtStatusMenu">
+                            <div class="debt-status-option active" data-val="pending" onclick="selectDebtStatusOption('pending', 'Chưa hoàn trả')">
+                                <div class="status-opt-left">
+                                    <span class="status-option-dot pending"></span>
+                                    <span class="status-opt-text">Chưa hoàn trả</span>
+                                </div>
+                                <i class="icon-svg check-icon" data-lucide="check"></i>
+                            </div>
+                            <div class="debt-status-option" data-val="partial" onclick="selectDebtStatusOption('partial', 'Trả một phần')">
+                                <div class="status-opt-left">
+                                    <span class="status-option-dot partial"></span>
+                                    <span class="status-opt-text">Trả một phần</span>
+                                </div>
+                                <i class="icon-svg check-icon" data-lucide="check"></i>
+                            </div>
+                            <div class="debt-status-option" data-val="paid" onclick="selectDebtStatusOption('paid', 'Đã hoàn trả')">
+                                <div class="status-opt-left">
+                                    <span class="status-option-dot paid"></span>
+                                    <span class="status-opt-text">Đã hoàn trả</span>
+                                </div>
+                                <i class="icon-svg check-icon" data-lucide="check"></i>
+                            </div>
+                        </div>
+                        <input type="hidden" id="inputDebtStatus" value="pending">
+                    </div>
+                </div>
+
+                <!-- Ghi chú chi tiết -->
+                <div class="ratio-item-row" style="align-items: flex-start;">
+                    <span class="asset-field-label" style="padding-top:6px;">Ghi chú chi tiết</span>
+                    <textarea id="inputDebtNotes" rows="3" class="asset-text-field" placeholder="" style="resize:vertical; min-height:64px; font-family:inherit;"></textarea>
+                </div>
+            </div>
+
+            <div id="debtModalPreview" class="asset-modal-preview">
+                <div>Quy đổi hiển thị: <strong id="debtPreviewConverted">0 ₫</strong> ≈ <strong id="debtPreviewAlt">0 ₩</strong></div>
+            </div>
+
+            <input type="hidden" id="editingDebtId" value="">
+            <div class="ratio-modal-actions">
+                <button class="ratio-btn secondary" type="button" onclick="closeAssetDebtNoteModal()">Hủy</button>
+                <button class="ratio-btn primary" type="button" onclick="saveDebtNote()">Lưu Ghi Chú</button>
+            </div>
+        </section>
+    </div>
+<div class="toast" id="toast"></div>
+    <script src="supabase.js?v=93"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="gsap.min.js?v=92"></script>
-    <script src="countup.js?v=92"></script>
-    <script src="app.js?v=92"></script>
-    <script src="portfolio.js?v=92"></script>
+    <script src="gsap.min.js?v=93"></script>
+    <script src="countup.js?v=93"></script>
+    <script src="app.js?v=93"></script>
+    <script src="portfolio.js?v=93"></script>
 </body>
 
 </html>

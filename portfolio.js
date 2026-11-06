@@ -103,7 +103,7 @@ window.togglePrivacyMode = function () {
 // Filter Category Tabs
 window.setAssetFilter = function (filter) {
     currentAssetFilter = filter;
-    ['all', 'crypto', 'stock_vn', 'gold', 'cash'].forEach(f => {
+    ['all', 'crypto', 'stock_vn', 'gold', 'cash', 'debt'].forEach(f => {
         const pill = document.getElementById('filter-asset-' + f);
         if (pill) {
             if (f === filter) pill.classList.add('active');
@@ -115,11 +115,13 @@ window.setAssetFilter = function (filter) {
     const secStocks = document.getElementById('sectionStocks');
     const secGold = document.getElementById('sectionGold');
     const secCash = document.getElementById('sectionCash');
+    const secDebt = document.getElementById('sectionDebtNotes');
 
     if (secCrypto) secCrypto.style.display = (filter === 'all' || filter === 'crypto') ? 'block' : 'none';
     if (secStocks) secStocks.style.display = (filter === 'all' || filter === 'stock_vn') ? 'block' : 'none';
     if (secGold) secGold.style.display = (filter === 'all' || filter === 'gold') ? 'block' : 'none';
     if (secCash) secCash.style.display = (filter === 'all' || filter === 'cash') ? 'block' : 'none';
+    if (secDebt) secDebt.style.display = (filter === 'all' || filter === 'debt') ? 'block' : 'none';
 };
 
 let assetSearchQuery = '';
@@ -985,6 +987,8 @@ window.renderPortfolio = function () {
     if (elCountStocks) elCountStocks.textContent = stockItems.length;
     if (elCountGold) elCountGold.textContent = goldItems.length;
     if (elCountCash) elCountCash.textContent = cashItems.length;
+    const elCountDebt = document.getElementById('filterCountDebt');
+    if (elCountDebt && typeof debtNotes !== 'undefined') elCountDebt.textContent = debtNotes.length;
 
     // Update Section Subtitles
     const cryptoSub = document.getElementById('cryptoSummarySub');
@@ -1264,6 +1268,7 @@ window.renderPortfolio = function () {
         }
     }
 
+    if (typeof window.renderDebtNotes === 'function') window.renderDebtNotes();
     if (typeof window.refreshIcons === 'function') window.refreshIcons();
 };
 
@@ -2404,3 +2409,565 @@ window.saveGoldAsset = async function () {
 
     showToast(editingId ? 'Đã cập nhật mục vàng thành công!' : 'Đã thêm vàng vào danh mục đầu tư!', 'success');
 };
+
+
+// ===== DEBT / LENDING NOTES MODULE (SỔ GHI CHÚ VAY NỢ & KHOẢN CHƯA HOÀN TRẢ) =====
+let currentDebtFilter = 'all'; // 'all', 'pending', 'lend', 'borrow', 'paid'
+let debtNotes = loadDebtNotes();
+
+function loadDebtNotes() {
+    try {
+        const raw = localStorage.getItem('goz_debt_notes');
+        if (raw) {
+            let notes = JSON.parse(raw);
+            if (Array.isArray(notes)) {
+                // Purge any dummy sample notes
+                notes = notes.filter(n => n.id !== 'debt_sample_1' && n.id !== 'debt_sample_2' && n.id !== 'debt_sample_3');
+                return notes;
+            }
+        }
+    } catch (e) {
+        console.error('Error loading debt notes', e);
+    }
+    return [];
+}
+
+function saveDebtNotes(notes) {
+    try {
+        debtNotes = notes;
+        localStorage.setItem('goz_debt_notes', JSON.stringify(notes));
+    } catch (e) {
+        console.error('Error saving debt notes', e);
+    }
+}
+
+function formatDebtDate(dateStr) {
+    if (!dateStr) return '';
+    try {
+        const parts = dateStr.split('-');
+        if (parts.length === 3) return parts[2] + '/' + parts[1] + '/' + parts[0];
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+    } catch (e) {
+        return dateStr;
+    }
+}
+
+function getDueDateInfo(dueDateStr, status) {
+    if (!dueDateStr) return null;
+    if (status === 'paid') return { text: 'Hạn: ' + formatDebtDate(dueDateStr), isOverdue: false };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDateStr);
+    due.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
+    if (diffDays > 0) {
+        return { text: 'Quá hạn ' + diffDays + ' ngày (' + formatDebtDate(dueDateStr) + ')', isOverdue: true };
+    } else if (diffDays === 0) {
+        return { text: 'Hôm nay là hạn chót (' + formatDebtDate(dueDateStr) + ')', isDueToday: true };
+    } else {
+        return { text: 'Hạn: ' + formatDebtDate(dueDateStr) + ' (còn ' + Math.abs(diffDays) + ' ngày)', isOverdue: false };
+    }
+}
+
+window.renderDebtNotes = function () {
+    const listContainer = document.getElementById('debtNotesListContainer');
+    if (!listContainer) return;
+
+    let totalLendPendingInCur = 0;
+    let totalBorrowPendingInCur = 0;
+    let totalPaidInCur = 0;
+    let countPending = 0;
+    let countLend = 0;
+    let countBorrow = 0;
+    let countPaid = 0;
+
+    debtNotes.forEach(item => {
+        const amt = Number(item.amount) || 0;
+        const cur = item.currency || 'VND';
+        const inDisplay = convertCurrency(amt, cur, displayCurrency);
+
+        if (item.status === 'paid') {
+            countPaid++;
+            totalPaidInCur += inDisplay;
+        } else {
+            countPending++;
+            if (item.type === 'lend') {
+                totalLendPendingInCur += inDisplay;
+                countLend++;
+            } else if (item.type === 'borrow') {
+                totalBorrowPendingInCur += inDisplay;
+                countBorrow++;
+            }
+        }
+    });
+
+    // Update Section Subtitle
+    const sub = document.getElementById('debtNotesSummarySub');
+    if (sub) {
+        const lendVND = convertCurrency(totalLendPendingInCur, displayCurrency, 'VND');
+        const lendKRW = convertCurrency(totalLendPendingInCur, displayCurrency, 'KRW');
+        const borrowVND = convertCurrency(totalBorrowPendingInCur, displayCurrency, 'VND');
+        const counterpart = displayCurrency === 'VND' 
+            ? '≈ ' + Number(lendKRW).toLocaleString('vi-VN') + ' ₩' 
+            : '≈ ' + Number(lendVND).toLocaleString('vi-VN') + ' ₫';
+        sub.innerHTML = 'Đang cho vay: <strong style="color:var(--text-primary);">' + fmtDisplayCur(totalLendPendingInCur) + '</strong> <span style="opacity:0.85;">(' + counterpart + ')</span> • Đang nợ: <strong style="color:#ef4444;">' + fmtDisplayCur(totalBorrowPendingInCur) + '</strong>';
+    }
+
+    // Update Filter Pill Counts
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setTxt('debtFilterCountAll', debtNotes.length);
+    setTxt('debtFilterCountPending', countPending);
+    setTxt('debtFilterCountLend', countLend);
+    setTxt('debtFilterCountBorrow', countBorrow);
+    setTxt('debtFilterCountPaid', countPaid);
+    setTxt('filterCountDebt', debtNotes.length);
+
+    // Update KPI Bar
+    const kpiBar = document.getElementById('debtKpiBar');
+    if (kpiBar) {
+        kpiBar.innerHTML = `
+            <div class="debt-kpi-chip lend" title="Các khoản bạn đang cho người khác vay (Cần thu hồi)">
+                <i class="icon-svg" data-lucide="arrow-up-right"></i>
+                <span>Phải thu: <strong>${fmtDisplayCur(totalLendPendingInCur)}</strong> (${countLend})</span>
+            </div>
+            <div class="debt-kpi-chip borrow" title="Các khoản bạn đang nợ người khác (Cần thanh toán)">
+                <i class="icon-svg" data-lucide="arrow-down-left"></i>
+                <span>Cần trả: <strong>${fmtDisplayCur(totalBorrowPendingInCur)}</strong> (${countBorrow})</span>
+            </div>
+            <div class="debt-kpi-chip paid" title="Các khoản đã hoàn tất thanh toán">
+                <i class="icon-svg" data-lucide="check-circle-2"></i>
+                <span>Đã tất toán: <strong>${fmtDisplayCur(totalPaidInCur)}</strong> (${countPaid})</span>
+            </div>
+        `;
+    }
+
+    // Filter Items
+    let filtered = debtNotes.filter(item => {
+        if (currentDebtFilter === 'pending') return item.status === 'pending' || item.status === 'partial';
+        if (currentDebtFilter === 'lend') return item.type === 'lend';
+        if (currentDebtFilter === 'borrow') return item.type === 'borrow';
+        if (currentDebtFilter === 'paid') return item.status === 'paid';
+        return true;
+    });
+
+    if (assetSearchQuery) {
+        filtered = filtered.filter(item => {
+            const p = (item.person || '').toLowerCase();
+            const n = (item.note || '').toLowerCase();
+            const c = (item.currency || '').toLowerCase();
+            const a = String(item.amount || '');
+            return p.includes(assetSearchQuery) || n.includes(assetSearchQuery) || c.includes(assetSearchQuery) || a.includes(assetSearchQuery);
+        });
+    }
+
+    if (filtered.length === 0) {
+        listContainer.innerHTML = `
+            <div class="debt-empty-state">
+                <div class="debt-empty-icon"><i class="icon-svg" data-lucide="receipt-text"></i></div>
+                <div class="debt-empty-title">${debtNotes.length === 0 ? 'Chưa có ghi chú khoản vay / nợ nào' : 'Không có khoản vay nợ nào khớp bộ lọc'}</div>
+                <div class="debt-empty-desc">${debtNotes.length === 0 ? 'Ghi chép ai vay tiền hoặc các khoản nợ chưa hoàn trả để luôn nắm rõ tài sản.' : 'Thử đổi bộ lọc hoặc xóa từ khóa tìm kiếm.'}</div>
+                <button class="btn-primary-add" onclick="openAddDebtNoteModal()" style="margin-top:12px;">
+                    <i class="icon-svg" data-lucide="plus"></i> <span>Thêm Ghi Chú Mới</span>
+                </button>
+            </div>
+        `;
+        if (typeof window.refreshIcons === 'function') window.refreshIcons();
+        return;
+    }
+
+    listContainer.innerHTML = filtered.map(item => {
+        const amt = Number(item.amount) || 0;
+        const cur = item.currency || 'VND';
+        const inDisplay = convertCurrency(amt, cur, displayCurrency);
+        const isLend = item.type === 'lend';
+        const isPaid = item.status === 'paid';
+        const isPartial = item.status === 'partial';
+        const dueInfo = getDueDateInfo(item.dueDate, item.status);
+
+        const typeBadge = isLend
+            ? '<span class="debt-badge-pill lend"><i class="icon-svg" data-lucide="arrow-up-right"></i> Cho vay (Phải thu)</span>'
+            : '<span class="debt-badge-pill borrow"><i class="icon-svg" data-lucide="arrow-down-left"></i> Đi vay (Cần trả)</span>';
+
+        let statusBadge = '';
+        if (isPaid) {
+            statusBadge = '<span class="debt-status-tag paid"><i class="icon-svg" data-lucide="check"></i> Đã hoàn trả</span>';
+        } else if (isPartial) {
+            statusBadge = '<span class="debt-status-tag partial"><i class="icon-svg" data-lucide="rotate-cw"></i> Trả một phần</span>';
+        } else {
+            statusBadge = '<span class="debt-status-tag pending"><i class="icon-svg" data-lucide="clock"></i> Chưa hoàn trả</span>';
+        }
+
+        let dueBadge = '';
+        if (dueInfo) {
+            if (dueInfo.isOverdue) {
+                dueBadge = '<span class="debt-due-tag overdue" title="Đã quá hạn thỏa thuận"><i class="icon-svg" data-lucide="alert-triangle"></i> ' + dueInfo.text + '</span>';
+            } else if (dueInfo.isDueToday) {
+                dueBadge = '<span class="debt-due-tag duetoday"><i class="icon-svg" data-lucide="alert-circle"></i> ' + dueInfo.text + '</span>';
+            } else {
+                dueBadge = '<span class="debt-due-tag normal"><i class="icon-svg" data-lucide="calendar"></i> ' + dueInfo.text + '</span>';
+            }
+        }
+
+        const dateFormatted = item.date ? formatDebtDate(item.date) : '';
+
+        return `
+            <div class="asset-item-row debt-item-row ${isPaid ? 'is-paid' : ''}">
+                <div class="asset-item-left">
+                    <div class="asset-badge debt-badge ${isLend ? 'lend-badge' : 'borrow-badge'}">
+                        <span class="badge-symbol-text">${isLend ? 'CHO VAY' : 'ĐI VAY'}</span>
+                    </div>
+                    <div class="asset-info">
+                        <div class="asset-title-line">
+                            <span class="asset-symbol-strong">${escapeHtml(item.person || 'Ghi chú')}</span>
+                            ${typeBadge}
+                            ${statusBadge}
+                            ${dueBadge}
+                        </div>
+                        <div class="asset-meta-line">
+                            <span>Số tiền gốc: <strong>${amt.toLocaleString('vi-VN')} ${cur}</strong></span>
+                            ${dateFormatted ? `<span class="meta-dot">•</span><span>Ngày vay: <strong>${dateFormatted}</strong></span>` : ''}
+                        </div>
+                        ${item.note ? `<div class="debt-note-text"><i class="icon-svg" data-lucide="quote"></i> ${escapeHtml(item.note)}</div>` : ''}
+                    </div>
+                </div>
+                <div class="asset-item-right">
+                    <div class="asset-values-block">
+                        <div class="asset-val-main ${isPaid ? 'paid-val' : (isLend ? 'lend-val' : 'borrow-val')}">${fmtDisplayCur(inDisplay)}</div>
+                        <div class="asset-pnl-chip ${isPaid ? 'cash-chip' : (isLend ? 'pos' : 'neg')}">
+                            <i class="icon-svg" data-lucide="${isPaid ? 'check-circle' : (isLend ? 'arrow-up-right' : 'arrow-down-left')}"></i>
+                            <span>${isPaid ? 'Đã thanh toán' : (isLend ? 'Khoản cần thu' : 'Khoản cần trả')}</span>
+                        </div>
+                    </div>
+                    <div class="asset-actions-block">
+                        <button class="asset-action-btn toggle-paid ${isPaid ? 'reopen' : 'complete'}" onclick="toggleDebtNoteStatus('${item.id}')" title="${isPaid ? 'Đánh dấu chưa hoàn trả' : 'Đánh dấu đã thanh toán xong'}">
+                            <i class="icon-svg" data-lucide="${isPaid ? 'rotate-ccw' : 'check'}"></i>
+                        </button>
+                        <button class="asset-action-btn edit" onclick="openEditDebtNoteModal('${item.id}')" title="Sửa ghi chú"><i class="icon-svg" data-lucide="pencil"></i></button>
+                        <button class="asset-action-btn delete" onclick="deleteDebtNote('${item.id}')" title="Xóa ghi chú"><i class="icon-svg" data-lucide="trash-2"></i></button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    if (typeof window.refreshIcons === 'function') window.refreshIcons();
+};
+
+
+
+window.toggleDebtCurrencyDropdown = function () {
+    const dropdown = document.getElementById('debtCurrencyDropdown');
+    const trigger = document.getElementById('debtCurrencyTrigger');
+    if (!dropdown) return;
+    const isOpen = dropdown.classList.toggle('open');
+    if (trigger) trigger.setAttribute('aria-expanded', String(isOpen));
+};
+
+window.selectDebtCurrencyOption = function (val, label) {
+    const input = document.getElementById('inputDebtCurrency');
+    if (input) input.value = val;
+
+    const labelEl = document.getElementById('debtCurrencySelectedLabel');
+    if (labelEl) labelEl.textContent = label || (val === 'KRW' ? '₩ KRW' : (val === 'USD' ? '$ USD' : '₫ VND'));
+
+    const dropdown = document.getElementById('debtCurrencyDropdown');
+    const trigger = document.getElementById('debtCurrencyTrigger');
+    if (dropdown) {
+        dropdown.classList.remove('open');
+        dropdown.querySelectorAll('.debt-currency-option').forEach(opt => {
+            if (opt.getAttribute('data-val') === val) {
+                opt.classList.add('active');
+            } else {
+                opt.classList.remove('active');
+            }
+        });
+    }
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+
+    if (typeof window.calcDebtModalPreview === 'function') window.calcDebtModalPreview();
+};
+
+window.toggleDebtStatusDropdown = function () {
+    
+    const curDropdown = document.getElementById('debtCurrencyDropdown');
+    if (curDropdown && curDropdown.classList.contains('open')) {
+        if (!curDropdown.contains(e.target)) {
+            curDropdown.classList.remove('open');
+            const trigger = document.getElementById('debtCurrencyTrigger');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    const dropdown = document.getElementById('debtStatusDropdown');
+    const trigger = document.getElementById('debtStatusTrigger');
+    if (!dropdown) return;
+    const isOpen = dropdown.classList.toggle('open');
+    if (trigger) trigger.setAttribute('aria-expanded', String(isOpen));
+};
+
+window.selectDebtStatusOption = function (val, label) {
+    const input = document.getElementById('inputDebtStatus');
+    if (input) input.value = val;
+
+    const labelEl = document.getElementById('debtStatusSelectedLabel');
+    if (labelEl) labelEl.textContent = label;
+
+    const dotEl = document.getElementById('debtStatusTriggerDot');
+    if (dotEl) {
+        dotEl.className = 'status-option-dot ' + val;
+    }
+
+    const dropdown = document.getElementById('debtStatusDropdown');
+    const trigger = document.getElementById('debtStatusTrigger');
+    if (dropdown) {
+        dropdown.classList.remove('open');
+        dropdown.querySelectorAll('.debt-status-option').forEach(opt => {
+            if (opt.getAttribute('data-val') === val) {
+                opt.classList.add('active');
+            } else {
+                opt.classList.remove('active');
+            }
+        });
+    }
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+};
+
+window.setDebtFilter = function (filter) {
+    currentDebtFilter = filter;
+    ['all', 'pending', 'lend', 'borrow', 'paid'].forEach(f => {
+        const btn = document.getElementById('debtFilter' + f.charAt(0).toUpperCase() + f.slice(1));
+        if (btn) {
+            if (f === filter) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+    });
+    renderDebtNotes();
+};
+
+window.selectDebtType = function (type) {
+    const hidden = document.getElementById('inputDebtType');
+    if (hidden) hidden.value = type;
+    const btnLend = document.getElementById('btnDebtTypeLend');
+    const btnBorrow = document.getElementById('btnDebtTypeBorrow');
+    const label = document.getElementById('labelDebtPerson');
+    if (type === 'lend') {
+        if (btnLend) btnLend.classList.add('active');
+        if (btnBorrow) btnBorrow.classList.remove('active');
+        if (label) label.textContent = 'Người vay tiền';
+    } else {
+        if (btnBorrow) btnBorrow.classList.add('active');
+        if (btnLend) btnLend.classList.remove('active');
+        if (label) label.textContent = 'Chủ nợ / Người cho vay';
+    }
+};
+
+window.calcDebtModalPreview = function () {
+    const amt = parseFloat(document.getElementById('inputDebtAmount')?.value) || 0;
+    const cur = document.getElementById('inputDebtCurrency')?.value || 'VND';
+    const convVND = convertCurrency(amt, cur, 'VND');
+    const convKRW = convertCurrency(amt, cur, 'KRW');
+    const elVND = document.getElementById('debtPreviewConverted');
+    const elAlt = document.getElementById('debtPreviewAlt');
+    if (elVND) elVND.textContent = Number(convVND).toLocaleString('vi-VN') + ' ₫';
+    if (elAlt) elAlt.textContent = Number(convKRW).toLocaleString('vi-VN') + ' ₩';
+};
+
+window.openAddDebtNoteModal = function () {
+    const title = document.getElementById('debtModalTitle');
+    if (title) title.textContent = 'Thêm Ghi Chú Khoản Vay / Nợ';
+    const idEl = document.getElementById('editingDebtId');
+    if (idEl) idEl.value = '';
+    const personEl = document.getElementById('inputDebtPerson');
+    if (personEl) personEl.value = '';
+    const amtEl = document.getElementById('inputDebtAmount');
+    if (amtEl) amtEl.value = '';
+    const initCur = displayCurrency || 'VND';
+    if (typeof window.selectDebtCurrencyOption === 'function') window.selectDebtCurrencyOption(initCur, initCur === 'KRW' ? '₩ KRW' : (initCur === 'USD' ? '$ USD' : '₫ VND'));
+    if (typeof window.selectDebtStatusOption === 'function') window.selectDebtStatusOption('pending', 'Chưa hoàn trả');
+    const notesEl = document.getElementById('inputDebtNotes');
+    if (notesEl) notesEl.value = '';
+    
+    const today = new Date().toISOString().split('T')[0];
+    const dateEl = document.getElementById('inputDebtDate');
+    if (dateEl) dateEl.value = today;
+    const dueEl = document.getElementById('inputDebtDueDate');
+    if (dueEl) dueEl.value = '';
+    
+    if (typeof window.selectDebtType === 'function') window.selectDebtType('lend');
+    if (typeof window.calcDebtModalPreview === 'function') window.calcDebtModalPreview();
+
+    const modal = document.getElementById('assetDebtNoteModal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    if (typeof window.refreshIcons === 'function') window.refreshIcons();
+};
+
+window.openEditDebtNoteModal = function (id) {
+    const item = debtNotes.find(n => n.id === id);
+    if (!item) return;
+
+    document.getElementById('debtModalTitle').textContent = 'Chỉnh Sửa Khoản Vay / Nợ';
+    document.getElementById('editingDebtId').value = item.id;
+    document.getElementById('inputDebtPerson').value = item.person || '';
+    document.getElementById('inputDebtAmount').value = item.amount || '';
+    const editCur = item.currency || 'VND';
+    if (typeof window.selectDebtCurrencyOption === 'function') window.selectDebtCurrencyOption(editCur, editCur === 'KRW' ? '₩ KRW' : (editCur === 'USD' ? '$ USD' : '₫ VND'));
+    document.getElementById('inputDebtDate').value = item.date || '';
+    document.getElementById('inputDebtDueDate').value = item.dueDate || '';
+    const statusMap = { 'pending': 'Chưa hoàn trả', 'partial': 'Trả một phần', 'paid': 'Đã hoàn trả' };
+    const curStatus = item.status || 'pending';
+    if (typeof window.selectDebtStatusOption === 'function') {
+        window.selectDebtStatusOption(curStatus, statusMap[curStatus] || 'Chưa hoàn trả');
+    }
+    document.getElementById('inputDebtNotes').value = item.note || '';
+
+    selectDebtType(item.type || 'lend');
+    calcDebtModalPreview();
+
+    const modal = document.getElementById('assetDebtNoteModal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    if (typeof window.refreshIcons === 'function') window.refreshIcons();
+};
+
+window.closeAssetDebtNoteModal = function () {
+    const modal = document.getElementById('assetDebtNoteModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+};
+
+window.saveDebtNote = function () {
+    const editId = document.getElementById('editingDebtId')?.value;
+    const type = document.getElementById('inputDebtType')?.value || 'lend';
+    const person = (document.getElementById('inputDebtPerson')?.value || '').trim();
+    const amount = parseFloat(document.getElementById('inputDebtAmount')?.value);
+    const currency = document.getElementById('inputDebtCurrency')?.value || 'VND';
+    const date = document.getElementById('inputDebtDate')?.value || new Date().toISOString().split('T')[0];
+    const dueDate = document.getElementById('inputDebtDueDate')?.value || '';
+    const status = document.getElementById('inputDebtStatus')?.value || 'pending';
+    const note = (document.getElementById('inputDebtNotes')?.value || '').trim();
+
+    if (!person) {
+        if (typeof window.showToast === 'function') window.showToast('Vui lòng nhập tên người vay / đối tác!', 'error');
+        return;
+    }
+    if (isNaN(amount) || amount <= 0) {
+        if (typeof window.showToast === 'function') window.showToast('Vui lòng nhập số tiền hợp lệ (> 0)!', 'error');
+        return;
+    }
+
+    const noteObj = {
+        id: editId || ('debt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4)),
+        type,
+        person,
+        amount,
+        currency,
+        date,
+        dueDate,
+        status,
+        note,
+        updatedAt: new Date().toISOString()
+    };
+
+    if (editId) {
+        const idx = debtNotes.findIndex(n => n.id === editId);
+        if (idx !== -1) debtNotes[idx] = noteObj;
+    } else {
+        debtNotes.unshift(noteObj);
+    }
+
+    saveDebtNotes(debtNotes);
+    closeAssetDebtNoteModal();
+    renderDebtNotes();
+    if (typeof window.showToast === 'function') {
+        window.showToast(editId ? 'Đã cập nhật ghi chú thành công!' : 'Đã thêm ghi chú khoản vay nợ mới!', 'success');
+    }
+};
+
+window.toggleDebtNoteStatus = function (id) {
+    const item = debtNotes.find(n => n.id === id);
+    if (!item) return;
+
+    if (item.status === 'paid') {
+        item.status = 'pending';
+        if (typeof window.showToast === 'function') window.showToast('Đã chuyển về trạng thái: Chưa hoàn trả', 'info');
+    } else {
+        item.status = 'paid';
+        if (typeof window.showToast === 'function') window.showToast('Đã đánh dấu hoàn tất thanh toán!', 'success');
+    }
+
+    item.updatedAt = new Date().toISOString();
+    saveDebtNotes(debtNotes);
+    renderDebtNotes();
+};
+
+window.deleteDebtNote = function (id) {
+    const item = debtNotes.find(n => n.id === id);
+    if (!item) return;
+
+    const confirmMsg = 'Bạn có chắc muốn xóa ghi chú "' + item.person + '" (' + Number(item.amount).toLocaleString('vi-VN') + ' ' + item.currency + ')?';
+    if (typeof window.confirmAction === 'function') {
+        window.confirmAction(confirmMsg, () => {
+            debtNotes = debtNotes.filter(n => n.id !== id);
+            saveDebtNotes(debtNotes);
+            renderDebtNotes();
+            if (typeof window.showToast === 'function') window.showToast('Đã xóa ghi chú vay nợ', 'info');
+        });
+    } else if (confirm(confirmMsg)) {
+        debtNotes = debtNotes.filter(n => n.id !== id);
+        saveDebtNotes(debtNotes);
+        renderDebtNotes();
+        if (typeof window.showToast === 'function') window.showToast('Đã xóa ghi chú vay nợ', 'info');
+    }
+};
+
+// Global Modal Escape & Close Key Handler
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        
+        const curDropdown = document.getElementById('debtCurrencyDropdown');
+        if (curDropdown && curDropdown.classList.contains('open')) {
+            curDropdown.classList.remove('open');
+        }
+
+        const debtModal = document.getElementById('assetDebtNoteModal');
+        if (debtModal && debtModal.classList.contains('active')) {
+            window.closeAssetDebtNoteModal();
+        }
+        const cashModal = document.getElementById('assetCashModal');
+        if (cashModal && cashModal.classList.contains('active')) {
+            window.closeAssetCashModal();
+        }
+        const goldModal = document.getElementById('assetGoldModal');
+        if (goldModal && goldModal.classList.contains('active')) {
+            window.closeAssetGoldModal();
+        }
+        const cryptoModal = document.getElementById('assetCryptoModal');
+        if (cryptoModal && cryptoModal.classList.contains('active')) {
+            window.closeAssetCryptoModal();
+        }
+        const stockModal = document.getElementById('assetStockModal');
+        if (stockModal && stockModal.classList.contains('active')) {
+            window.closeAssetStockModal();
+        }
+    }
+});
+
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('debtStatusDropdown');
+    if (dropdown && dropdown.classList.contains('open')) {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+            const trigger = document.getElementById('debtStatusTrigger');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+    }
+});
