@@ -10912,255 +10912,200 @@ select.goal-currency-select option {
 }
 
 
-/* --- Option B: Continuous Stacked Ribbon & Target vs Actual Allocation Cards --- */
+/* --- Option B: Continuous Stacked Ribbon & Target vs Actual (Ultra-Sleek & Bento-Balanced) --- */
 .pie-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
-    gap: 16px !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px !important;
+}
+
+@media (max-width: 680px) {
+    .pie-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 .pie-card {
     background: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 18px !important;
-    padding: 16px 18px !important;
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
+    border-radius: 14px !important;
+    padding: 14px 16px !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 14px !important;
-    align-items: stretch !important;
-    position: relative !important;
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease !important;
+    gap: 12px !important;
+    justify-content: flex-start !important;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .pie-card:hover {
-    box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.08) !important;
-    border-color: rgba(0, 184, 148, 0.25) !important;
+    border-color: rgba(0, 184, 148, 0.3) !important;
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.06) !important;
 }
 
 .pie-card-header {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 8px !important;
+    gap: 6px !important;
+    margin-bottom: 2px !important;
 }
 
 .pie-card-title {
-    font-size: 0.95rem !important;
+    font-size: 0.88rem !important;
     font-weight: 800 !important;
     color: var(--text-primary) !important;
+    white-space: nowrap !important;
     margin: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
 }
 
-.pie-card-rule-pill,
 .pie-card-total-pill {
-    font-size: 0.72rem !important;
+    font-size: 0.68rem !important;
     font-weight: 700 !important;
-    padding: 3px 9px !important;
-    border-radius: 8px !important;
-    background: rgba(0, 184, 148, 0.1) !important;
-    color: var(--accent-primary) !important;
+    color: var(--text-muted) !important;
+    background: var(--bg-secondary) !important;
+    padding: 2px 7px !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--border) !important;
     white-space: nowrap !important;
     font-variant-numeric: tabular-nums !important;
-    transition: background 0.2s ease !important;
 }
 
-.pie-card-rule-pill:hover,
-.pie-card-total-pill:hover {
-    background: rgba(0, 184, 148, 0.18) !important;
-}
-
-/* 1. Continuous Stacked Allocation Ribbon */
+/* Continuous Stacked Allocation Ribbon */
 .stacked-ribbon-container {
     display: flex !important;
-    height: 14px !important;
+    height: 8px !important;
     width: 100% !important;
     border-radius: 999px !important;
     overflow: hidden !important;
     background: rgba(148, 163, 184, 0.15) !important;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
     gap: 2px !important;
 }
 
 .ribbon-segment {
     height: 100% !important;
-    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    position: relative !important;
-    cursor: pointer !important;
+    border-radius: 2px !important;
+    transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
+.ribbon-segment.expense { background: linear-gradient(90deg, #f43f5e, #fb7185) !important; }
+.ribbon-segment.reserve { background: linear-gradient(90deg, #f59e0b, #fbbf24) !important; }
+.ribbon-segment.invest { background: linear-gradient(90deg, #00b894, #2dd4bf) !important; }
 
-.ribbon-segment.expense {
-    background: linear-gradient(90deg, #f43f5e, #fb7185) !important;
-}
-.ribbon-segment.reserve {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
-}
-.ribbon-segment.invest {
-    background: linear-gradient(90deg, #00b894, #2dd4bf) !important;
-}
-
-/* 2. Breakdown Item Cards (Target vs Actual) */
+/* Sleek Target vs Actual Rows */
 .alloc-breakdown-list {
     display: flex !important;
     flex-direction: column !important;
     gap: 10px !important;
 }
 
-.alloc-item-card {
-    background: var(--bg-secondary) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
-    padding: 10px 12px !important;
+.alloc-sleek-row {
     display: flex !important;
     flex-direction: column !important;
-    gap: 6px !important;
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+    gap: 5px !important;
 }
 
-.alloc-item-card:hover {
-    transform: translateY(-1px) !important;
-    border-color: rgba(0, 184, 148, 0.35) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
-}
-
-.alloc-item-top {
+.alloc-row-heading {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    flex-wrap: wrap !important;
-    gap: 6px !important;
+    font-size: 0.8rem !important;
 }
 
-.alloc-item-name {
+.alloc-row-label {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 7px !important;
-    font-size: 0.82rem !important;
+    gap: 6px !important;
     font-weight: 700 !important;
     color: var(--text-primary) !important;
 }
 
 .alloc-dot {
-    width: 9px !important;
-    height: 9px !important;
+    width: 8px !important;
+    height: 8px !important;
     border-radius: 50% !important;
 }
-.alloc-dot.expense { background: #f43f5e !important; box-shadow: 0 0 8px rgba(244, 63, 94, 0.5) !important; }
-.alloc-dot.reserve { background: #f59e0b !important; box-shadow: 0 0 8px rgba(245, 158, 11, 0.5) !important; }
-.alloc-dot.invest { background: #00b894 !important; box-shadow: 0 0 8px rgba(0, 184, 148, 0.5) !important; }
+.alloc-dot.expense { background: #fb7185 !important; }
+.alloc-dot.reserve { background: #fbbf24 !important; }
+.alloc-dot.invest { background: #2dd4bf !important; }
 
-.alloc-item-values {
-    display: flex !important;
+.alloc-row-stats {
+    display: inline-flex !important;
     align-items: baseline !important;
     gap: 6px !important;
-    flex-wrap: wrap !important;
 }
 
-.alloc-amount {
-    font-size: 0.92rem !important;
+.alloc-pct {
     font-weight: 800 !important;
-    color: var(--text-primary) !important;
-    font-variant-numeric: tabular-nums !important;
+    font-size: 0.82rem !important;
 }
+.alloc-pct.expense { color: #fb7185 !important; }
+.alloc-pct.reserve { color: #f59e0b !important; }
+.alloc-pct.invest { color: #00b894 !important; }
 
-.alloc-pct-strong {
-    font-size: 0.85rem !important;
-    font-weight: 800 !important;
-}
-
-.alloc-target-hint {
-    font-size: 0.72rem !important;
+.alloc-target-tag {
+    font-size: 0.68rem !important;
     color: var(--text-muted) !important;
     font-weight: 500 !important;
 }
 
-.alloc-item-bottom {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 10px !important;
-}
-
-/* Mini Progress Track with Target Marker */
-.alloc-mini-track {
-    flex: 1 !important;
-    height: 6px !important;
-    background: rgba(148, 163, 184, 0.18) !important;
-    border-radius: 999px !important;
+/* Progress bar with Target Marker */
+.alloc-track-wrap {
     position: relative !important;
+    height: 7px !important;
+    background: rgba(148, 163, 184, 0.15) !important;
+    border-radius: 999px !important;
     overflow: visible !important;
 }
 
-.alloc-mini-fill {
+.alloc-track-fill {
     height: 100% !important;
     border-radius: 999px !important;
-    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: width 0.5s ease !important;
 }
-.alloc-mini-fill.expense { background: linear-gradient(90deg, #f43f5e, #fb7185) !important; }
-.alloc-mini-fill.reserve { background: linear-gradient(90deg, #f59e0b, #fbbf24) !important; }
-.alloc-mini-fill.invest { background: linear-gradient(90deg, #00b894, #2dd4bf) !important; }
+.alloc-track-fill.expense { background: linear-gradient(90deg, #f43f5e, #fb7185) !important; }
+.alloc-track-fill.reserve { background: linear-gradient(90deg, #f59e0b, #fbbf24) !important; }
+.alloc-track-fill.invest { background: linear-gradient(90deg, #00b894, #2dd4bf) !important; }
 
-/* Target Marker */
 .alloc-target-marker {
     position: absolute !important;
-    top: -4px !important;
-    bottom: -4px !important;
-    width: 2.5px !important;
+    top: -3px !important;
+    bottom: -3px !important;
+    width: 2px !important;
     background: var(--text-primary) !important;
-    border-radius: 2px !important;
-    opacity: 0.75 !important;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3) !important;
+    border-radius: 1px !important;
+    opacity: 0.7 !important;
     z-index: 2 !important;
 }
 
-/* Smart Delta Badge */
-.alloc-delta-badge {
-    font-size: 0.68rem !important;
-    font-weight: 700 !important;
-    padding: 2.5px 8px !important;
-    border-radius: 6px !important;
-    white-space: nowrap !important;
-    line-height: 1.2 !important;
-    flex-shrink: 0 !important;
+/* Sub row: Amount + Status badge */
+.alloc-row-sub {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
 }
 
-.alloc-delta-badge.pos {
+.alloc-amount-val {
+    color: var(--text-secondary) !important;
+    font-variant-numeric: tabular-nums !important;
+    font-weight: 600 !important;
+}
+
+.alloc-micro-badge {
+    font-size: 0.64rem !important;
+    font-weight: 700 !important;
+    padding: 1.5px 5.5px !important;
+    border-radius: 4px !important;
+}
+.alloc-micro-badge.pos {
     background: rgba(16, 185, 129, 0.14) !important;
     color: #10b981 !important;
 }
-
-.alloc-delta-badge.neg {
+.alloc-micro-badge.neg {
     background: rgba(244, 63, 94, 0.14) !important;
     color: #f43f5e !important;
 }
-
-.alloc-delta-badge.info {
+.alloc-micro-badge.info {
     background: rgba(245, 158, 11, 0.14) !important;
     color: #f59e0b !important;
-}
-
-/* 3. Smart Financial Health Insight Tip Box */
-.alloc-insight-tip {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    background: rgba(0, 184, 148, 0.08) !important;
-    border: 1px dashed rgba(0, 184, 148, 0.3) !important;
-    border-radius: 11px !important;
-    padding: 9px 12px !important;
-    font-size: 0.76rem !important;
-    color: var(--text-secondary) !important;
-    line-height: 1.45 !important;
-}
-
-.alloc-insight-tip strong {
-    color: var(--accent-primary) !important;
-}
-
-.alloc-insight-icon {
-    font-size: 1rem !important;
-    flex-shrink: 0 !important;
 }

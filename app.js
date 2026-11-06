@@ -2338,7 +2338,14 @@ function drawAllocationCard(containerId, data, title, targetLiving, targetReserv
 
     const total = data.reduce((sum, item) => sum + item.value, 0);
     if (total <= 0) {
-        container.innerHTML = '<div class="pie-empty allocation-empty" style="padding:28px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Chưa có dữ liệu giao dịch</div>';
+        container.innerHTML = `
+            <div class="pie-card-header">
+                <h4 class="pie-card-title">${title}</h4>
+            </div>
+            <div class="pie-empty allocation-empty" style="min-height:160px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.8rem;">
+                Chưa có dữ liệu
+            </div>
+        `;
         return;
     }
 
@@ -2370,26 +2377,21 @@ function drawAllocationCard(containerId, data, title, targetLiving, targetReserv
     const diffInv = pInv - targetInvest;
 
     const badgeExp = diffExp <= 0 
-        ? `<span class="alloc-delta-badge pos">✓ Tiết kiệm tốt (${diffExp}%)</span>` 
-        : `<span class="alloc-delta-badge neg">▲ Vượt mức (+${diffExp}%)</span>`;
+        ? `<span class="alloc-micro-badge pos">✓ Tiết kiệm (${diffExp}%)</span>` 
+        : `<span class="alloc-micro-badge neg">▲ Vượt (+${diffExp}%)</span>`;
 
     const badgeRes = diffRes >= 0 
-        ? `<span class="alloc-delta-badge pos">✓ An toàn (+${diffRes}%)</span>` 
-        : `<span class="alloc-delta-badge info">Thiếu (${diffRes}%)</span>`;
+        ? `<span class="alloc-micro-badge pos">✓ An toàn (+${diffRes}%)</span>` 
+        : `<span class="alloc-micro-badge info">Thiếu (${diffRes}%)</span>`;
 
     const badgeInv = diffInv >= 0 
-        ? `<span class="alloc-delta-badge pos">★ Vượt mục tiêu (+${diffInv}%)</span>` 
-        : `<span class="alloc-delta-badge info">Thiếu (${diffInv}%)</span>`;
-
-    const savedPct = pRes + pInv;
-    const tipText = pExp <= targetLiving 
-        ? `Kiểm soát chi tiêu xuất sắc! Bạn đang giữ lại <strong>${savedPct}%</strong> thu nhập cho Dự phòng & Đầu tư.`
-        : `Chi tiêu đang chiếm <strong>${pExp}%</strong> thu nhập (vượt ngưỡng mục tiêu ${targetLiving}%).`;
+        ? `<span class="alloc-micro-badge pos">★ Đạt (+${diffInv}%)</span>` 
+        : `<span class="alloc-micro-badge info">Thiếu (${diffInv}%)</span>`;
 
     container.innerHTML = `
         <div class="pie-card-header">
             <h4 class="pie-card-title">${title}</h4>
-            <span class="pie-card-total-pill" title="Tổng thu nhập đã phân bổ">Tổng thu: ${convert(total)}</span>
+            <span class="pie-card-total-pill">${convert(total)}</span>
         </div>
 
         <!-- 1. Continuous Stacked Allocation Ribbon -->
@@ -2399,70 +2401,64 @@ function drawAllocationCard(containerId, data, title, targetLiving, targetReserv
             <div class="ribbon-segment invest" style="width: ${pInv}%;" title="Đầu tư: ${pInv}% (${fInv})"></div>
         </div>
 
-        <!-- 2. Breakdown Cards (Target vs Actual) -->
+        <!-- 2. Breakdown Rows with Target vs Actual -->
         <div class="alloc-breakdown-list">
             <!-- Chi tiêu -->
-            <div class="alloc-item-card">
-                <div class="alloc-item-top">
-                    <span class="alloc-item-name"><span class="alloc-dot expense"></span> Chi tiêu</span>
-                    <div class="alloc-item-values">
-                        <span class="alloc-amount">${fExp}</span>
-                        <span class="alloc-pct-strong" style="color:#f43f5e;">${pExp}%</span>
-                        <span class="alloc-target-hint">/ Mục tiêu: ${targetLiving}%</span>
+            <div class="alloc-sleek-row">
+                <div class="alloc-row-heading">
+                    <span class="alloc-row-label"><span class="alloc-dot expense"></span> Chi tiêu</span>
+                    <div class="alloc-row-stats">
+                        <span class="alloc-pct expense">${pExp}%</span>
+                        <span class="alloc-target-tag">/ MT ${targetLiving}%</span>
                     </div>
                 </div>
-                <div class="alloc-item-bottom">
-                    <div class="alloc-mini-track">
-                        <div class="alloc-mini-fill expense" style="width: ${Math.min(100, pExp)}%;"></div>
-                        <div class="alloc-target-marker" style="left: ${Math.min(100, targetLiving)}%;" title="Mục tiêu: ${targetLiving}%"></div>
-                    </div>
+                <div class="alloc-track-wrap">
+                    <div class="alloc-track-fill expense" style="width: ${Math.min(100, pExp)}%;"></div>
+                    <div class="alloc-target-marker" style="left: ${Math.min(100, targetLiving)}%;" title="Mục tiêu: ${targetLiving}%"></div>
+                </div>
+                <div class="alloc-row-sub">
+                    <span class="alloc-amount-val">${fExp}</span>
                     ${badgeExp}
                 </div>
             </div>
 
             <!-- Dự phòng -->
-            <div class="alloc-item-card">
-                <div class="alloc-item-top">
-                    <span class="alloc-item-name"><span class="alloc-dot reserve"></span> Dự phòng</span>
-                    <div class="alloc-item-values">
-                        <span class="alloc-amount">${fRes}</span>
-                        <span class="alloc-pct-strong" style="color:#f59e0b;">${pRes}%</span>
-                        <span class="alloc-target-hint">/ Mục tiêu: ${targetReserve}%</span>
+            <div class="alloc-sleek-row">
+                <div class="alloc-row-heading">
+                    <span class="alloc-row-label"><span class="alloc-dot reserve"></span> Dự phòng</span>
+                    <div class="alloc-row-stats">
+                        <span class="alloc-pct reserve">${pRes}%</span>
+                        <span class="alloc-target-tag">/ MT ${targetReserve}%</span>
                     </div>
                 </div>
-                <div class="alloc-item-bottom">
-                    <div class="alloc-mini-track">
-                        <div class="alloc-mini-fill reserve" style="width: ${Math.min(100, pRes)}%;"></div>
-                        <div class="alloc-target-marker" style="left: ${Math.min(100, targetReserve)}%;" title="Mục tiêu: ${targetReserve}%"></div>
-                    </div>
+                <div class="alloc-track-wrap">
+                    <div class="alloc-track-fill reserve" style="width: ${Math.min(100, pRes)}%;"></div>
+                    <div class="alloc-target-marker" style="left: ${Math.min(100, targetReserve)}%;" title="Mục tiêu: ${targetReserve}%"></div>
+                </div>
+                <div class="alloc-row-sub">
+                    <span class="alloc-amount-val">${fRes}</span>
                     ${badgeRes}
                 </div>
             </div>
 
             <!-- Đầu tư -->
-            <div class="alloc-item-card">
-                <div class="alloc-item-top">
-                    <span class="alloc-item-name"><span class="alloc-dot invest"></span> Đầu tư</span>
-                    <div class="alloc-item-values">
-                        <span class="alloc-amount">${fInv}</span>
-                        <span class="alloc-pct-strong" style="color:#00b894;">${pInv}%</span>
-                        <span class="alloc-target-hint">/ Mục tiêu: ${targetInvest}%</span>
+            <div class="alloc-sleek-row">
+                <div class="alloc-row-heading">
+                    <span class="alloc-row-label"><span class="alloc-dot invest"></span> Đầu tư</span>
+                    <div class="alloc-row-stats">
+                        <span class="alloc-pct invest">${pInv}%</span>
+                        <span class="alloc-target-tag">/ MT ${targetInvest}%</span>
                     </div>
                 </div>
-                <div class="alloc-item-bottom">
-                    <div class="alloc-mini-track">
-                        <div class="alloc-mini-fill invest" style="width: ${Math.min(100, pInv)}%;"></div>
-                        <div class="alloc-target-marker" style="left: ${Math.min(100, targetInvest)}%;" title="Mục tiêu: ${targetInvest}%"></div>
-                    </div>
+                <div class="alloc-track-wrap">
+                    <div class="alloc-track-fill invest" style="width: ${Math.min(100, pInv)}%;"></div>
+                    <div class="alloc-target-marker" style="left: ${Math.min(100, targetInvest)}%;" title="Mục tiêu: ${targetInvest}%"></div>
+                </div>
+                <div class="alloc-row-sub">
+                    <span class="alloc-amount-val">${fInv}</span>
                     ${badgeInv}
                 </div>
             </div>
-        </div>
-
-        <!-- 3. Smart Insight Box -->
-        <div class="alloc-insight-tip">
-            <span class="alloc-insight-icon">💡</span>
-            <span>${tipText}</span>
         </div>
     `;
 }
@@ -2516,7 +2512,7 @@ renderPieCharts = function () {
     ];
 
     drawAllocationCard('pieChartYearly', yearlyData, `Năm ${budgetYear}`, targetLiving, targetReserve, targetInvest);
-    drawAllocationCard('pieChartAllTime', allTimeData, 'Tất cả các năm', targetLiving, targetReserve, targetInvest);
+    drawAllocationCard('pieChartAllTime', allTimeData, 'Tất cả năm', targetLiving, targetReserve, targetInvest);
 
     const yearlyLegend = document.getElementById('pieLegendYearly');
     const allTimeLegend = document.getElementById('pieLegendAllTime');
