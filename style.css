@@ -5315,7 +5315,6 @@ textarea {
         transform: none !important;
     }
 }
-}
 
 /* Responsive constraints & Floating Mobile Navigation ("bóng ma") */
 /* Responsive constraints & Floating Mobile Navigation ("bóng ma") */
@@ -6406,30 +6405,98 @@ select.goal-currency-select option {
     fill: #e67e22 !important;
 }
 
+/* ===== STABLE EXPENSE CELL ALIGNMENT (CHỐNG THỤT RA THỤT VÀO) ===== */
 .expense-cell-container {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 4px;
+    gap: 6px;
     width: 100%;
 }
 
 .expense-cell-container .expense-input {
-    width: 95px;
+    width: 92px !important;
+    min-width: 92px !important;
+    max-width: 92px !important;
     flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .expense-pct-badge {
-    display: inline-block;
-    padding: 2px 5px;
-    border-radius: 5px;
-    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px !important;
+    min-width: 52px !important;
+    max-width: 52px !important;
+    padding: 3px 2px;
+    border-radius: 6px;
+    font-size: 0.72rem;
     font-weight: 800;
     line-height: 1.1;
+    text-align: center;
     white-space: nowrap;
-    transition: all 0.2s ease;
     font-family: 'Inter', sans-serif;
+    font-variant-numeric: tabular-nums;
     flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+/* KHÓA CỐ ĐỊNH CHIỀU RỘNG CỘT BẢNG NGÂN SÁCH (CHỐNG CO GIÃN CỘT KHI NHẬP SỐ) */
+.monthly-table th:nth-child(1),
+.monthly-table td:nth-child(1) {
+    width: 44px;
+    min-width: 44px;
+    text-align: center;
+}
+
+.monthly-table th:nth-child(2),
+.monthly-table td:nth-child(2) {
+    width: 114px;
+    min-width: 114px;
+}
+
+.monthly-table .income-input {
+    width: 98px !important;
+    min-width: 98px !important;
+    max-width: 98px !important;
+    box-sizing: border-box;
+}
+
+.monthly-table th:nth-child(3),
+.monthly-table td:nth-child(3) {
+    width: 96px;
+    min-width: 96px;
+}
+
+.monthly-table th:nth-child(4),
+.monthly-table td:nth-child(4) {
+    width: 126px;
+    min-width: 126px;
+}
+
+.monthly-table th:nth-child(5),
+.monthly-table td:nth-child(5) {
+    width: 126px;
+    min-width: 126px;
+}
+
+.monthly-table th:nth-child(6),
+.monthly-table td:nth-child(6) {
+    width: 164px;
+    min-width: 164px;
+}
+
+.monthly-table th:nth-child(7),
+.monthly-table td:nth-child(7) {
+    width: 96px;
+    min-width: 96px;
+}
+
+.monthly-table th:nth-child(8),
+.monthly-table td:nth-child(8) {
+    width: 96px;
+    min-width: 96px;
 }
 
 .expense-pct-badge.safe {
