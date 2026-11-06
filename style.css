@@ -10724,3 +10724,151 @@ select.goal-currency-select option {
         font-size: 0.78rem !important;
     }
 }
+
+/* ==========================================================================
+   REACT BITS ANIMATIONS SUITE (Inspired by reactbits.dev)
+   1. Spotlight Card (reactbits.dev/components/spotlight-card)
+   2. Shiny Text & Shiny Badge (reactbits.dev/text-animations/shiny-text)
+   3. ClickSpark Particles (reactbits.dev/animations/click-spark)
+   ========================================================================== */
+
+/* 1. Spotlight Card - Dynamic Cursor-Tracking Ambient Illumination */
+.spotlight-card,
+.metric-glass-card,
+.portfolio-sub-card,
+.portfolio-hero-card,
+.asset-section-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.spotlight-card::before,
+.metric-glass-card::before,
+.portfolio-sub-card::before,
+.portfolio-hero-card::before,
+.asset-section-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+        380px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+        var(--spotlight-color, rgba(45, 212, 191, 0.12)),
+        transparent 80%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.spotlight-card:hover::before,
+.metric-glass-card:hover::before,
+.portfolio-sub-card:hover::before,
+.portfolio-hero-card:hover::before,
+.asset-section-card:hover::before {
+    opacity: 1;
+}
+
+/* Border illumination tracking cursor */
+.spotlight-card::after,
+.metric-glass-card::after,
+.portfolio-sub-card::after,
+.portfolio-hero-card::after,
+.asset-section-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.2px;
+    background: radial-gradient(
+        260px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+        var(--spotlight-border, rgba(45, 212, 191, 0.45)),
+        transparent 70%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.spotlight-card:hover::after,
+.metric-glass-card:hover::after,
+.portfolio-sub-card:hover::after,
+.portfolio-hero-card:hover::after,
+.asset-section-card:hover::after {
+    opacity: 1;
+}
+
+/* Pillar-specific luxury spotlight colors */
+.portfolio-sub-card.cash {
+    --spotlight-color: rgba(16, 185, 129, 0.15);
+    --spotlight-border: rgba(16, 185, 129, 0.55);
+}
+.portfolio-sub-card.crypto {
+    --spotlight-color: rgba(168, 85, 247, 0.18);
+    --spotlight-border: rgba(168, 85, 247, 0.6);
+}
+.portfolio-sub-card.stocks {
+    --spotlight-color: rgba(59, 130, 246, 0.15);
+    --spotlight-border: rgba(59, 130, 246, 0.55);
+}
+.portfolio-sub-card.gold {
+    --spotlight-color: rgba(245, 158, 11, 0.18);
+    --spotlight-border: rgba(245, 158, 11, 0.65);
+}
+
+/* 2. Shiny Text & Shiny Badge (reactbits.dev/text-animations/shiny-text) */
+.badge-pro {
+    position: relative;
+    overflow: hidden;
+}
+.badge-pro::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 70%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+    transform: skewX(-20deg);
+    animation: reactBitsShinyBadge 3s infinite;
+}
+@keyframes reactBitsShinyBadge {
+    0%, 25% { left: -100%; }
+    65%, 100% { left: 200%; }
+}
+
+.shiny-text {
+    background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0.4) 30%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.4) 70%
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    display: inline-block;
+    animation: reactBitsShinyText 3.5s linear infinite;
+}
+@keyframes reactBitsShinyText {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+/* 3. ClickSpark Particle (reactbits.dev/animations/click-spark) */
+.click-spark-particle {
+    position: fixed;
+    pointer-events: none;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #2dd4bf;
+    box-shadow: 0 0 8px #2dd4bf;
+    z-index: 999999;
+}

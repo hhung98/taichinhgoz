@@ -3871,3 +3871,78 @@ window.unhighlightDualRatePoint = window.unhighlightRatePoint;
 
 // Init
 init();
+
+// ==========================================================================
+// REACT BITS ANIMATIONS SUITE (reactbits.dev)
+// 1. Spotlight Card: dynamic cursor tracking radial glow
+// 2. ClickSpark: tactile micro-particle burst on click
+// 3. Magnet: smooth magnetic cursor attraction for header buttons
+// ==========================================================================
+function initReactBitsSuite() {
+    // 1. Spotlight Card: Event delegation for silky-smooth 60-120 FPS cursor tracking
+    document.addEventListener('mousemove', (e) => {
+        const card = e.target.closest('.spotlight-card, .metric-glass-card, .portfolio-sub-card, .portfolio-hero-card, .asset-section-card');
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    }, { passive: true });
+
+    // 2. ClickSpark: Tactile micro-particle spark burst on button clicks
+    document.addEventListener('pointerdown', (e) => {
+        const trigger = e.target.closest('button, .cur-btn, .ov-tab-btn, .nav-tab, .portfolio-sub-card, .metric-glass-card, .badge-pro, .user-badge, .btn-primary-add, .debt-type-btn');
+        if (!trigger) return;
+
+        const count = 7;
+        const colors = ['#2dd4bf', '#38bdf8', '#818cf8', '#f59e0b', '#34d399'];
+        for (let i = 0; i < count; i++) {
+            const spark = document.createElement('span');
+            spark.className = 'click-spark-particle';
+            spark.style.left = `${e.clientX}px`;
+            spark.style.top = `${e.clientY}px`;
+            spark.style.background = colors[i % colors.length];
+            spark.style.boxShadow = `0 0 6px ${colors[i % colors.length]}`;
+            document.body.appendChild(spark);
+
+            const angle = (i / count) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
+            const dist = 22 + Math.random() * 16;
+            const destX = Math.cos(angle) * dist;
+            const destY = Math.sin(angle) * dist;
+
+            if (typeof gsap !== 'undefined') {
+                gsap.to(spark, {
+                    x: destX,
+                    y: destY,
+                    scale: 0,
+                    opacity: 0,
+                    duration: 0.36,
+                    ease: 'power2.out',
+                    onComplete: () => spark.remove()
+                });
+            } else {
+                setTimeout(() => spark.remove(), 350);
+            }
+        }
+    });
+
+    // 3. Magnet: Gentle magnetic spring effect for header tools on desktop
+    if (window.matchMedia('(pointer: fine)').matches) {
+        const magnets = document.querySelectorAll('.privacy-toggle-btn, .theme-toggle, .user-badge, .currency-toggle-group .cur-btn');
+        magnets.forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = (e.clientX - (rect.left + rect.width / 2)) * 0.25;
+                const y = (e.clientY - (rect.top + rect.height / 2)) * 0.25;
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(btn, { x, y, duration: 0.2, ease: 'power2.out' });
+                }
+            });
+            btn.addEventListener('mouseleave', () => {
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(btn, { x: 0, y: 0, duration: 0.4, ease: 'elastic.out(1, 0.4)' });
+                }
+            });
+        });
+    }
+}
+initReactBitsSuite();
