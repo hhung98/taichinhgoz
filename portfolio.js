@@ -2658,6 +2658,13 @@ window.renderDebtNotes = function () {
 
 
 window.toggleDebtCurrencyDropdown = function () {
+    const statusDropdown = document.getElementById('debtStatusDropdown');
+    if (statusDropdown && statusDropdown.classList.contains('open')) {
+        statusDropdown.classList.remove('open');
+        const trigger = document.getElementById('debtStatusTrigger');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+
     const dropdown = document.getElementById('debtCurrencyDropdown');
     const trigger = document.getElementById('debtCurrencyTrigger');
     if (!dropdown) return;
@@ -2690,14 +2697,11 @@ window.selectDebtCurrencyOption = function (val, label) {
 };
 
 window.toggleDebtStatusDropdown = function () {
-    
     const curDropdown = document.getElementById('debtCurrencyDropdown');
     if (curDropdown && curDropdown.classList.contains('open')) {
-        if (!curDropdown.contains(e.target)) {
-            curDropdown.classList.remove('open');
-            const trigger = document.getElementById('debtCurrencyTrigger');
-            if (trigger) trigger.setAttribute('aria-expanded', 'false');
-        }
+        curDropdown.classList.remove('open');
+        const trigger = document.getElementById('debtCurrencyTrigger');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
     }
 
     const dropdown = document.getElementById('debtStatusDropdown');
@@ -2962,11 +2966,20 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('click', (e) => {
-    const dropdown = document.getElementById('debtStatusDropdown');
-    if (dropdown && dropdown.classList.contains('open')) {
-        if (!dropdown.contains(e.target)) {
-            dropdown.classList.remove('open');
+    const statusDropdown = document.getElementById('debtStatusDropdown');
+    if (statusDropdown && statusDropdown.classList.contains('open')) {
+        if (!statusDropdown.contains(e.target)) {
+            statusDropdown.classList.remove('open');
             const trigger = document.getElementById('debtStatusTrigger');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    const curDropdown = document.getElementById('debtCurrencyDropdown');
+    if (curDropdown && curDropdown.classList.contains('open')) {
+        if (!curDropdown.contains(e.target)) {
+            curDropdown.classList.remove('open');
+            const trigger = document.getElementById('debtCurrencyTrigger');
             if (trigger) trigger.setAttribute('aria-expanded', 'false');
         }
     }
