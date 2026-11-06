@@ -1249,16 +1249,20 @@ function enrichGoalsWithMeta(goals) {
     if (!Array.isArray(goals)) return [];
     const metas = getGoalsMetaMap();
     return goals.map(g => {
-        const meta = metas[g.id];
-        if (meta) {
-            return {
-                ...g,
-                currency: meta.currency || g.currency || 'KRW',
-                amountVND: meta.amountVND !== undefined ? meta.amountVND : g.amountVND,
-                amountKRW: meta.amountKRW !== undefined ? meta.amountKRW : g.amountKRW
-            };
-        }
-        return g;
+        const meta = metas[g.id] || {};
+        const currency = g.currency || meta.currency || 'KRW';
+        const amountVND = (g.amountVND !== undefined && g.amountVND !== null)
+            ? g.amountVND
+            : (meta.amountVND !== undefined ? meta.amountVND : null);
+        const amountKRW = (g.amountKRW !== undefined && g.amountKRW !== null)
+            ? g.amountKRW
+            : (meta.amountKRW !== undefined ? meta.amountKRW : null);
+        return {
+            ...g,
+            currency,
+            amountVND,
+            amountKRW
+        };
     });
 }
 
@@ -1305,14 +1309,14 @@ async function addSavingsGoal() {
     }
 
     try {
-        const goal = await saveGoal(name, amountKRW, months);
+        const goal = await saveGoal(name, amountKRW, months, currency, rawAmount);
         goal.currency = currency;
         if (currency === 'VND') {
             goal.amountVND = amountVND;
-            delete goal.amountKRW; // Gốc VND: amountKRW luôn tính động theo tỷ giá
+            delete goal.amountKRW;
         } else {
             goal.amountKRW = amountKRW;
-            delete goal.amountVND; // Gốc KRW: amountVND luôn tính động theo tỷ giá
+            delete goal.amountVND;
         }
         saveGoalMeta(goal.id, { currency, amountVND: goal.amountVND, amountKRW: goal.amountKRW });
         savingsGoals.push(goal);
@@ -1340,7 +1344,7 @@ async function deleteSavingsGoal(id) {
     }
 }
 
-function toggleGoalCurrency(id) {
+async function toggleGoalCurrency(id) {
     const g = savingsGoals.find(item => item.id === id);
     if (!g) return;
     const r = (window.exchangeRate && window.exchangeRate > 0) ? window.exchangeRate : 19.18;
@@ -1350,14 +1354,20 @@ function toggleGoalCurrency(id) {
 
     if (newCurr === 'KRW') {
         // Đổi sang gốc KRW: lấy giá trị tương đương KRW theo tỷ giá hiện tại và ghim làm gốc KRW mới
-        const currentVND = g.amountVND || (g.amountKRW ? Math.round(g.amountKRW * r) : (g.amount_krw ? Math.round(g.amount_krw * r) : 0));
+        const currentVND = g.amountVND || g.amount_vnd || (g.amountKRW ? Math.round(g.amountKRW * r) : (g.amount_krw ? Math.round(g.amount_krw * r) : 0));
         g.amountKRW = r > 0 ? Math.round(currentVND / r) : 0;
         delete g.amountVND;
+        if (typeof updateGoalInDB === 'function') {
+            updateGoalInDB(id, { currency: 'KRW', amount_krw: g.amountKRW, amount_vnd: null });
+        }
     } else {
         // Đổi sang gốc VND: lấy giá trị tương đương VND theo tỷ giá hiện tại và ghim làm gốc VND mới
         const currentKRW = g.amountKRW || g.amount_krw || (g.amountVND ? Math.round(g.amountVND / r) : 0);
         g.amountVND = Math.round(currentKRW * r);
         delete g.amountKRW;
+        if (typeof updateGoalInDB === 'function') {
+            updateGoalInDB(id, { currency: 'VND', amount_vnd: g.amountVND });
+        }
     }
 
     saveGoalMeta(id, { currency: newCurr, amountVND: g.amountVND, amountKRW: g.amountKRW });
@@ -1502,6 +1512,14 @@ function renderSavingsGoals() {
     // Đồng bộ custom dropdown nguồn tính
     updateGoalSourceUI();
 
+    const goalCurrSelect = document.getElementById('goalCurrency');
+    if (goalCurrSelect && !goalCurrSelect.dataset.userChanged) {
+        const cur = window.displayCurrency || localStorage.getItem('goz_display_currency') || 'VND';
+        if (cur === 'VND' || cur === 'KRW') {
+            goalCurrSelect.value = cur;
+        }
+    }
+
     if (!savingsGoals.length) { container.innerHTML = ''; return; }
 
     const curBal = getGoalCurrentBalance();
@@ -1515,12 +1533,12 @@ function renderSavingsGoals() {
         let targetKRW = 0;
 
         if (isVND) {
-            // Khi đặt gốc là VND: Giữ nguyên cố định số tiền gốc VND anh nhập (vd: 1.000.000.000 ₫)
-            targetVND = Number(g.amountVND) || (g.amount_krw ? Math.round(g.amount_krw * r) : (g.amountKRW ? Math.round(g.amountKRW * r) : 0));
+            // Khi đặt gốc là VND: Giữ nguyên tuyệt đối số tiền gốc VND anh nhập (vd: 1.000.000.000 ₫)
+            targetVND = Number(g.amountVND) || Number(g.amount_vnd) || (g.amount_krw ? Math.round(g.amount_krw * r) : (g.amountKRW ? Math.round(g.amountKRW * r) : 0));
             // Vế sau quy đổi tương đương KRW luôn tính động theo tỷ giá thời gian thực
             targetKRW = r > 0 ? Math.round(targetVND / r) : 0;
         } else {
-            // Khi đặt gốc là KRW: Giữ nguyên cố định số tiền gốc KRW anh nhập (vd: 50.000.000 ₩)
+            // Khi đặt gốc là KRW: Giữ nguyên tuyệt đối số tiền gốc KRW anh nhập (vd: 50.000.000 ₩)
             targetKRW = Number(g.amountKRW) || Number(g.amount_krw) || (g.amountVND ? Math.round(g.amountVND / r) : 0);
             // Vế sau quy đổi tương đương VND luôn tính động theo tỷ giá thời gian thực
             targetVND = Math.round(targetKRW * r);

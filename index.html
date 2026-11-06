@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=102">
+    <link rel="stylesheet" href="style.css?v=103">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -452,9 +452,9 @@
                             <div class="goal-field goal-amount-wrapper">
                                 <span>Số tiền</span>
                                 <div class="goal-amount-box">
-                                    <select id="goalCurrency" class="goal-currency-select" onchange="previewGoalVND()">
-                                        <option value="KRW">₩ KRW</option>
+                                    <select id="goalCurrency" class="goal-currency-select" onchange="this.dataset.userChanged='true'; previewGoalVND()">
                                         <option value="VND">₫ VND</option>
+                                        <option value="KRW">₩ KRW</option>
                                     </select>
                                     <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền"
                                         class="goal-input goal-amount-input"
@@ -1460,12 +1460,12 @@
         </section>
     </div>
     <div class="toast" id="toast"></div>
-    <script src="supabase.js?v=94"></script>
+    <script src="supabase.js?v=96"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="gsap.min.js?v=93"></script>
     <script src="countup.js?v=93"></script>
-    <script src="app.js?v=102"></script>
-    <script src="portfolio.js?v=96"></script>
+    <script src="app.js?v=104"></script>
+    <script src="portfolio.js?v=98"></script>
 </body>
 
 </html>

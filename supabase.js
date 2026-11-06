@@ -94,26 +94,39 @@ async function saveBudget(year, month, income, expense) {
 async function loadGoals() {
     const { data, error } = await supabaseClient
         .from('savings_goals')
-        .select('id, name, amount_krw, months_duration, created_at')
+        .select('id, name, amount_krw, amount_vnd, currency, target_amount, months_duration, created_at')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: true });
     if (error) throw error;
-    return data.map(g => ({
-        id: g.id,
-        name: g.name,
-        amountKRW: Number(g.amount_krw),
-        months: g.months_duration ? Number(g.months_duration) : 0,
-        createdAt: g.created_at
-    }));
+    return data.map(g => {
+        const isVND = (g.currency === 'VND') || (g.amount_vnd && Number(g.amount_vnd) > 0);
+        const amountVND = g.amount_vnd ? Number(g.amount_vnd) : (isVND ? Number(g.target_amount) : null);
+        return {
+            id: g.id,
+            name: g.name,
+            amountKRW: Number(g.amount_krw),
+            amountVND: amountVND,
+            currency: isVND ? 'VND' : (g.currency || 'KRW'),
+            targetAmount: g.target_amount ? Number(g.target_amount) : (isVND ? amountVND : Number(g.amount_krw)),
+            months: g.months_duration ? Number(g.months_duration) : 0,
+            createdAt: g.created_at
+        };
+    });
 }
 
-async function saveGoal(name, amountKRW, months) {
+async function saveGoal(name, amountKRW, months, currency = 'KRW', rawAmount = 0) {
     const monthsVal = (months && Number(months) > 0) ? Number(months) : 0;
+    const amountVND = currency === 'VND' ? Number(rawAmount) : null;
+    const targetAmount = Number(rawAmount) || (currency === 'VND' ? amountVND : amountKRW);
+
     if (!currentUser || !currentUser.id) {
         return {
             id: 'goal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
             name,
             amountKRW: Number(amountKRW),
+            amountVND: amountVND,
+            currency: currency,
+            targetAmount: targetAmount,
             months: monthsVal,
             createdAt: new Date().toISOString()
         };
@@ -124,6 +137,9 @@ async function saveGoal(name, amountKRW, months) {
             user_id: currentUser.id,
             name,
             amount_krw: amountKRW,
+            amount_vnd: amountVND,
+            currency: currency,
+            target_amount: targetAmount,
             months_duration: monthsVal
         })
         .select()
@@ -133,9 +149,25 @@ async function saveGoal(name, amountKRW, months) {
         id: data.id,
         name: data.name,
         amountKRW: Number(data.amount_krw),
+        amountVND: data.amount_vnd ? Number(data.amount_vnd) : amountVND,
+        currency: data.currency || currency,
+        targetAmount: data.target_amount ? Number(data.target_amount) : targetAmount,
         months: data.months_duration ? Number(data.months_duration) : 0,
         createdAt: data.created_at
     };
+}
+
+async function updateGoalInDB(goalId, updates) {
+    if (!currentUser || !currentUser.id) return;
+    try {
+        await supabaseClient
+            .from('savings_goals')
+            .update(updates)
+            .eq('id', goalId)
+            .eq('user_id', currentUser.id);
+    } catch (e) {
+        console.error('updateGoalInDB error:', e);
+    }
 }
 
 async function deleteGoalFromDB(goalId) {

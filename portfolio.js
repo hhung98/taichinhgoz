@@ -71,6 +71,11 @@ window.setDisplayCurrency = function (cur) {
             else btn.classList.remove('active');
         }
     });
+    const goalCurr = document.getElementById('goalCurrency');
+    if (goalCurr && (cur === 'VND' || cur === 'KRW')) {
+        goalCurr.value = cur;
+        if (typeof window.previewGoalVND === 'function') window.previewGoalVND();
+    }
     if (typeof window.invalidateTabCache === "function") window.invalidateTabCache();
     renderPortfolio();
     updateOverviewCards();
