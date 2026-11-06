@@ -10641,3 +10641,86 @@ select.goal-currency-select option {
     background: #ffffff;
     box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.05);
 }
+
+
+/* ===== Prevent text wrapping in Debt Modal (Tránh gãy dòng) ===== */
+.asset-modal-card.debt-modal-card {
+    width: min(520px, calc(100vw - 24px)) !important;
+}
+
+.debt-type-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+}
+
+.debt-type-row .asset-field-label {
+    min-width: 72px !important;
+    max-width: 76px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+.debt-type-toggle-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+.debt-type-btn {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    padding: 9px 8px !important;
+    font-size: 0.81rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    letter-spacing: -0.2px !important;
+    border-radius: 10px !important;
+}
+
+.debt-type-btn span {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.debt-type-btn i,
+.debt-type-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0 !important;
+}
+
+#labelDebtPerson {
+    white-space: nowrap !important;
+}
+
+@media (max-width: 460px) {
+    .debt-type-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        padding: 10px 12px !important;
+    }
+    
+    .debt-type-row .asset-field-label {
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .debt-type-toggle-group {
+        width: 100% !important;
+    }
+
+    .debt-type-btn {
+        padding: 8px 6px !important;
+        font-size: 0.78rem !important;
+    }
+}

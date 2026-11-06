@@ -2755,11 +2755,11 @@ window.selectDebtType = function (type) {
     if (type === 'lend') {
         if (btnLend) btnLend.classList.add('active');
         if (btnBorrow) btnBorrow.classList.remove('active');
-        if (label) label.textContent = 'Người vay tiền';
+        if (label) label.textContent = 'Người vay';
     } else {
         if (btnBorrow) btnBorrow.classList.add('active');
         if (btnLend) btnLend.classList.remove('active');
-        if (label) label.textContent = 'Chủ nợ / Người cho vay';
+        if (label) label.textContent = 'Người cho vay';
     }
 };
 

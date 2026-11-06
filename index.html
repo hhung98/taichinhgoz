@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=93">
+    <link rel="stylesheet" href="style.css?v=94">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -1271,14 +1271,14 @@
             <p class="ratio-modal-desc">Ghi chép ai vay tiền hoặc các khoản nợ chưa được hoàn trả để theo dõi và thu hồi thuận tiện.</p>
             <div class="ratio-modal-body">
                 <!-- Loại: Cho vay vs Đi vay -->
-                <div class="ratio-item-row">
+                <div class="ratio-item-row debt-type-row">
                     <span class="asset-field-label">Phân loại</span>
                     <div class="debt-type-toggle-group">
                         <button type="button" class="debt-type-btn active" id="btnDebtTypeLend" onclick="selectDebtType('lend')">
-                            <i class="icon-svg" data-lucide="arrow-up-right"></i> Cho vay (Phải thu)
+                            <i class="icon-svg" data-lucide="arrow-up-right"></i> <span>Cho vay (Phải thu)</span>
                         </button>
                         <button type="button" class="debt-type-btn" id="btnDebtTypeBorrow" onclick="selectDebtType('borrow')">
-                            <i class="icon-svg" data-lucide="arrow-down-left"></i> Đi vay (Cần trả)
+                            <i class="icon-svg" data-lucide="arrow-down-left"></i> <span>Đi vay (Cần trả)</span>
                         </button>
                     </div>
                     <input type="hidden" id="inputDebtType" value="lend">
@@ -1286,7 +1286,7 @@
 
                 <!-- Tên người / Bên liên quan -->
                 <div class="ratio-item-row">
-                    <span class="asset-field-label" id="labelDebtPerson">Người vay tiền</span>
+                    <span class="asset-field-label" id="labelDebtPerson">Người vay</span>
                     <input type="text" id="inputDebtPerson" placeholder="" class="asset-text-field" required>
                 </div>
 
@@ -1387,12 +1387,12 @@
         </section>
     </div>
 <div class="toast" id="toast"></div>
-    <script src="supabase.js?v=93"></script>
+    <script src="supabase.js?v=94"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="gsap.min.js?v=93"></script>
     <script src="countup.js?v=93"></script>
-    <script src="app.js?v=93"></script>
-    <script src="portfolio.js?v=93"></script>
+    <script src="app.js?v=94"></script>
+    <script src="portfolio.js?v=94"></script>
 </body>
 
 </html>
