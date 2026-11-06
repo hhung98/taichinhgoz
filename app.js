@@ -1408,8 +1408,88 @@ function getGoalCurrentBalance() {
 }
 window.getGoalCurrentBalance = getGoalCurrentBalance;
 
+function updateGoalSourceUI(src) {
+    const curSource = src || localStorage.getItem('goz_goal_source') || 'net_worth';
+    const labelEl = document.getElementById('goalSourceCurrentLabel');
+    if (labelEl) {
+        labelEl.textContent = curSource === 'net_worth' 
+            ? 'Số dư hiện tại (Tài sản ròng)' 
+            : 'Dòng tiền tích lũy (Thu - Chi)';
+    }
+    const hiddenInput = document.getElementById('goalSourceSelect');
+    if (hiddenInput) hiddenInput.value = curSource;
+
+    const trigger = document.querySelector('.goal-source-trigger');
+    if (trigger) {
+        trigger.setAttribute('aria-label', `Nguồn tính mục tiêu: ${curSource === 'net_worth' ? 'Số dư hiện tại (Tài sản ròng)' : 'Dòng tiền tích lũy (Thu - Chi)'}`);
+    }
+
+    document.querySelectorAll('.goal-source-option').forEach(opt => {
+        if (opt.dataset && opt.dataset.value === curSource) {
+            opt.classList.add('active');
+        } else {
+            opt.classList.remove('active');
+        }
+    });
+}
+window.updateGoalSourceUI = updateGoalSourceUI;
+
+function toggleGoalSourceDropdown(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    const dropdown = document.getElementById('goalSourceDropdown');
+    if (!dropdown) return;
+    const isOpen = dropdown.classList.toggle('open');
+    const trigger = dropdown.querySelector('.goal-source-trigger');
+    if (trigger) trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+window.toggleGoalSourceDropdown = toggleGoalSourceDropdown;
+
+function selectGoalSource(val, e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    const dropdown = document.getElementById('goalSourceDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('open');
+        const trigger = dropdown.querySelector('.goal-source-trigger');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+    changeGoalBalanceSource(val);
+}
+window.selectGoalSource = selectGoalSource;
+
+// Đóng dropdown khi bấm ra ngoài hoặc nhấn Esc
+if (typeof document !== 'undefined') {
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('goalSourceDropdown');
+        if (dropdown && dropdown.classList.contains('open')) {
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+                const trigger = dropdown.querySelector('.goal-source-trigger');
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            }
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const dropdown = document.getElementById('goalSourceDropdown');
+            if (dropdown && dropdown.classList.contains('open')) {
+                dropdown.classList.remove('open');
+                const trigger = dropdown.querySelector('.goal-source-trigger');
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            }
+        }
+    });
+}
+
 function changeGoalBalanceSource(src) {
     localStorage.setItem('goz_goal_source', src);
+    updateGoalSourceUI(src);
     renderSavingsGoals();
     showToast(src === 'net_worth' ? 'Nguồn tính: Số dư hiện tại (Tài sản ròng)' : 'Nguồn tính: Dòng tiền tích lũy (Thu - Chi)', 'info');
 }
@@ -1419,12 +1499,8 @@ function renderSavingsGoals() {
     const container = document.getElementById('goalsList');
     if (!container) return;
 
-    // Đồng bộ dropdown nguồn tính nếu có trên UI
-    const srcSelect = document.getElementById('goalSourceSelect');
-    const curSource = localStorage.getItem('goz_goal_source') || 'net_worth';
-    if (srcSelect && srcSelect.value !== curSource) {
-        srcSelect.value = curSource;
-    }
+    // Đồng bộ custom dropdown nguồn tính
+    updateGoalSourceUI();
 
     if (!savingsGoals.length) { container.innerHTML = ''; return; }
 

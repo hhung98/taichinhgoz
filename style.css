@@ -9754,43 +9754,167 @@ select.goal-currency-select option {
     flex-shrink: 0;
 }
 
-/* SOURCE SWITCH */
-.goal-source-switch {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--bg-card);
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
+/* ========================================================
+   CUSTOM DROPDOWN: GOAL SOURCE SELECTOR (DANH SÁCH RƠI XUỐNG)
+   ======================================================== */
+.goal-source-dropdown {
+    position: relative;
+    display: inline-block;
+    user-select: none;
 }
 
-.goal-source-switch .source-lbl {
-    font-size: 0.74rem;
+.goal-source-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-size: 0.8rem;
     font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    font-family: inherit;
+}
+
+.goal-source-trigger:hover {
+    border-color: var(--accent-money, #0d9488);
+    background: var(--bg-card-hover, rgba(255, 255, 255, 0.05));
+    box-shadow: 0 3px 10px rgba(13, 148, 136, 0.12);
+}
+
+.goal-source-dropdown.open .goal-source-trigger {
+    border-color: var(--accent-money, #0d9488);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+.goal-source-trigger .source-lbl {
+    font-size: 0.74rem;
+    font-weight: 500;
     color: var(--text-muted);
 }
 
-.goal-source-select {
-    background: transparent;
-    border: none;
-    font-size: 0.76rem;
+.goal-source-trigger .source-val {
     font-weight: 700;
     color: var(--text-primary);
+}
+
+.goal-source-trigger .chevron-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+}
+
+.goal-source-dropdown.open .chevron-icon {
+    transform: rotate(180deg);
+    color: var(--accent-money, #0d9488);
+}
+
+/* DANH SÁCH RƠI XUỐNG (DROPDOWN MENU CARD) */
+.goal-source-menu {
+    position: absolute;
+    top: calc(100% + 7px);
+    right: 0;
+    min-width: 255px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 14px 35px -5px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.06);
+    z-index: 150;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.97);
+    transform-origin: top right;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.2s;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.goal-source-dropdown.open .goal-source-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* CÁC MỤC LỰA CHỌN TRONG DANH SÁCH */
+.goal-source-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 13px;
+    border-radius: 8px;
+    font-size: 0.81rem;
+    font-weight: 600;
+    color: var(--text-secondary);
     cursor: pointer;
-    outline: none;
-    font-family: inherit;
-    padding: 2px 4px;
+    transition: all 0.15s ease;
 }
 
-[data-theme="light"] .goal-source-select option {
+.goal-source-option:hover {
+    background: rgba(13, 148, 136, 0.08);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .goal-source-option:hover {
+    background: rgba(45, 212, 191, 0.12);
+}
+
+.goal-source-option.active {
+    background: rgba(13, 148, 136, 0.12);
+    color: var(--accent-money, #0d9488);
+    font-weight: 700;
+}
+
+[data-theme="dark"] .goal-source-option.active {
+    background: rgba(45, 212, 191, 0.16);
+    color: #2dd4bf;
+}
+
+.goal-source-option .check-icon {
+    width: 15px;
+    height: 15px;
+    color: currentColor;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+}
+
+.goal-source-option.active .check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* THEME ADAPTATION */
+[data-theme="light"] .goal-source-menu {
     background: #ffffff;
-    color: #1e293b;
+    border-color: rgba(0, 0, 0, 0.09);
+    box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-[data-theme="dark"] .goal-source-select option {
+[data-theme="light"] .goal-source-trigger {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="dark"] .goal-source-menu {
     background: #1e293b;
-    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .goal-source-trigger {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
