@@ -6827,11 +6827,11 @@ select.goal-currency-select option {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 4px;
-    background: rgba(255, 255, 255, 0.8);
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    padding: 4px;
+    padding: 4px 6px;
     border-radius: 14px;
     border: 1px solid rgba(226, 232, 240, 0.9);
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 0 1px 1px rgba(255, 255, 255, 0.8);
@@ -6839,7 +6839,7 @@ select.goal-currency-select option {
 }
 
 [data-theme="dark"] .header-nav-list {
-    background: rgba(17, 24, 39, 0.72);
+    background: rgba(17, 24, 39, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
@@ -6850,76 +6850,98 @@ select.goal-currency-select option {
     gap: 8px;
     padding: 8px 14px;
     border-radius: 10px;
-    border: none;
-    background: transparent !important;
-    color: var(--text-secondary);
+    border: none !important;
+    outline: none !important;
+    background: transparent;
+    color: #475569;
     font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
-    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
     text-decoration: none;
     position: relative;
-    z-index: 3;
+    box-shadow: none;
 }
 
-/* Inactive item hover: Clean contrast */
+[data-theme="dark"] .header-nav-item {
+    color: #94a3b8;
+}
+
+/* Remove default browser black outline on click/focus */
+.header-nav-item:focus,
+.header-nav-item:focus-visible {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Inactive item hover: Ghost Aura Pill */
 .header-nav-item:hover:not(.active) {
-    color: var(--text-primary);
+    color: #0f172a !important;
+    background: rgba(0, 184, 148, 0.08) !important;
+    box-shadow: 0 0 14px rgba(0, 184, 148, 0.12), inset 0 0 0 1px rgba(0, 184, 148, 0.18) !important;
 }
 
-[data-theme="light"] .header-nav-item:hover:not(.active) {
-    color: #0f172a;
+[data-theme="dark"] .header-nav-item:hover:not(.active) {
+    color: #f1f5f9 !important;
+    background: rgba(0, 184, 148, 0.12) !important;
+    box-shadow: 0 0 16px rgba(0, 184, 148, 0.18), inset 0 0 0 1px rgba(0, 184, 148, 0.25) !important;
 }
 
 .header-nav-item:hover:not(.active) .nav-item-icon {
-    color: var(--accent-primary);
+    color: #00b894 !important;
 }
 
-/* Active item: White text over sliding ghost pill */
+/* Active item: Solid Emerald/Teal + Crisp White Text + Ghost Glow */
 .header-nav-item.active,
 [data-theme="light"] .header-nav-item.active {
+    background: linear-gradient(135deg, #00b894, #009374) !important;
     color: #ffffff !important;
-    font-weight: 700;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 16px -2px rgba(0, 184, 148, 0.45), 0 0 20px -2px rgba(0, 184, 148, 0.3) !important;
+}
+
+.header-nav-item.active:hover,
+[data-theme="light"] .header-nav-item.active:hover {
+    background: linear-gradient(135deg, #00c9a0, #00a382) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px -2px rgba(0, 184, 148, 0.55), 0 0 26px -2px rgba(0, 184, 148, 0.4) !important;
 }
 
 .header-nav-item.active .nav-item-icon,
+.header-nav-item.active .nav-item-label,
 .header-nav-item.active:hover .nav-item-icon,
+.header-nav-item.active:hover .nav-item-label,
 [data-theme="light"] .header-nav-item.active .nav-item-icon,
-[data-theme="light"] .header-nav-item.active:hover .nav-item-icon {
+[data-theme="light"] .header-nav-item.active .nav-item-label {
     color: #ffffff !important;
 }
 
-/* Sliding Ghost Pill Indicator */
-.nav-ghost-pill {
-    position: absolute !important;
-    top: 4px !important;
-    bottom: 4px !important;
-    left: 0;
-    border-radius: 10px !important;
-    background: linear-gradient(135deg, #00b894, #009374) !important;
-    box-shadow: 0 4px 18px -2px rgba(0, 184, 148, 0.5), 0 0 24px -2px rgba(0, 184, 148, 0.35) !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
-    opacity: 0;
-    transform: translateX(0);
-    transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), width 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
+.header-nav-item.active .badge-invest-pill,
+.header-nav-item.active .badge-live-dot {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
 }
 
-/* Tubelight Ghost Beam underneath */
-.nav-ghost-beam {
+/* Tubelight Ghost Beam directly attached to active tab */
+.header-nav-item.active::after {
+    content: '' !important;
     position: absolute !important;
-    bottom: -3px !important;
-    left: 0;
+    bottom: -5px !important;
+    left: 18% !important;
+    right: 18% !important;
     height: 3px !important;
     border-radius: 999px !important;
     background: #55efc4 !important;
     box-shadow: 0 0 10px 2px #00b894, 0 0 20px 4px rgba(0, 184, 148, 0.7) !important;
     pointer-events: none !important;
-    z-index: 2 !important;
-    opacity: 0;
-    transform: translateX(0);
-    transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), width 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
+    animation: ghostLightPulse 2.4s ease-in-out infinite alternate !important;
+}
+
+@keyframes ghostLightPulse {
+    0% { opacity: 0.75; transform: scaleX(0.9); }
+    100% { opacity: 1; transform: scaleX(1.08); filter: drop-shadow(0 0 6px #00b894); }
 }
 
 .header-nav-item .nav-item-icon {

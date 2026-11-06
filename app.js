@@ -2678,27 +2678,6 @@ function animateTabWaterfall(pane) {
 
 let _currentWaterfallTargets = [];
 
-function updateHeaderGhostNav(btn) {
-    if (!btn) btn = document.querySelector('.header-nav-item.active');
-    if (!btn) return;
-    const pill = document.getElementById('navGhostPill');
-    const beam = document.getElementById('navGhostBeam');
-    if (!pill || !beam) return;
-
-    const left = btn.offsetLeft;
-    const width = btn.offsetWidth;
-    pill.style.transform = `translateX(${left}px)`;
-    pill.style.width = `${width}px`;
-    pill.style.opacity = '1';
-
-    const beamWidth = Math.max(28, width * 0.58);
-    const beamLeft = left + (width - beamWidth) / 2;
-    beam.style.transform = `translateX(${beamLeft}px)`;
-    beam.style.width = `${beamWidth}px`;
-    beam.style.opacity = '1';
-}
-window.updateHeaderGhostNav = updateHeaderGhostNav;
-
 function switchTab(tabId) {
     if (activeTab === tabId && document.getElementById('tab-' + tabId)?.classList.contains('active')) {
         return;
@@ -2731,8 +2710,7 @@ function switchTab(tabId) {
     const headerBtn = document.getElementById('h-nav-' + tabId);
     if (headerBtn) {
         headerBtn.classList.add('active');
-        updateHeaderGhostNav(headerBtn);
-    }
+        }
 
     // 4. Update overview quick sub-tab buttons
     document.querySelectorAll('.ov-tab-btn').forEach(btn => {
@@ -3858,43 +3836,6 @@ init();
 // 2. ClickSpark: tactile micro-particle burst on click
 // 3. Magnet: smooth magnetic cursor attraction for header buttons
 // ==========================================================================
-function initHeaderGhostNav() {
-    const navList = document.querySelector('.header-nav-list');
-    if (!navList) return;
-
-    if (!document.getElementById('navGhostPill')) {
-        const pill = document.createElement('div');
-        pill.className = 'nav-ghost-pill';
-        pill.id = 'navGhostPill';
-        navList.appendChild(pill);
-    }
-    if (!document.getElementById('navGhostBeam')) {
-        const beam = document.createElement('div');
-        beam.className = 'nav-ghost-beam';
-        beam.id = 'navGhostBeam';
-        navList.appendChild(beam);
-    }
-
-    const items = navList.querySelectorAll('.header-nav-item');
-    items.forEach(item => {
-        item.addEventListener('mouseenter', () => updateHeaderGhostNav(item));
-    });
-    navList.addEventListener('mouseleave', () => {
-        const active = navList.querySelector('.header-nav-item.active');
-        updateHeaderGhostNav(active);
-    });
-
-    window.addEventListener('resize', () => {
-        const active = navList.querySelector('.header-nav-item.active');
-        updateHeaderGhostNav(active);
-    }, { passive: true });
-
-    setTimeout(() => {
-        const active = navList.querySelector('.header-nav-item.active');
-        updateHeaderGhostNav(active);
-    }, 60);
-}
-
 function initReactBitsSuite() {
     // 1. Spotlight Card: Throttled with RAF for 120 FPS buttery smoothness
     let _spotlightRaf = null;
@@ -3968,8 +3909,5 @@ function initReactBitsSuite() {
             });
         });
     }
-
-    // 4. Initialize Sliding Ghost Nav
-    initHeaderGhostNav();
 }
 initReactBitsSuite();
