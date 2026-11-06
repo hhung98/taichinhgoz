@@ -2371,51 +2371,26 @@ function drawAllocationCard(containerId, data, title, targetLiving, targetReserv
     const fRes = convert(resVal);
     const fInv = convert(invVal);
 
-    // Deltas vs Targets
-    const diffExp = pExp - targetLiving;
-    const diffRes = pRes - targetReserve;
-    const diffInv = pInv - targetInvest;
-
-    const badgeExp = diffExp <= 0 
-        ? `<span class="alloc-micro-badge pos">✓ Tiết kiệm (${diffExp}%)</span>` 
-        : `<span class="alloc-micro-badge neg">▲ Vượt (+${diffExp}%)</span>`;
-
-    const badgeRes = diffRes >= 0 
-        ? `<span class="alloc-micro-badge pos">✓ An toàn (+${diffRes}%)</span>` 
-        : `<span class="alloc-micro-badge info">Thiếu (${diffRes}%)</span>`;
-
-    const badgeInv = diffInv >= 0 
-        ? `<span class="alloc-micro-badge pos">★ Đạt (+${diffInv}%)</span>` 
-        : `<span class="alloc-micro-badge info">Thiếu (${diffRes}%)</span>`;
-
-    const savedPct = pRes + pInv;
-    const tipText = pExp <= targetLiving 
-        ? `Kiểm soát chi tiêu xuất sắc! Giữ lại <strong>${savedPct}%</strong> thu nhập.`
-        : `Chi tiêu chiếm <strong>${pExp}%</strong> (vượt mức ${targetLiving}%).`;
-
     container.innerHTML = `
         <div class="pie-card-header">
             <h4 class="pie-card-title">${title}</h4>
             <span class="pie-card-total-pill">${convert(total)}</span>
         </div>
 
-        <!-- 1. Continuous Stacked Allocation Ribbon -->
+        <!-- Continuous Stacked Allocation Ribbon -->
         <div class="stacked-ribbon-container">
             <div class="ribbon-segment expense" style="width: ${pExp}%;" title="Chi tiêu: ${pExp}% (${fExp})"></div>
             <div class="ribbon-segment reserve" style="width: ${pRes}%;" title="Dự phòng: ${pRes}% (${fRes})"></div>
             <div class="ribbon-segment invest" style="width: ${pInv}%;" title="Đầu tư: ${pInv}% (${fInv})"></div>
         </div>
 
-        <!-- 2. Breakdown Rows with Target vs Actual -->
+        <!-- Clean Rows -->
         <div class="alloc-breakdown-list">
             <!-- Chi tiêu -->
-            <div class="alloc-sleek-row">
+            <div class="alloc-clean-row">
                 <div class="alloc-row-heading">
                     <span class="alloc-row-label"><span class="alloc-dot expense"></span> Chi tiêu</span>
-                    <div class="alloc-row-stats">
-                        <span class="alloc-pct expense">${pExp}%</span>
-                        <span class="alloc-target-tag">/ MT ${targetLiving}%</span>
-                    </div>
+                    <span class="alloc-pct expense">${pExp}%</span>
                 </div>
                 <div class="alloc-track-wrap">
                     <div class="alloc-track-fill expense" style="width: ${Math.min(100, pExp)}%;"></div>
@@ -2423,18 +2398,15 @@ function drawAllocationCard(containerId, data, title, targetLiving, targetReserv
                 </div>
                 <div class="alloc-row-sub">
                     <span class="alloc-amount-val">${fExp}</span>
-                    ${badgeExp}
+                    <span class="alloc-target-hint">Mục tiêu: ${targetLiving}%</span>
                 </div>
             </div>
 
             <!-- Dự phòng -->
-            <div class="alloc-sleek-row">
+            <div class="alloc-clean-row">
                 <div class="alloc-row-heading">
                     <span class="alloc-row-label"><span class="alloc-dot reserve"></span> Dự phòng</span>
-                    <div class="alloc-row-stats">
-                        <span class="alloc-pct reserve">${pRes}%</span>
-                        <span class="alloc-target-tag">/ MT ${targetReserve}%</span>
-                    </div>
+                    <span class="alloc-pct reserve">${pRes}%</span>
                 </div>
                 <div class="alloc-track-wrap">
                     <div class="alloc-track-fill reserve" style="width: ${Math.min(100, pRes)}%;"></div>
@@ -2442,18 +2414,15 @@ function drawAllocationCard(containerId, data, title, targetLiving, targetReserv
                 </div>
                 <div class="alloc-row-sub">
                     <span class="alloc-amount-val">${fRes}</span>
-                    ${badgeRes}
+                    <span class="alloc-target-hint">Mục tiêu: ${targetReserve}%</span>
                 </div>
             </div>
 
             <!-- Đầu tư -->
-            <div class="alloc-sleek-row">
+            <div class="alloc-clean-row">
                 <div class="alloc-row-heading">
                     <span class="alloc-row-label"><span class="alloc-dot invest"></span> Đầu tư</span>
-                    <div class="alloc-row-stats">
-                        <span class="alloc-pct invest">${pInv}%</span>
-                        <span class="alloc-target-tag">/ MT ${targetInvest}%</span>
-                    </div>
+                    <span class="alloc-pct invest">${pInv}%</span>
                 </div>
                 <div class="alloc-track-wrap">
                     <div class="alloc-track-fill invest" style="width: ${Math.min(100, pInv)}%;"></div>
@@ -2461,15 +2430,9 @@ function drawAllocationCard(containerId, data, title, targetLiving, targetReserv
                 </div>
                 <div class="alloc-row-sub">
                     <span class="alloc-amount-val">${fInv}</span>
-                    ${badgeInv}
+                    <span class="alloc-target-hint">Mục tiêu: ${targetInvest}%</span>
                 </div>
             </div>
-        </div>
-
-        <!-- 3. Smart Insight Box -->
-        <div class="alloc-insight-tip">
-            <span class="alloc-insight-icon">💡</span>
-            <span>${tipText}</span>
         </div>
     `;
 }
