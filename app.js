@@ -2386,7 +2386,12 @@ function drawAllocationCard(containerId, data, title, targetLiving, targetReserv
 
     const badgeInv = diffInv >= 0 
         ? `<span class="alloc-micro-badge pos">★ Đạt (+${diffInv}%)</span>` 
-        : `<span class="alloc-micro-badge info">Thiếu (${diffInv}%)</span>`;
+        : `<span class="alloc-micro-badge info">Thiếu (${diffRes}%)</span>`;
+
+    const savedPct = pRes + pInv;
+    const tipText = pExp <= targetLiving 
+        ? `Kiểm soát chi tiêu xuất sắc! Giữ lại <strong>${savedPct}%</strong> thu nhập.`
+        : `Chi tiêu chiếm <strong>${pExp}%</strong> (vượt mức ${targetLiving}%).`;
 
     container.innerHTML = `
         <div class="pie-card-header">
@@ -2459,6 +2464,12 @@ function drawAllocationCard(containerId, data, title, targetLiving, targetReserv
                     ${badgeInv}
                 </div>
             </div>
+        </div>
+
+        <!-- 3. Smart Insight Box -->
+        <div class="alloc-insight-tip">
+            <span class="alloc-insight-icon">💡</span>
+            <span>${tipText}</span>
         </div>
     `;
 }
