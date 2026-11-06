@@ -9622,3 +9622,175 @@ select.goal-currency-select option {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }
+
+
+/* ========================================================
+   SAVINGS GOAL REFINEMENT & FINTECH STATUS STYLING
+   ======================================================== */
+.goal-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.goal-header-row .goal-name {
+    margin-bottom: 0;
+    font-size: 0.94rem;
+    font-weight: 700;
+}
+
+.goal-pct-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    background: rgba(45, 212, 191, 0.12);
+    color: #0d9488;
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .goal-pct-pill {
+    background: rgba(45, 212, 191, 0.15);
+    color: #2dd4bf;
+    border-color: rgba(45, 212, 191, 0.35);
+}
+
+.goal-pct-pill.done {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+    border-color: rgba(34, 197, 94, 0.35);
+}
+
+[data-theme="dark"] .goal-pct-pill.done {
+    color: #4ade80;
+}
+
+.goal-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 0.76rem;
+}
+
+.goal-status-saved {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-primary);
+    font-size: 0.78rem;
+}
+
+.goal-status-saved strong {
+    color: var(--accent-money);
+}
+
+.goal-status-saved .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+    flex-shrink: 0;
+}
+
+.goal-status-rem {
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+}
+
+.goal-status-rem .rem-num {
+    color: #e11d48;
+}
+
+[data-theme="dark"] .goal-status-rem .rem-num {
+    color: #fb7185;
+}
+
+.goal-status-rem .rem-pct-badge {
+    font-size: 0.68rem;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: rgba(225, 29, 72, 0.08);
+    color: #e11d48;
+    font-weight: 700;
+}
+
+[data-theme="dark"] .goal-status-rem .rem-pct-badge {
+    background: rgba(251, 113, 133, 0.15);
+    color: #fb7185;
+}
+
+.goal-status-rem.done-tag {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+[data-theme="dark"] .goal-status-rem.done-tag {
+    color: #4ade80;
+}
+
+.equiv-sub {
+    font-size: 0.72rem;
+    opacity: 0.75;
+}
+
+.goal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* SOURCE SWITCH */
+.goal-source-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-card);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.goal-source-switch .source-lbl {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.goal-source-select {
+    background: transparent;
+    border: none;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+    font-family: inherit;
+    padding: 2px 4px;
+}
+
+[data-theme="light"] .goal-source-select option {
+    background: #ffffff;
+    color: #1e293b;
+}
+
+[data-theme="dark"] .goal-source-select option {
+    background: #1e293b;
+    color: #f8fafc;
+}
+

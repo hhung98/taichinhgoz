@@ -734,7 +734,10 @@ function updateOverviewCards() {
         savingsSubEl.textContent = 'Tiết kiệm ' + Math.max(0, pct) + '%';
     }
 
-    // Synchronize ratio labels
+        if (typeof window.renderSavingsGoals === 'function') {
+        window.renderSavingsGoals();
+    }
+// Synchronize ratio labels
     if (typeof window.updateRatioLabelsUI === 'function') {
         window.updateRatioLabelsUI();
     }
@@ -2017,6 +2020,37 @@ window.deleteAsset = async function (id) {
         window.showToast('Đã xóa tài sản khỏi danh mục', 'info');
     }
 };
+
+
+
+function getNetWorthAmounts() {
+    const r = (window.exchangeRate && window.exchangeRate > 0) ? window.exchangeRate : 19.18;
+    let balanceKRW = 0;
+    if (typeof window.getAllTimeTotals === 'function') {
+        const att = window.getAllTimeTotals();
+        balanceKRW = Number(att.balanceKRW) || 0;
+    }
+    const { grandTotal } = (typeof getPortfolioTotals === 'function') ? getPortfolioTotals() : { grandTotal: 0 };
+    const cur = window.displayCurrency || 'KRW';
+    let grandTotalKRW = 0;
+    let grandTotalVND = 0;
+    if (typeof convertCurrency === 'function') {
+        grandTotalKRW = convertCurrency(grandTotal, cur, 'KRW');
+        grandTotalVND = convertCurrency(grandTotal, cur, 'VND');
+    } else {
+        grandTotalKRW = grandTotal;
+        grandTotalVND = Math.round(grandTotal * r);
+    }
+    const netWorthKRW = Math.round(balanceKRW + grandTotalKRW);
+    const netWorthVND = Math.round(Math.round(balanceKRW * r) + grandTotalVND);
+    return {
+        netWorthKRW,
+        netWorthVND,
+        cashflowKRW: balanceKRW,
+        cashflowVND: Math.round(balanceKRW * r)
+    };
+}
+window.getNetWorthAmounts = getNetWorthAmounts;
 
 // ========================================================
 // HOOKS INTO EXISTING APP.JS FUNCTIONS

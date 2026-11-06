@@ -1366,13 +1366,72 @@ function toggleGoalCurrency(id) {
 }
 window.toggleGoalCurrency = toggleGoalCurrency;
 
+function getGoalCurrentBalance() {
+    const r = (window.exchangeRate && window.exchangeRate > 0) ? window.exchangeRate : 19.18;
+    const source = localStorage.getItem('goz_goal_source') || 'net_worth';
+
+    let cashflowKRW = 0;
+    if (typeof getAllTimeTotals === 'function') {
+        const att = getAllTimeTotals();
+        cashflowKRW = Number(att.balanceKRW) || 0;
+    }
+    const cashflowVND = Math.round(cashflowKRW * r);
+
+    if (source === 'cashflow') {
+        return {
+            source: 'cashflow',
+            savedKRW: cashflowKRW,
+            savedVND: cashflowVND,
+            cashflowKRW,
+            cashflowVND
+        };
+    }
+
+    if (typeof window.getNetWorthAmounts === 'function') {
+        const nw = window.getNetWorthAmounts();
+        return {
+            source: 'net_worth',
+            savedKRW: nw.netWorthKRW,
+            savedVND: nw.netWorthVND,
+            cashflowKRW,
+            cashflowVND
+        };
+    }
+
+    return {
+        source: 'net_worth',
+        savedKRW: cashflowKRW,
+        savedVND: cashflowVND,
+        cashflowKRW,
+        cashflowVND
+    };
+}
+window.getGoalCurrentBalance = getGoalCurrentBalance;
+
+function changeGoalBalanceSource(src) {
+    localStorage.setItem('goz_goal_source', src);
+    renderSavingsGoals();
+    showToast(src === 'net_worth' ? 'Nguồn tính: Số dư hiện tại (Tài sản ròng)' : 'Nguồn tính: Dòng tiền tích lũy (Thu - Chi)', 'info');
+}
+window.changeGoalBalanceSource = changeGoalBalanceSource;
+
 function renderSavingsGoals() {
     const container = document.getElementById('goalsList');
     if (!container) return;
+
+    // Đồng bộ dropdown nguồn tính nếu có trên UI
+    const srcSelect = document.getElementById('goalSourceSelect');
+    const curSource = localStorage.getItem('goz_goal_source') || 'net_worth';
+    if (srcSelect && srcSelect.value !== curSource) {
+        srcSelect.value = curSource;
+    }
+
     if (!savingsGoals.length) { container.innerHTML = ''; return; }
-    const { balanceKRW } = getAllTimeTotals();
+
+    const curBal = getGoalCurrentBalance();
+    const savedKRW = curBal.savedKRW;
+    const savedVND = curBal.savedVND;
     const r = (window.exchangeRate && window.exchangeRate > 0) ? window.exchangeRate : 19.18;
-    const balanceVND = Math.round(balanceKRW * r);
 
     container.innerHTML = savingsGoals.map(g => {
         const isVND = g.currency === 'VND';
@@ -1392,8 +1451,8 @@ function renderSavingsGoals() {
         }
 
         const pct = isVND
-            ? (targetVND > 0 ? Math.min(100, Math.max(0, Math.round((balanceVND / targetVND) * 100))) : 0)
-            : (targetKRW > 0 ? Math.min(100, Math.max(0, Math.round((balanceKRW / targetKRW) * 100))) : 0);
+            ? (targetVND > 0 ? Math.min(100, Math.max(0, Math.round((savedVND / targetVND) * 100))) : 0)
+            : (targetKRW > 0 ? Math.min(100, Math.max(0, Math.round((savedKRW / targetKRW) * 100))) : 0);
 
         const amountDisplay = isVND
             ? `${fmtVND(targetVND)} (≈ ${fmtKRW(targetKRW)})`
@@ -1407,22 +1466,16 @@ function renderSavingsGoals() {
             ? `<span class="goal-meta">${iconMarkup('circle-dollar-sign')} ${isVND ? fmtVND(Math.round(targetVND / g.months)) : fmtKRW(Math.round(targetKRW / g.months))}/tháng</span>`
             : '';
 
-        let remainingText = '';
-        if (pct >= 100) {
-            remainingText = '(🎉 Hoàn thành)';
-        } else if (isVND) {
-            const remVND = Math.max(0, targetVND - balanceVND);
-            const remKRW = r > 0 ? Math.round(remVND / r) : 0;
-            remainingText = `(${fmtVND(remVND)} ≈ ${fmtKRW(remKRW)})`;
-        } else {
-            const remKRW = Math.max(0, targetKRW - balanceKRW);
-            const remVND = Math.round(remKRW * r);
-            remainingText = `(${fmtKRW(remKRW)} ≈ ${fmtVND(remVND)})`;
-        }
+        const remVND = Math.max(0, targetVND - savedVND);
+        const remKRW = isVND ? (r > 0 ? Math.round(remVND / r) : 0) : Math.max(0, targetKRW - savedKRW);
+        const remPct = Math.max(0, 100 - pct);
 
         return `<div class="goal-item">
             <div class="goal-info">
-                <div class="goal-name">${iconMarkup('target')} ${escapeHtml(g.name)}</div>
+                <div class="goal-header-row">
+                    <div class="goal-name">${iconMarkup('target')} ${escapeHtml(g.name)}</div>
+                    <span class="goal-pct-pill ${pct >= 100 ? 'done' : ''}">${pct}%</span>
+                </div>
                 <div class="goal-details">
                     <span class="goal-meta goal-amount-tag" onclick="toggleGoalCurrency('${g.id}')" title="Bấm để chuyển đổi hiển thị gốc VND ↔ KRW" style="cursor:pointer; user-select:none;">
                         ${iconMarkup('banknote')} <strong>${amountDisplay}</strong> <span style="opacity:0.8; font-size:10px; margin-left:3px; text-decoration:underline;">⇄ Đổi gốc</span>
@@ -1430,23 +1483,35 @@ function renderSavingsGoals() {
                     ${durationHtml}
                     ${monthlyHtml}
                 </div>
-                <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%;${pct >= 100 ? 'background:linear-gradient(90deg,#2dd4bf,#5eead4);' : ''}"></div></div>
+                <div class="goal-progress-bar">
+                    <div class="goal-progress-fill" style="width:${pct}%;${pct >= 100 ? 'background:linear-gradient(90deg,#2dd4bf,#5eead4);' : ''}"></div>
+                </div>
+                <div class="goal-status-row">
+                    <span class="goal-status-saved">
+                        <span class="status-dot"></span> Đã có: <strong>${isVND ? fmtVND(savedVND) : fmtKRW(savedKRW)}</strong> <span class="equiv-sub">(${isVND ? '≈ ' + fmtKRW(savedKRW) : '≈ ' + fmtVND(savedVND)})</span>
+                    </span>
+                    ${pct >= 100
+                        ? `<span class="goal-status-rem done-tag">🎉 Đã hoàn thành mục tiêu!</span>`
+                        : `<span class="goal-status-rem">
+                            Còn thiếu: <strong class="rem-num">${isVND ? fmtVND(remVND) : fmtKRW(remKRW)}</strong> <span class="equiv-sub">(${isVND ? '≈ ' + fmtKRW(remKRW) : '≈ ' + fmtVND(remVND)})</span> <span class="rem-pct-badge">${remPct}%</span>
+                        </span>`
+                    }
+                </div>
             </div>
-            <div class="goal-pct-box">
-                <span class="goal-pct-val">${pct}%</span>
-                <span class="goal-remaining-sub">${remainingText}</span>
+            <div class="goal-actions">
+                <button class="goal-delete" onclick="deleteSavingsGoal('${g.id}')" title="Xóa mục tiêu" aria-label="Xóa mục tiêu">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
-            <button class="goal-delete" onclick="deleteSavingsGoal('${g.id}')" title="Xóa mục tiêu" aria-label="Xóa mục tiêu">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
         </div>`;
     }).join('');
 
     refreshIcons();
 }
+window.renderSavingsGoals = renderSavingsGoals;
 
 // ===== Budget Table =====
 function getBudgetKey(y, m) { return `${y}-${String(m + 1).padStart(2, '0')}`; }
