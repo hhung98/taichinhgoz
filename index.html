@@ -35,7 +35,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=96">
+    <link rel="stylesheet" href="style.css?v=97">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Dashboard Tài Chính","description":"Ứng dụng quản lý thu nhập và chi tiêu cá nhân thông minh","applicationCategory":"FinanceApplication"}
@@ -140,7 +140,7 @@
                             <span>goz</span>
                             <span class="badge-pro">pro</span>
                         </div>
-                        
+
                     </div>
                 </div>
 
@@ -214,9 +214,11 @@
 
                     <!-- Quick Navigation Pills (Matching media_1793698460424_de0fe200.png) -->
                     <div class="overview-quick-tabs">
-                        <button class="ov-tab-btn active" data-tab="overview" onclick="switchTab('overview')">Tổng quan</button>
+                        <button class="ov-tab-btn active" data-tab="overview" onclick="switchTab('overview')">Tổng
+                            quan</button>
                         <button class="ov-tab-btn" data-tab="budget" onclick="switchTab('budget')">Thu chi 12T</button>
-                        <button class="ov-tab-btn" data-tab="assets" onclick="switchTab('assets')">Cơ cấu tài sản</button>
+                        <button class="ov-tab-btn" data-tab="assets" onclick="switchTab('assets')">Cơ cấu tài
+                            sản</button>
                     </div>
                 </div>
 
@@ -233,7 +235,8 @@
 
                     <div class="ex-card">
                         <div class="ex-card-header">
-                            <span class="ex-card-label"><i class="icon-svg" data-lucide="circle-dollar-sign"></i> USD SANG VND</span>
+                            <span class="ex-card-label"><i class="icon-svg" data-lucide="circle-dollar-sign"></i> USD
+                                SANG VND</span>
                             <span class="badge-usd">USD</span>
                         </div>
                         <div class="ex-card-val" id="usdRateValue">25,744 đ</div>
@@ -242,7 +245,8 @@
 
                     <div class="ex-card converter-card-box">
                         <div class="ex-card-header">
-                            <span class="ex-card-label"><i class="icon-svg" data-lucide="arrow-left-right"></i> Quy đổi ngoại tệ tức thì</span>
+                            <span class="ex-card-label"><i class="icon-svg" data-lucide="arrow-left-right"></i> Quy đổi
+                                ngoại tệ tức thì</span>
                             <span class="badge-time">Tỷ giá thời gian thực</span>
                         </div>
                         <div class="converter-inputs-tri">
@@ -276,7 +280,8 @@
                         <div class="metric-value" id="totalBalance">-- ₩</div>
                         <div class="metric-sub" id="balanceKRW"></div>
                         <div class="metric-footer">
-                            <span class="metric-growth pos"><i class="icon-svg" data-lucide="trending-up"></i> Thu chi + Đầu tư</span>
+                            <span class="metric-growth pos"><i class="icon-svg" data-lucide="trending-up"></i> Thu chi +
+                                Đầu tư</span>
                             <svg class="sparkline-svg" viewBox="0 0 80 24">
                                 <path d="M 0,18 Q 20,20 40,10 T 80,4" fill="none" stroke="#00b894" stroke-width="2"
                                     stroke-linecap="round" />
@@ -292,7 +297,9 @@
                         <div class="metric-value green" id="totalIncome">-- ₩</div>
                         <div class="metric-sub" id="incomeKRW"></div>
                         <div class="metric-footer">
-                            <span class="metric-growth pos" id="incomeRatioText" onclick="openRatioConfigModal()" title="Nhấp để tùy chỉnh tỷ lệ %" style="cursor: pointer;"><i class="icon-svg" data-lucide="trending-up"></i> Quy tắc 40-40-20</span>
+                            <span class="metric-growth pos" id="incomeRatioText" onclick="openRatioConfigModal()"
+                                title="Nhấp để tùy chỉnh tỷ lệ %" style="cursor: pointer;"><i class="icon-svg"
+                                    data-lucide="trending-up"></i> Quy tắc 40-40-20</span>
                             <svg class="sparkline-svg" viewBox="0 0 80 24">
                                 <path d="M 0,22 Q 25,18 50,12 T 80,6" fill="none" stroke="#00b894" stroke-width="2"
                                     stroke-linecap="round" />
@@ -308,7 +315,8 @@
                         <div class="metric-value red" id="totalExpense">-- ₩</div>
                         <div class="metric-sub" id="expenseKRW"></div>
                         <div class="metric-footer">
-                            <span class="metric-growth red-text" id="expenseGrowthText"><i class="icon-svg" data-lucide="trending-down"></i> Chiếm 8.3% thu nhập</span>
+                            <span class="metric-growth red-text" id="expenseGrowthText"><i class="icon-svg"
+                                    data-lucide="trending-down"></i> Chiếm 8.3% thu nhập</span>
                             <svg class="sparkline-svg" viewBox="0 0 80 24">
                                 <path d="M 0,8 Q 30,16 50,10 T 80,18" fill="none" stroke="#ff6b6b" stroke-width="2"
                                     stroke-linecap="round" />
@@ -366,11 +374,14 @@
                             </div>
                             <div class="chart-header-actions" style="display: flex; align-items: center; gap: 8px;">
                                 <div class="year-selector year-selector-circle">
-                                    <button type="button" onclick="changeYear(-1)" title="Năm trước" aria-label="Năm trước">◀</button>
+                                    <button type="button" onclick="changeYear(-1)" title="Năm trước"
+                                        aria-label="Năm trước">◀</button>
                                     <span class="year-label" id="overviewYearLabel">2026</span>
-                                    <button type="button" onclick="changeYear(1)" title="Năm sau" aria-label="Năm sau">▶</button>
+                                    <button type="button" onclick="changeYear(1)" title="Năm sau"
+                                        aria-label="Năm sau">▶</button>
                                 </div>
-                                <span class="badge-rule-40" id="badgeRuleRatio" onclick="openRatioConfigModal()" title="Nhấp để tùy chỉnh tỷ lệ %" style="cursor: pointer;">Quy tắc 40-40-20</span>
+                                <span class="badge-rule-40" id="badgeRuleRatio" onclick="openRatioConfigModal()"
+                                    title="Nhấp để tùy chỉnh tỷ lệ %" style="cursor: pointer;">Quy tắc 40-40-20</span>
                             </div>
                         </div>
                         <div class="pie-charts-section">
@@ -392,27 +403,40 @@
 
                 <!-- SAVINGS GOAL SECTION -->
                 <section class="panel savings-goal-panel" id="savingsGoalPanel" aria-label="Mục tiêu tiết kiệm">
-                    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                        <h2 class="panel-title"><i class="icon-svg" data-lucide="badge-dollar-sign"></i> Mục tiêu tiết kiệm</h2>
+                    <div class="panel-header"
+                        style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <h2 class="panel-title"><i class="icon-svg" data-lucide="badge-dollar-sign"></i> Mục tiêu tiết
+                            kiệm</h2>
                         <div class="goal-source-dropdown" id="goalSourceDropdown">
                             <input type="hidden" id="goalSourceSelect" value="net_worth">
-                            <button type="button" class="goal-source-trigger" onclick="toggleGoalSourceDropdown(event)" aria-haspopup="listbox" aria-expanded="false" title="Chọn nguồn số dư để đo lường tiến độ mục tiêu tiết kiệm">
+                            <button type="button" class="goal-source-trigger" onclick="toggleGoalSourceDropdown(event)"
+                                aria-haspopup="listbox" aria-expanded="false"
+                                title="Chọn nguồn số dư để đo lường tiến độ mục tiêu tiết kiệm">
                                 <span class="source-lbl">Nguồn tính:</span>
-                                <span class="source-val" id="goalSourceCurrentLabel">Số dư hiện tại (Tài sản ròng)</span>
-                                <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <span class="source-val" id="goalSourceCurrentLabel">Số dư hiện tại (Tài sản
+                                    ròng)</span>
+                                <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                                    stroke-linejoin="round">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
                             </button>
                             <div class="goal-source-menu" role="listbox">
-                                <div class="goal-source-option active" role="option" data-value="net_worth" onclick="selectGoalSource('net_worth', event)">
+                                <div class="goal-source-option active" role="option" data-value="net_worth"
+                                    onclick="selectGoalSource('net_worth', event)">
                                     <span>Số dư hiện tại (Tài sản ròng)</span>
-                                    <svg class="check-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg class="check-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                                        stroke-linejoin="round">
                                         <polyline points="20 6 9 17 4 12"></polyline>
                                     </svg>
                                 </div>
-                                <div class="goal-source-option" role="option" data-value="cashflow" onclick="selectGoalSource('cashflow', event)">
+                                <div class="goal-source-option" role="option" data-value="cashflow"
+                                    onclick="selectGoalSource('cashflow', event)">
                                     <span>Dòng tiền tích lũy (Thu - Chi)</span>
-                                    <svg class="check-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg class="check-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                                        stroke-linejoin="round">
                                         <polyline points="20 6 9 17 4 12"></polyline>
                                     </svg>
                                 </div>
@@ -475,7 +499,8 @@
                         <div class="portfolio-hero-pnl-wrap" id="portfolioHeroPnl"></div>
                     </div>
                     <!-- CONTINUOUS ASSET ALLOCATION RIBBON -->
-                    <div class="portfolio-ribbon-track" id="portfolioRibbonTrack" title="Tỷ lệ phân bổ danh mục tài sản">
+                    <div class="portfolio-ribbon-track" id="portfolioRibbonTrack"
+                        title="Tỷ lệ phân bổ danh mục tài sản">
                         <div class="ribbon-bar cash" id="ribbonBarCash" style="width: 0%;" title="Tiền mặt"></div>
                         <div class="ribbon-bar crypto" id="ribbonBarCrypto" style="width: 0%;" title="Crypto"></div>
                         <div class="ribbon-bar stock" id="ribbonBarStock" style="width: 0%;" title="Cổ phiếu VN"></div>
@@ -484,7 +509,8 @@
                     <div class="portfolio-hero-breakdown">
                         <div class="portfolio-sub-card cash" onclick="setAssetFilter('cash')" title="Lọc xem Tiền mặt">
                             <div class="sub-card-top">
-                                <span class="sub-card-label"><i class="icon-svg" data-lucide="wallet"></i> Tiền mặt</span>
+                                <span class="sub-card-label"><i class="icon-svg" data-lucide="wallet"></i> Tiền
+                                    mặt</span>
                                 <span class="sub-card-pct" id="heroCashPct">--%</span>
                             </div>
                             <div class="sub-card-val" id="heroCashTotal">-- ₩</div>
@@ -493,7 +519,8 @@
                             </div>
                             <div class="sub-card-note" id="heroCashNote">An toàn & Sẵn sàng</div>
                         </div>
-                        <div class="portfolio-sub-card crypto" onclick="setAssetFilter('crypto')" title="Lọc xem Crypto Coin">
+                        <div class="portfolio-sub-card crypto" onclick="setAssetFilter('crypto')"
+                            title="Lọc xem Crypto Coin">
                             <div class="sub-card-top">
                                 <span class="sub-card-label"><i class="icon-svg" data-lucide="coins"></i> Crypto</span>
                                 <span class="sub-card-pct" id="heroCryptoPct">--%</span>
@@ -504,9 +531,11 @@
                             </div>
                             <div class="sub-card-note" id="heroCryptoNote">--</div>
                         </div>
-                        <div class="portfolio-sub-card stocks" onclick="setAssetFilter('stock_vn')" title="Lọc xem Cổ phiếu VN">
+                        <div class="portfolio-sub-card stocks" onclick="setAssetFilter('stock_vn')"
+                            title="Lọc xem Cổ phiếu VN">
                             <div class="sub-card-top">
-                                <span class="sub-card-label"><i class="icon-svg" data-lucide="trending-up"></i> Cổ phiếu VN</span>
+                                <span class="sub-card-label"><i class="icon-svg" data-lucide="trending-up"></i> Cổ phiếu
+                                    VN</span>
                                 <span class="sub-card-pct" id="heroStockPct">--%</span>
                             </div>
                             <div class="sub-card-val" id="heroStockTotal">-- ₩</div>
@@ -515,7 +544,8 @@
                             </div>
                             <div class="sub-card-note" id="heroStockNote">--</div>
                         </div>
-                        <div class="portfolio-sub-card gold" onclick="setAssetFilter('gold')" title="Lọc xem Đầu tư Vàng">
+                        <div class="portfolio-sub-card gold" onclick="setAssetFilter('gold')"
+                            title="Lọc xem Đầu tư Vàng">
                             <div class="sub-card-top">
                                 <span class="sub-card-label"><i class="icon-svg" data-lucide="gem"></i> Vàng</span>
                                 <span class="sub-card-pct" id="heroGoldPct">--%</span>
@@ -533,18 +563,22 @@
                 <div class="asset-toolbar-wrap">
                     <div class="asset-search-box">
                         <i class="icon-svg" data-lucide="search"></i>
-                        <input type="text" id="assetSearchInput" placeholder="Tìm tài sản (BTC, FPT, Tiền mặt...)" oninput="filterAndSortAssets()">
-                        <button type="button" class="btn-clear-search" id="assetSearchClearBtn" onclick="clearAssetSearch()" style="display:none;" title="Xóa tìm kiếm">✕</button>
+                        <input type="text" id="assetSearchInput" placeholder="Tìm tài sản (BTC, FPT, Tiền mặt...)"
+                            oninput="filterAndSortAssets()">
+                        <button type="button" class="btn-clear-search" id="assetSearchClearBtn"
+                            onclick="clearAssetSearch()" style="display:none;" title="Xóa tìm kiếm">✕</button>
                     </div>
                     <div class="asset-toolbar-right">
-                        <select id="assetSortSelect" class="asset-sort-select" onchange="filterAndSortAssets()" title="Sắp xếp danh mục">
+                        <select id="assetSortSelect" class="asset-sort-select" onchange="filterAndSortAssets()"
+                            title="Sắp xếp danh mục">
                             <option value="val_desc">Giá trị: Cao → Thấp</option>
                             <option value="val_asc">Giá trị: Thấp → Cao</option>
                             <option value="pnl_desc">Lãi nhiều nhất</option>
                             <option value="pnl_asc">Lỗ nhiều nhất</option>
                             <option value="name_asc">Tên: A → Z</option>
                         </select>
-                        <button class="asset-sync-btn" id="assetSyncBtn" onclick="syncAllLiveAssetPrices()" title="Lấy giá live mới nhất từ Binance và thị trường chứng khoán">
+                        <button class="asset-sync-btn" id="assetSyncBtn" onclick="syncAllLiveAssetPrices()"
+                            title="Lấy giá live mới nhất từ Binance và thị trường chứng khoán">
                             <i class="icon-svg" data-lucide="refresh-cw" id="assetSyncIcon"></i>
                             <span>Cập nhật giá</span>
                         </button>
@@ -586,7 +620,8 @@
                         <div class="asset-section-title-wrap">
                             <div class="asset-cat-icon crypto"><i class="icon-svg" data-lucide="link"></i></div>
                             <div>
-                                <h3 class="asset-cat-title"><span class="live-pulse-dot" title="Giá thời gian thực Binance"></span>Danh Mục Crypto (Coin)</h3>
+                                <h3 class="asset-cat-title"><span class="live-pulse-dot"
+                                        title="Giá thời gian thực Binance"></span>Danh Mục Crypto (Coin)</h3>
                                 <div class="asset-cat-sub" id="cryptoSummarySub">Tổng: 15,914,951 ₩ -3.26% (-$391.90)
                                 </div>
                             </div>
@@ -622,7 +657,9 @@
                         <div class="asset-section-title-wrap">
                             <div class="asset-cat-icon gold"><i class="icon-svg" data-lucide="gem"></i></div>
                             <div>
-                                <h3 class="asset-cat-title"><span class="live-pulse-dot" title="Kết nối trực tiếp giá vàng Việt Nam"></span>Đầu Tư Vàng (SJC, 9999, PNJ, DOJI)</h3>
+                                <h3 class="asset-cat-title"><span class="live-pulse-dot"
+                                        title="Kết nối trực tiếp giá vàng Việt Nam"></span>Đầu Tư Vàng (SJC, 9999, PNJ,
+                                    DOJI)</h3>
                                 <div class="asset-cat-sub" id="goldSummarySub">Tổng: -- ₩</div>
                             </div>
                         </div>
@@ -657,7 +694,8 @@
                             <div class="asset-cat-icon debt"><i class="icon-svg" data-lucide="hand-coins"></i></div>
                             <div>
                                 <h3 class="asset-cat-title">Sổ Ghi Chú & Theo Dõi Vay Nợ</h3>
-                                <div class="asset-cat-sub" id="debtNotesSummarySub">Đang cho vay: 0 ₫ • Đang nợ: 0 ₫</div>
+                                <div class="asset-cat-sub" id="debtNotesSummarySub">Đang cho vay: 0 ₫ • Đang nợ: 0 ₫
+                                </div>
                             </div>
                         </div>
                         <button class="btn-primary-add" onclick="openAddDebtNoteModal()">
@@ -672,16 +710,20 @@
                                 Tất cả <span class="debt-pill-num" id="debtFilterCountAll">0</span>
                             </button>
                             <button class="debt-pill" id="debtFilterPending" onclick="setDebtFilter('pending')">
-                                <span class="debt-dot pending"></span> Chưa hoàn trả <span class="debt-pill-num" id="debtFilterCountPending">0</span>
+                                <span class="debt-dot pending"></span> Chưa hoàn trả <span class="debt-pill-num"
+                                    id="debtFilterCountPending">0</span>
                             </button>
                             <button class="debt-pill" id="debtFilterLend" onclick="setDebtFilter('lend')">
-                                <span class="debt-dot lend"></span> Cho vay (Phải thu) <span class="debt-pill-num" id="debtFilterCountLend">0</span>
+                                <span class="debt-dot lend"></span> Cho vay (Phải thu) <span class="debt-pill-num"
+                                    id="debtFilterCountLend">0</span>
                             </button>
                             <button class="debt-pill" id="debtFilterBorrow" onclick="setDebtFilter('borrow')">
-                                <span class="debt-dot borrow"></span> Đi vay (Cần trả) <span class="debt-pill-num" id="debtFilterCountBorrow">0</span>
+                                <span class="debt-dot borrow"></span> Đi vay (Cần trả) <span class="debt-pill-num"
+                                    id="debtFilterCountBorrow">0</span>
                             </button>
                             <button class="debt-pill" id="debtFilterPaid" onclick="setDebtFilter('paid')">
-                                <span class="debt-dot paid"></span> Đã thanh toán <span class="debt-pill-num" id="debtFilterCountPaid">0</span>
+                                <span class="debt-dot paid"></span> Đã thanh toán <span class="debt-pill-num"
+                                    id="debtFilterCountPaid">0</span>
                             </button>
                         </div>
                         <div class="debt-kpi-bar" id="debtKpiBar"></div>
@@ -697,17 +739,21 @@
                         <div class="exchange-header-title-row">
                             <h2 class="panel-title" id="exchangePanelTitle">Lịch sử Tỷ giá (15 ngày)</h2>
                             <div class="exchange-range-selector" role="group" aria-label="Khoảng thời gian">
-                                <button class="rate-range-btn" id="btnRange7" onclick="setExchangeRangeDays(7)">7N</button>
-                                <button class="rate-range-btn active" id="btnRange15" onclick="setExchangeRangeDays(15)">15N</button>
-                                <button class="rate-range-btn" id="btnRange30" onclick="setExchangeRangeDays(30)">30N</button>
-                                <button class="rate-range-btn" id="btnRange90" onclick="setExchangeRangeDays(90)">90N</button>
+                                <button class="rate-range-btn" id="btnRange7"
+                                    onclick="setExchangeRangeDays(7)">7N</button>
+                                <button class="rate-range-btn active" id="btnRange15"
+                                    onclick="setExchangeRangeDays(15)">15N</button>
+                                <button class="rate-range-btn" id="btnRange30"
+                                    onclick="setExchangeRangeDays(30)">30N</button>
+                                <button class="rate-range-btn" id="btnRange90"
+                                    onclick="setExchangeRangeDays(90)">90N</button>
                             </div>
                         </div>
 
                         <!-- Bộ chọn chế độ hiển thị (Lưới 3 Biểu đồ trực quan / Từng cặp riêng / % So sánh) -->
                         <div class="exchange-legend-selector" role="tablist">
-                            <button class="exchange-mode-btn active" id="btnRateGrid" onclick="setExchangeRateMode('grid')"
-                                title="Xem trực quan cùng lúc cả 3 biểu đồ riêng">
+                            <button class="exchange-mode-btn active" id="btnRateGrid"
+                                onclick="setExchangeRateMode('grid')" title="Xem trực quan cùng lúc cả 3 biểu đồ riêng">
                                 <i class="icon-svg" data-lucide="layout-grid"></i> <span>Lưới 3 Biểu đồ</span>
                             </button>
                             <button class="exchange-mode-btn" id="btnRateKRW" onclick="setExchangeRateMode('krw')"
@@ -736,12 +782,14 @@
                                 <span class="pulse-dot"></span> <span id="exchangeStatusText">Realtime Live</span>
                             </span>
                             <span class="exchange-meta-item">
-                                <i class="icon-svg" data-lucide="clock"></i> Cập nhật lúc: <strong id="exchangeLastUpdated">--</strong>
+                                <i class="icon-svg" data-lucide="clock"></i> Cập nhật lúc: <strong
+                                    id="exchangeLastUpdated">--</strong>
                             </span>
                         </div>
                         <div class="exchange-meta-right">
                             <span class="exchange-meta-item">
-                                <i class="icon-svg" data-lucide="database"></i> Nguồn: <strong id="exchangeDataSource">Open Exchange Rates & ECB</strong>
+                                <i class="icon-svg" data-lucide="database"></i> Nguồn: <strong
+                                    id="exchangeDataSource">Open Exchange Rates & ECB</strong>
                             </span>
                         </div>
                     </div>
@@ -870,7 +918,8 @@
                                 <div class="settings-option">
                                     <div class="settings-option-text">
                                         <h4>Phiên bản & Cập nhật PWA</h4>
-                                        <p>Phiên bản: <strong>v67 (Restored Quick Sub-Tabs, Refined Converter & Ultra-Modern Portfolio UX/UI)</strong></p>
+                                        <p>Phiên bản: <strong>v67 (Restored Quick Sub-Tabs, Refined Converter &
+                                                Ultra-Modern Portfolio UX/UI)</strong></p>
                                         <p class="update-status-sub" id="updateStatusText">Ứng dụng tự động tải bản mới
                                             khi đẩy code lên Git.</p>
                                     </div>
@@ -1021,16 +1070,16 @@
                     <button type="button" class="quick-chip" onclick="selectCryptoChip('SOL', 'Solana')">SOL</button>
                     <button type="button" class="quick-chip"
                         onclick="selectCryptoChip('USDT', 'Tether USD')">USDT</button>
-                    <button type="button" class="quick-chip" onclick="selectCryptoChip('BNB', 'Binance Coin')">BNB</button>
+                    <button type="button" class="quick-chip"
+                        onclick="selectCryptoChip('BNB', 'Binance Coin')">BNB</button>
                     <button type="button" class="quick-chip" onclick="selectCryptoChip('XRP', 'Ripple')">XRP</button>
                 </div>
                 <div class="ratio-item-row" style="position: relative;">
                     <span class="asset-field-label">Ký hiệu Coin</span>
                     <div class="crypto-input-wrapper">
-                        <input type="text" id="inputCryptoSymbol" placeholder="VD: BTC, ETH, SOL..." class="asset-text-field"
-                            autocomplete="off" spellcheck="false"
-                            oninput="onCryptoSymbolInput(this.value)"
-                            onfocus="onCryptoSymbolFocus()"
+                        <input type="text" id="inputCryptoSymbol" placeholder="VD: BTC, ETH, SOL..."
+                            class="asset-text-field" autocomplete="off" spellcheck="false"
+                            oninput="onCryptoSymbolInput(this.value)" onfocus="onCryptoSymbolFocus()"
                             onkeydown="onCryptoSymbolKeydown(event)">
                         <div id="cryptoSuggestBox" class="crypto-suggest-box" style="display: none;"></div>
                     </div>
@@ -1038,8 +1087,7 @@
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Tên Coin</span>
                     <input type="text" id="inputCryptoName" placeholder="VD: Bitcoin" class="asset-text-field"
-                        autocomplete="off" spellcheck="false"
-                        oninput="onCryptoNameInput(this.value)">
+                        autocomplete="off" spellcheck="false" oninput="onCryptoNameInput(this.value)">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Số lượng nắm giữ</span>
@@ -1191,15 +1239,21 @@
                     <i class="icon-svg" data-lucide="x"></i>
                 </button>
             </div>
-            <p class="ratio-modal-desc">Quản lý vàng vật chất (SJC, Nhẫn 9999, PNJ, DOJI) và tự động cập nhật giá thị trường Việt Nam.</p>
+            <p class="ratio-modal-desc">Quản lý vàng vật chất (SJC, Nhẫn 9999, PNJ, DOJI) và tự động cập nhật giá thị
+                trường Việt Nam.</p>
             <div class="ratio-modal-body">
                 <div class="quick-chips-row">
                     <span class="quick-chip-label">Gợi ý nhanh:</span>
-                    <button type="button" class="quick-chip" onclick="selectGoldChip('SJL1L10', 'Vàng miếng SJC 9999', 'SJC')">SJC 9999</button>
-                    <button type="button" class="quick-chip" onclick="selectGoldChip('SJ9999', 'Nhẫn Trơn SJC 99.99', 'SJC')">Nhẫn SJC</button>
-                    <button type="button" class="quick-chip" onclick="selectGoldChip('BT9999NTT', 'Bảo Tín 9999', 'Bảo Tín')">Bảo Tín 9999</button>
-                    <button type="button" class="quick-chip" onclick="selectGoldChip('PQHN24NTT', 'Nhẫn Trơn PNJ 24K', 'PNJ')">PNJ 24K</button>
-                    <button type="button" class="quick-chip" onclick="selectGoldChip('DOJINHTV', 'DOJI Hưng Thịnh Vượng', 'DOJI')">DOJI 9999</button>
+                    <button type="button" class="quick-chip"
+                        onclick="selectGoldChip('SJL1L10', 'Vàng miếng SJC 9999', 'SJC')">SJC 9999</button>
+                    <button type="button" class="quick-chip"
+                        onclick="selectGoldChip('SJ9999', 'Nhẫn Trơn SJC 99.99', 'SJC')">Nhẫn SJC</button>
+                    <button type="button" class="quick-chip"
+                        onclick="selectGoldChip('BT9999NTT', 'Bảo Tín 9999', 'Bảo Tín')">Bảo Tín 9999</button>
+                    <button type="button" class="quick-chip"
+                        onclick="selectGoldChip('PQHN24NTT', 'Nhẫn Trơn PNJ 24K', 'PNJ')">PNJ 24K</button>
+                    <button type="button" class="quick-chip"
+                        onclick="selectGoldChip('DOJINHTV', 'DOJI Hưng Thịnh Vượng', 'DOJI')">DOJI 9999</button>
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Loại vàng</span>
@@ -1217,11 +1271,13 @@
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Tên hiển thị</span>
-                    <input type="text" id="inputGoldName" placeholder="VD: Vàng miếng SJC 9999" class="asset-text-field">
+                    <input type="text" id="inputGoldName" placeholder="VD: Vàng miếng SJC 9999"
+                        class="asset-text-field">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Đơn vị tính</span>
-                    <select id="selectGoldUnit" class="asset-text-field" onchange="onGoldUnitChange(this.value)" style="max-width:140px;">
+                    <select id="selectGoldUnit" class="asset-text-field" onchange="onGoldUnitChange(this.value)"
+                        style="max-width:140px;">
                         <option value="chi">Chỉ (3.75g)</option>
                         <option value="luong">Lượng / Cây (10 chỉ)</option>
                     </select>
@@ -1242,12 +1298,14 @@
                         <input type="number" step="any" min="0" id="inputGoldCurrentPrice" placeholder="VD: 14240000"
                             class="asset-text-field" oninput="calcGoldModalPreview()">
                         <button type="button" class="btn-fetch-price" onclick="fetchLiveGoldPriceForModal()"
-                            title="Lấy giá live thị trường Việt Nam"><i class="icon-svg" data-lucide="refresh-cw"></i></button>
+                            title="Lấy giá live thị trường Việt Nam"><i class="icon-svg"
+                                data-lucide="refresh-cw"></i></button>
                     </div>
                 </div>
             </div>
             <div id="goldModalPreview" class="asset-modal-preview">
-                <div>Tổng giá trị: <strong id="goldPreviewVal">0 ₫</strong> ≈ <strong id="goldPreviewKRW">0 ₩</strong></div>
+                <div>Tổng giá trị: <strong id="goldPreviewVal">0 ₫</strong> ≈ <strong id="goldPreviewKRW">0 ₩</strong>
+                </div>
                 <div>Lợi nhuận: <strong id="goldPreviewPnL">0% (0 ₫)</strong></div>
             </div>
             <input type="hidden" id="editingGoldId" value="">
@@ -1264,20 +1322,24 @@
         <section class="ratio-modal-card asset-modal-card debt-modal-card" role="dialog" aria-modal="true">
             <div class="ratio-modal-header">
                 <h3 id="debtModalTitle">Thêm Ghi Chú Khoản Vay / Nợ</h3>
-                <button type="button" class="ratio-modal-close" id="btnCloseDebtModal" onclick="closeAssetDebtNoteModal(); event.stopPropagation();" title="Đóng">
+                <button type="button" class="ratio-modal-close" id="btnCloseDebtModal"
+                    onclick="closeAssetDebtNoteModal(); event.stopPropagation();" title="Đóng">
                     <i class="icon-svg" data-lucide="x"></i>
                 </button>
             </div>
-            <p class="ratio-modal-desc">Ghi chép ai vay tiền hoặc các khoản nợ chưa được hoàn trả để theo dõi và thu hồi thuận tiện.</p>
+            <p class="ratio-modal-desc">Ghi chép ai vay tiền hoặc các khoản nợ chưa được hoàn trả để theo dõi và thu hồi
+                thuận tiện.</p>
             <div class="ratio-modal-body">
                 <!-- Loại: Cho vay vs Đi vay -->
                 <div class="ratio-item-row debt-type-row">
                     <span class="asset-field-label">Phân loại</span>
                     <div class="debt-type-toggle-group">
-                        <button type="button" class="debt-type-btn active" id="btnDebtTypeLend" onclick="selectDebtType('lend')">
+                        <button type="button" class="debt-type-btn active" id="btnDebtTypeLend"
+                            onclick="selectDebtType('lend')">
                             <i class="icon-svg" data-lucide="arrow-up-right"></i> <span>Cho vay (Phải thu)</span>
                         </button>
-                        <button type="button" class="debt-type-btn" id="btnDebtTypeBorrow" onclick="selectDebtType('borrow')">
+                        <button type="button" class="debt-type-btn" id="btnDebtTypeBorrow"
+                            onclick="selectDebtType('borrow')">
                             <i class="icon-svg" data-lucide="arrow-down-left"></i> <span>Đi vay (Cần trả)</span>
                         </button>
                     </div>
@@ -1294,22 +1356,27 @@
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Số tiền</span>
                     <div style="display:flex; gap:8px; width:100%;">
-                        <input type="number" min="0" step="any" id="inputDebtAmount" placeholder="" class="asset-text-field" style="flex:1;" oninput="calcDebtModalPreview()">
+                        <input type="number" min="0" step="any" id="inputDebtAmount" placeholder=""
+                            class="asset-text-field" style="flex:1;" oninput="calcDebtModalPreview()">
                         <div class="debt-currency-dropdown" id="debtCurrencyDropdown">
-                            <button type="button" class="debt-currency-trigger" id="debtCurrencyTrigger" onclick="toggleDebtCurrencyDropdown()" aria-expanded="false">
+                            <button type="button" class="debt-currency-trigger" id="debtCurrencyTrigger"
+                                onclick="toggleDebtCurrencyDropdown()" aria-expanded="false">
                                 <span class="currency-selected-label" id="debtCurrencySelectedLabel">₫ VND</span>
                                 <i class="icon-svg currency-chevron" data-lucide="chevron-down"></i>
                             </button>
                             <div class="debt-currency-menu" id="debtCurrencyMenu">
-                                <div class="debt-currency-option active" data-val="VND" onclick="selectDebtCurrencyOption('VND', '₫ VND')">
+                                <div class="debt-currency-option active" data-val="VND"
+                                    onclick="selectDebtCurrencyOption('VND', '₫ VND')">
                                     <span class="currency-opt-text">₫ VND</span>
                                     <i class="icon-svg check-icon" data-lucide="check"></i>
                                 </div>
-                                <div class="debt-currency-option" data-val="KRW" onclick="selectDebtCurrencyOption('KRW', '₩ KRW')">
+                                <div class="debt-currency-option" data-val="KRW"
+                                    onclick="selectDebtCurrencyOption('KRW', '₩ KRW')">
                                     <span class="currency-opt-text">₩ KRW</span>
                                     <i class="icon-svg check-icon" data-lucide="check"></i>
                                 </div>
-                                <div class="debt-currency-option" data-val="USD" onclick="selectDebtCurrencyOption('USD', '$ USD')">
+                                <div class="debt-currency-option" data-val="USD"
+                                    onclick="selectDebtCurrencyOption('USD', '$ USD')">
                                     <span class="currency-opt-text">$ USD</span>
                                     <i class="icon-svg check-icon" data-lucide="check"></i>
                                 </div>
@@ -1334,7 +1401,8 @@
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Trạng thái</span>
                     <div class="debt-status-dropdown" id="debtStatusDropdown">
-                        <button type="button" class="debt-status-trigger" id="debtStatusTrigger" onclick="toggleDebtStatusDropdown()" aria-expanded="false">
+                        <button type="button" class="debt-status-trigger" id="debtStatusTrigger"
+                            onclick="toggleDebtStatusDropdown()" aria-expanded="false">
                             <span class="status-trigger-content">
                                 <span class="status-option-dot pending" id="debtStatusTriggerDot"></span>
                                 <span class="status-selected-label" id="debtStatusSelectedLabel">Chưa hoàn trả</span>
@@ -1342,21 +1410,24 @@
                             <i class="icon-svg status-chevron" data-lucide="chevron-down"></i>
                         </button>
                         <div class="debt-status-menu" id="debtStatusMenu">
-                            <div class="debt-status-option active" data-val="pending" onclick="selectDebtStatusOption('pending', 'Chưa hoàn trả')">
+                            <div class="debt-status-option active" data-val="pending"
+                                onclick="selectDebtStatusOption('pending', 'Chưa hoàn trả')">
                                 <div class="status-opt-left">
                                     <span class="status-option-dot pending"></span>
                                     <span class="status-opt-text">Chưa hoàn trả</span>
                                 </div>
                                 <i class="icon-svg check-icon" data-lucide="check"></i>
                             </div>
-                            <div class="debt-status-option" data-val="partial" onclick="selectDebtStatusOption('partial', 'Trả một phần')">
+                            <div class="debt-status-option" data-val="partial"
+                                onclick="selectDebtStatusOption('partial', 'Trả một phần')">
                                 <div class="status-opt-left">
                                     <span class="status-option-dot partial"></span>
                                     <span class="status-opt-text">Trả một phần</span>
                                 </div>
                                 <i class="icon-svg check-icon" data-lucide="check"></i>
                             </div>
-                            <div class="debt-status-option" data-val="paid" onclick="selectDebtStatusOption('paid', 'Đã hoàn trả')">
+                            <div class="debt-status-option" data-val="paid"
+                                onclick="selectDebtStatusOption('paid', 'Đã hoàn trả')">
                                 <div class="status-opt-left">
                                     <span class="status-option-dot paid"></span>
                                     <span class="status-opt-text">Đã hoàn trả</span>
@@ -1371,12 +1442,14 @@
                 <!-- Ghi chú chi tiết -->
                 <div class="ratio-item-row" style="align-items: flex-start;">
                     <span class="asset-field-label" style="padding-top:6px;">Ghi chú chi tiết</span>
-                    <textarea id="inputDebtNotes" rows="3" class="asset-text-field" placeholder="" style="resize:vertical; min-height:64px; font-family:inherit;"></textarea>
+                    <textarea id="inputDebtNotes" rows="3" class="asset-text-field" placeholder=""
+                        style="resize:vertical; min-height:64px; font-family:inherit;"></textarea>
                 </div>
             </div>
 
             <div id="debtModalPreview" class="asset-modal-preview">
-                <div>Quy đổi hiển thị: <strong id="debtPreviewConverted">0 ₫</strong> ≈ <strong id="debtPreviewAlt">0 ₩</strong></div>
+                <div>Quy đổi hiển thị: <strong id="debtPreviewConverted">0 ₫</strong> ≈ <strong id="debtPreviewAlt">0
+                        ₩</strong></div>
             </div>
 
             <input type="hidden" id="editingDebtId" value="">
@@ -1386,12 +1459,12 @@
             </div>
         </section>
     </div>
-<div class="toast" id="toast"></div>
+    <div class="toast" id="toast"></div>
     <script src="supabase.js?v=94"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="gsap.min.js?v=93"></script>
     <script src="countup.js?v=93"></script>
-    <script src="app.js?v=96"></script>
+    <script src="app.js?v=97"></script>
     <script src="portfolio.js?v=96"></script>
 </body>
 

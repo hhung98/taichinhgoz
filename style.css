@@ -6822,15 +6822,26 @@ select.goal-currency-select option {
 }
 
 /* 2. Center Nav Items */
+/* 2. Center Nav Items with Ghost Glow & Floating Tubelight Effect */
 .header-nav-list {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 4px;
-    background: var(--bg-card);
-    padding: 4px 6px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 0 1px 1px rgba(255, 255, 255, 0.8);
     flex-shrink: 0;
+}
+
+[data-theme="dark"] .header-nav-list {
+    background: rgba(17, 24, 39, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .header-nav-item {
@@ -6838,49 +6849,38 @@ select.goal-currency-select option {
     align-items: center;
     gap: 8px;
     padding: 8px 14px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: none;
-    background: transparent;
+    background: transparent !important;
     color: var(--text-secondary);
     font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
     text-decoration: none;
     position: relative;
+    z-index: 3;
 }
 
-/* Inactive item hover: Clean contrast, never white on white */
+/* Inactive item hover: Clean contrast */
 .header-nav-item:hover:not(.active) {
     color: var(--text-primary);
-    background: rgba(0, 184, 148, 0.09);
 }
 
 [data-theme="light"] .header-nav-item:hover:not(.active) {
     color: #0f172a;
-    background: rgba(0, 184, 148, 0.08);
 }
 
 .header-nav-item:hover:not(.active) .nav-item-icon {
     color: var(--accent-primary);
 }
 
-/* Active item: Solid teal/primary, stays solid and crystal clear when hovered */
+/* Active item: White text over sliding ghost pill */
 .header-nav-item.active,
 [data-theme="light"] .header-nav-item.active {
-    background: var(--accent-primary) !important;
     color: #ffffff !important;
     font-weight: 700;
-    box-shadow: 0 2px 8px var(--accent-primary-glow);
-}
-
-.header-nav-item.active:hover,
-[data-theme="light"] .header-nav-item.active:hover {
-    background: #00a884 !important;
-    color: #ffffff !important;
-    box-shadow: 0 3px 10px var(--accent-primary-glow);
-    transform: translateY(-1px);
 }
 
 .header-nav-item.active .nav-item-icon,
@@ -6888,6 +6888,38 @@ select.goal-currency-select option {
 [data-theme="light"] .header-nav-item.active .nav-item-icon,
 [data-theme="light"] .header-nav-item.active:hover .nav-item-icon {
     color: #ffffff !important;
+}
+
+/* Sliding Ghost Pill Indicator */
+.nav-ghost-pill {
+    position: absolute !important;
+    top: 4px !important;
+    bottom: 4px !important;
+    left: 0;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #00b894, #009374) !important;
+    box-shadow: 0 4px 18px -2px rgba(0, 184, 148, 0.5), 0 0 24px -2px rgba(0, 184, 148, 0.35) !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    opacity: 0;
+    transform: translateX(0);
+    transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), width 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
+}
+
+/* Tubelight Ghost Beam underneath */
+.nav-ghost-beam {
+    position: absolute !important;
+    bottom: -3px !important;
+    left: 0;
+    height: 3px !important;
+    border-radius: 999px !important;
+    background: #55efc4 !important;
+    box-shadow: 0 0 10px 2px #00b894, 0 0 20px 4px rgba(0, 184, 148, 0.7) !important;
+    pointer-events: none !important;
+    z-index: 2 !important;
+    opacity: 0;
+    transform: translateX(0);
+    transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), width 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
 }
 
 .header-nav-item .nav-item-icon {
@@ -10770,38 +10802,22 @@ select.goal-currency-select option {
     opacity: 1;
 }
 
-/* Border illumination tracking cursor */
-.spotlight-card::after,
-.metric-glass-card::after,
-.portfolio-sub-card::after,
-.portfolio-hero-card::after,
-.asset-section-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1.2px;
-    background: radial-gradient(
-        260px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
-        var(--spotlight-border, rgba(45, 212, 191, 0.45)),
-        transparent 70%
-    );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    z-index: 2;
+/* Border illumination tracking cursor (GPU-optimized, no CPU mask-composite) */
+.spotlight-card,
+.metric-glass-card,
+.portfolio-sub-card,
+.portfolio-hero-card,
+.asset-section-card {
+    transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
 }
 
-.spotlight-card:hover::after,
-.metric-glass-card:hover::after,
-.portfolio-sub-card:hover::after,
-.portfolio-hero-card:hover::after,
-.asset-section-card:hover::after {
-    opacity: 1;
+.spotlight-card:hover,
+.metric-glass-card:hover,
+.portfolio-sub-card:hover,
+.portfolio-hero-card:hover,
+.asset-section-card:hover {
+    border-color: var(--spotlight-border, rgba(45, 212, 191, 0.45)) !important;
+    box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.12), 0 0 20px -4px var(--spotlight-color, rgba(45, 212, 191, 0.15)) !important;
 }
 
 /* Pillar-specific luxury spotlight colors */

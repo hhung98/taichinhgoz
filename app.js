@@ -2621,100 +2621,54 @@ function invalidateTabCache(tabId) {
 window.invalidateTabCache = invalidateTabCache;
 
 function animateTabWaterfall(pane) {
-    if (!pane) return;
-    if (typeof gsap === 'undefined') return;
+    if (!pane || typeof gsap === 'undefined') return;
 
-    // Special dedicated handling for Budget Tab: sequential row-by-row horizontal cascade
+    let targets = [];
+
     if (pane.id === 'tab-budget') {
         const header = pane.querySelector('.panel-header');
-        const kpiCards = Array.from(pane.querySelectorAll('.budget-dash-item'));
-        const theadTr = pane.querySelector('.monthly-table thead tr');
-        const monthRows = Array.from(pane.querySelectorAll('#budgetTableBody tr'));
-        const tfootTr = pane.querySelector('#budgetTableFoot tr');
+        const dashGrid = pane.querySelector('.budget-dashboard-grid');
+        const tableCard = pane.querySelector('.budget-table-container');
         const legend = pane.querySelector('.table-legend');
-
-        const targets = [];
         if (header) targets.push(header);
-        targets.push(...kpiCards);
-        if (theadTr) targets.push(theadTr);
-        targets.push(...monthRows);
-        if (tfootTr) targets.push(tfootTr);
+        if (dashGrid) targets.push(dashGrid);
+        if (tableCard) targets.push(tableCard);
         if (legend) targets.push(legend);
-
-        const visibleTargets = targets.filter(el => {
-            if (!el) return false;
-            const disp = window.getComputedStyle(el).display;
-            return disp !== 'none';
-        });
-
-        if (visibleTargets.length === 0) return;
-
-        gsap.killTweensOf(visibleTargets);
-        gsap.fromTo(
-            visibleTargets,
-            {
-                y: 8,
-                autoAlpha: 0,
-            },
-            {
-                y: 0,
-                autoAlpha: 1,
-                duration: 0.22,
-                stagger: 0.018, // 18ms smooth wave cascade (header -> 4 KPIs -> thead -> 12 month rows -> footer -> legend)
-                ease: 'power2.out',
-                force3D: true,
-                clearProps: 'transform,opacity,visibility',
-            }
-        );
-        return;
-    }
-
-    // 1. Look for explicit waterfall items first (highest priority, Jinil B2B Portal pattern)
-    let targets = Array.from(pane.querySelectorAll('.waterfall-item, [data-waterfall]'));
-
-    // 2. If no explicit targets found, smart-select discrete functional components instead of large outer wrappers
-    if (targets.length === 0) {
-        if (pane.id === 'tab-overview') {
-            targets = Array.from(pane.querySelectorAll('.overview-header-bar, .exchange-tri-grid, .overview-stats-grid, .overview-charts-grid'));
-        } else if (pane.id === 'tab-assets') {
-            targets = Array.from(pane.querySelectorAll('.portfolio-hero-card, .asset-section-card'));
+    } else if (pane.id === 'tab-overview') {
+        targets = Array.from(pane.querySelectorAll('.overview-header-bar, .exchange-tri-grid, .overview-stats-grid, .overview-charts-grid'));
+    } else if (pane.id === 'tab-assets') {
+        targets = Array.from(pane.querySelectorAll('.portfolio-hero-card, .asset-section-card'));
+    } else {
+        const wrapper = pane.querySelector('section, .panel');
+        if (wrapper && wrapper.children && wrapper.children.length > 0) {
+            targets = Array.from(wrapper.children);
         } else {
-            // General fallback: inspect children of section wrapper so we never animate a giant slab
-            const wrapper = pane.querySelector('section, .panel');
-            if (wrapper && wrapper.children && wrapper.children.length > 0) {
-                targets = Array.from(wrapper.children);
-            } else {
-                targets = Array.from(pane.children);
-            }
+            targets = Array.from(pane.children);
         }
     }
 
-    // Limit to 8 targets max for silky 60-120 FPS performance (from Jinil B2B Portal)
+    // Limit to 6 items max for buttery 120 FPS
     targets = targets.filter(el => {
         if (!el) return false;
-        // Never animate outer container sections as a single mass
-        if (el.classList.contains('budget-section') || el.classList.contains('panel-header-actions')) return false;
-        const disp = window.getComputedStyle(el).display;
-        return disp !== 'none' && !el.classList.contains('pin-overlay') && !el.classList.contains('auth-overlay');
-    }).slice(0, 8);
+        return window.getComputedStyle(el).display !== 'none';
+    }).slice(0, 6);
 
     if (targets.length === 0) return;
 
-    // Kill any in-flight tweens on targets to prevent frame drops on rapid tab switching
+    _currentWaterfallTargets = targets;
     gsap.killTweensOf(targets);
 
-    // Hardware-accelerated fromTo cascade with silky Jinil B2B physics (subtle 10px lift, 240ms duration, 25ms stagger)
     gsap.fromTo(
         targets,
         {
-            y: 10,
+            y: 8,
             autoAlpha: 0,
         },
         {
             y: 0,
             autoAlpha: 1,
-            duration: 0.24,
-            stagger: 0.025,
+            duration: 0.2,
+            stagger: 0.02,
             ease: 'power2.out',
             force3D: true,
             clearProps: 'transform,opacity,visibility',
@@ -2722,36 +2676,62 @@ function animateTabWaterfall(pane) {
     );
 }
 
+let _currentWaterfallTargets = [];
+
+function updateHeaderGhostNav(btn) {
+    if (!btn) btn = document.querySelector('.header-nav-item.active');
+    if (!btn) return;
+    const pill = document.getElementById('navGhostPill');
+    const beam = document.getElementById('navGhostBeam');
+    if (!pill || !beam) return;
+
+    const left = btn.offsetLeft;
+    const width = btn.offsetWidth;
+    pill.style.transform = `translateX(${left}px)`;
+    pill.style.width = `${width}px`;
+    pill.style.opacity = '1';
+
+    const beamWidth = Math.max(28, width * 0.58);
+    const beamLeft = left + (width - beamWidth) / 2;
+    beam.style.transform = `translateX(${beamLeft}px)`;
+    beam.style.width = `${beamWidth}px`;
+    beam.style.opacity = '1';
+}
+window.updateHeaderGhostNav = updateHeaderGhostNav;
+
 function switchTab(tabId) {
     if (activeTab === tabId && document.getElementById('tab-' + tabId)?.classList.contains('active')) {
         return;
     }
     activeTab = tabId;
 
-    // Cancel any pending animation frame
     if (_tabAnimFrame) cancelAnimationFrame(_tabAnimFrame);
 
-    // 1. Hide all tab panes immediately and cancel running animations
+    // Instant kill of active tweens only (0ms instead of querying 1300+ elements)
+    if (_currentWaterfallTargets.length > 0 && typeof gsap !== 'undefined') {
+        gsap.killTweensOf(_currentWaterfallTargets);
+        _currentWaterfallTargets = [];
+    }
+
+    // 1. Hide all tab panes immediately
     document.querySelectorAll('.tab-pane').forEach(pane => {
         pane.classList.remove('active');
-        if (typeof gsap !== 'undefined') {
-            gsap.killTweensOf(pane.querySelectorAll('*'));
-        }
     });
 
-    // 2. Activate target tab pane
+    // 2. Activate target tab pane immediately (0ms)
     const selectedPane = document.getElementById('tab-' + tabId);
     if (selectedPane) {
         selectedPane.classList.add('active');
     }
 
-    // 3. Update desktop header tabs active state
+    // 3. Update desktop header tabs active state & slide ghost indicator
     document.querySelectorAll('.header-nav-item').forEach(btn => {
         btn.classList.remove('active');
     });
     const headerBtn = document.getElementById('h-nav-' + tabId);
     if (headerBtn) {
         headerBtn.classList.add('active');
+        updateHeaderGhostNav(headerBtn);
     }
 
     // 4. Update overview quick sub-tab buttons
@@ -2788,7 +2768,7 @@ function switchTab(tabId) {
         if (typeof refreshIcons === 'function') refreshIcons();
     }
 
-    // 7. Trigger silky-smooth 60fps GSAP waterfall transition on next animation frame
+    // 7. Trigger hardware-accelerated GSAP waterfall transition on next animation frame
     _tabAnimFrame = requestAnimationFrame(() => {
         animateTabWaterfall(selectedPane);
     });
@@ -3878,22 +3858,66 @@ init();
 // 2. ClickSpark: tactile micro-particle burst on click
 // 3. Magnet: smooth magnetic cursor attraction for header buttons
 // ==========================================================================
-function initReactBitsSuite() {
-    // 1. Spotlight Card: Event delegation for silky-smooth 60-120 FPS cursor tracking
-    document.addEventListener('mousemove', (e) => {
-        const card = e.target.closest('.spotlight-card, .metric-glass-card, .portfolio-sub-card, .portfolio-hero-card, .asset-section-card');
-        if (!card) return;
-        const rect = card.getBoundingClientRect();
-        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+function initHeaderGhostNav() {
+    const navList = document.querySelector('.header-nav-list');
+    if (!navList) return;
+
+    if (!document.getElementById('navGhostPill')) {
+        const pill = document.createElement('div');
+        pill.className = 'nav-ghost-pill';
+        pill.id = 'navGhostPill';
+        navList.appendChild(pill);
+    }
+    if (!document.getElementById('navGhostBeam')) {
+        const beam = document.createElement('div');
+        beam.className = 'nav-ghost-beam';
+        beam.id = 'navGhostBeam';
+        navList.appendChild(beam);
+    }
+
+    const items = navList.querySelectorAll('.header-nav-item');
+    items.forEach(item => {
+        item.addEventListener('mouseenter', () => updateHeaderGhostNav(item));
+    });
+    navList.addEventListener('mouseleave', () => {
+        const active = navList.querySelector('.header-nav-item.active');
+        updateHeaderGhostNav(active);
+    });
+
+    window.addEventListener('resize', () => {
+        const active = navList.querySelector('.header-nav-item.active');
+        updateHeaderGhostNav(active);
     }, { passive: true });
 
-    // 2. ClickSpark: Tactile micro-particle spark burst on button clicks
+    setTimeout(() => {
+        const active = navList.querySelector('.header-nav-item.active');
+        updateHeaderGhostNav(active);
+    }, 60);
+}
+
+function initReactBitsSuite() {
+    // 1. Spotlight Card: Throttled with RAF for 120 FPS buttery smoothness
+    let _spotlightRaf = null;
+    document.addEventListener('mousemove', (e) => {
+        if (_spotlightRaf) return;
+        _spotlightRaf = requestAnimationFrame(() => {
+            _spotlightRaf = null;
+            const card = e.target.closest('.spotlight-card, .metric-glass-card, .portfolio-sub-card, .portfolio-hero-card, .asset-section-card');
+            if (!card) return;
+            const rect = card.getBoundingClientRect();
+            card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+            card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        });
+    }, { passive: true });
+
+    // 2. ClickSpark: Tactile micro-particle spark burst on action button clicks (excludes tab navs)
     document.addEventListener('pointerdown', (e) => {
-        const trigger = e.target.closest('button, .cur-btn, .ov-tab-btn, .nav-tab, .portfolio-sub-card, .metric-glass-card, .badge-pro, .user-badge, .btn-primary-add, .debt-type-btn');
+        if (e.target.closest('.header-nav-item, .mobile-bottom-nav a, .ov-tab-btn')) return;
+
+        const trigger = e.target.closest('button, .cur-btn, .portfolio-sub-card, .badge-pro, .user-badge, .btn-primary-add, .debt-type-btn');
         if (!trigger) return;
 
-        const count = 7;
+        const count = 6;
         const colors = ['#2dd4bf', '#38bdf8', '#818cf8', '#f59e0b', '#34d399'];
         for (let i = 0; i < count; i++) {
             const spark = document.createElement('span');
@@ -3905,7 +3929,7 @@ function initReactBitsSuite() {
             document.body.appendChild(spark);
 
             const angle = (i / count) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
-            const dist = 22 + Math.random() * 16;
+            const dist = 20 + Math.random() * 14;
             const destX = Math.cos(angle) * dist;
             const destY = Math.sin(angle) * dist;
 
@@ -3915,12 +3939,12 @@ function initReactBitsSuite() {
                     y: destY,
                     scale: 0,
                     opacity: 0,
-                    duration: 0.36,
+                    duration: 0.32,
                     ease: 'power2.out',
                     onComplete: () => spark.remove()
                 });
             } else {
-                setTimeout(() => spark.remove(), 350);
+                setTimeout(() => spark.remove(), 320);
             }
         }
     });
@@ -3944,5 +3968,8 @@ function initReactBitsSuite() {
             });
         });
     }
+
+    // 4. Initialize Sliding Ghost Nav
+    initHeaderGhostNav();
 }
 initReactBitsSuite();
