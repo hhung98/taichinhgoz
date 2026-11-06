@@ -2332,44 +2332,146 @@ function getAllocationLegendHTML(data) {
     return '';
 }
 
-function drawAllocationBars(containerId, data) {
+function drawAllocationCard(containerId, data, title, targetLiving, targetReserve, targetInvest) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     const total = data.reduce((sum, item) => sum + item.value, 0);
     if (total <= 0) {
-        container.innerHTML = '<div class="pie-empty allocation-empty">Chưa có dữ liệu</div>';
+        container.innerHTML = '<div class="pie-empty allocation-empty" style="padding:28px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Chưa có dữ liệu giao dịch</div>';
         return;
     }
 
+    const expVal = data[0].value;
+    const resVal = data[1].value;
+    const invVal = data[2].value;
+
+    const pExp = Math.round((expVal / total) * 100);
+    const pRes = Math.round((resVal / total) * 100);
+    const pInv = Math.max(0, 100 - pExp - pRes);
+
     const cur = window.displayCurrency || 'KRW';
-    const rows = data.map(item => {
-        const percent = Math.round((item.value / total) * 100);
-        const convertedVal = (typeof window.convertCurrency === 'function')
-            ? window.convertCurrency(item.value, 'KRW', cur)
-            : item.value;
-        const displayVal = (typeof window.fmtDisplayCur === 'function')
-            ? window.fmtDisplayCur(convertedVal, cur)
-            : `${fmtFull(Math.round(convertedVal))} ${cur}`;
+    const convert = (val) => {
+        const c = (typeof window.convertCurrency === 'function')
+            ? window.convertCurrency(val, 'KRW', cur)
+            : val;
+        return (typeof window.fmtDisplayCur === 'function')
+            ? window.fmtDisplayCur(c)
+            : `${Number(c).toLocaleString('vi-VN')} ${cur}`;
+    };
 
-        return `<div class="allocation-bar-row">
-            <div class="allocation-bar-heading">
-                <span><i style="background:${item.color}"></i>${item.label}</span>
-                <strong>${percent}%</strong>
-            </div>
-            <div class="allocation-bar-track">
-                <div class="allocation-bar-fill" style="--bar-width:${percent}%; --bar-color:${item.color}"></div>
-            </div>
-            <div class="allocation-bar-value">${displayVal}</div>
-        </div>`;
-    }).join('');
+    const fExp = convert(expVal);
+    const fRes = convert(resVal);
+    const fInv = convert(invVal);
 
-    container.innerHTML = `<div class="allocation-bar-chart">${rows}</div>`;
+    // Deltas vs Targets
+    const diffExp = pExp - targetLiving;
+    const diffRes = pRes - targetReserve;
+    const diffInv = pInv - targetInvest;
+
+    const badgeExp = diffExp <= 0 
+        ? `<span class="alloc-delta-badge pos">✓ Tiết kiệm tốt (${diffExp}%)</span>` 
+        : `<span class="alloc-delta-badge neg">▲ Vượt mức (+${diffExp}%)</span>`;
+
+    const badgeRes = diffRes >= 0 
+        ? `<span class="alloc-delta-badge pos">✓ An toàn (+${diffRes}%)</span>` 
+        : `<span class="alloc-delta-badge info">Thiếu (${diffRes}%)</span>`;
+
+    const badgeInv = diffInv >= 0 
+        ? `<span class="alloc-delta-badge pos">★ Vượt mục tiêu (+${diffInv}%)</span>` 
+        : `<span class="alloc-delta-badge info">Thiếu (${diffInv}%)</span>`;
+
+    const savedPct = pRes + pInv;
+    const tipText = pExp <= targetLiving 
+        ? `Kiểm soát chi tiêu xuất sắc! Bạn đang giữ lại <strong>${savedPct}%</strong> thu nhập cho Dự phòng & Đầu tư.`
+        : `Chi tiêu đang chiếm <strong>${pExp}%</strong> thu nhập (vượt ngưỡng mục tiêu ${targetLiving}%).`;
+
+    container.innerHTML = `
+        <div class="pie-card-header">
+            <h4 class="pie-card-title">${title}</h4>
+            <span class="pie-card-total-pill" title="Tổng thu nhập đã phân bổ">Tổng thu: ${convert(total)}</span>
+        </div>
+
+        <!-- 1. Continuous Stacked Allocation Ribbon -->
+        <div class="stacked-ribbon-container">
+            <div class="ribbon-segment expense" style="width: ${pExp}%;" title="Chi tiêu: ${pExp}% (${fExp})"></div>
+            <div class="ribbon-segment reserve" style="width: ${pRes}%;" title="Dự phòng: ${pRes}% (${fRes})"></div>
+            <div class="ribbon-segment invest" style="width: ${pInv}%;" title="Đầu tư: ${pInv}% (${fInv})"></div>
+        </div>
+
+        <!-- 2. Breakdown Cards (Target vs Actual) -->
+        <div class="alloc-breakdown-list">
+            <!-- Chi tiêu -->
+            <div class="alloc-item-card">
+                <div class="alloc-item-top">
+                    <span class="alloc-item-name"><span class="alloc-dot expense"></span> Chi tiêu</span>
+                    <div class="alloc-item-values">
+                        <span class="alloc-amount">${fExp}</span>
+                        <span class="alloc-pct-strong" style="color:#f43f5e;">${pExp}%</span>
+                        <span class="alloc-target-hint">/ Mục tiêu: ${targetLiving}%</span>
+                    </div>
+                </div>
+                <div class="alloc-item-bottom">
+                    <div class="alloc-mini-track">
+                        <div class="alloc-mini-fill expense" style="width: ${Math.min(100, pExp)}%;"></div>
+                        <div class="alloc-target-marker" style="left: ${Math.min(100, targetLiving)}%;" title="Mục tiêu: ${targetLiving}%"></div>
+                    </div>
+                    ${badgeExp}
+                </div>
+            </div>
+
+            <!-- Dự phòng -->
+            <div class="alloc-item-card">
+                <div class="alloc-item-top">
+                    <span class="alloc-item-name"><span class="alloc-dot reserve"></span> Dự phòng</span>
+                    <div class="alloc-item-values">
+                        <span class="alloc-amount">${fRes}</span>
+                        <span class="alloc-pct-strong" style="color:#f59e0b;">${pRes}%</span>
+                        <span class="alloc-target-hint">/ Mục tiêu: ${targetReserve}%</span>
+                    </div>
+                </div>
+                <div class="alloc-item-bottom">
+                    <div class="alloc-mini-track">
+                        <div class="alloc-mini-fill reserve" style="width: ${Math.min(100, pRes)}%;"></div>
+                        <div class="alloc-target-marker" style="left: ${Math.min(100, targetReserve)}%;" title="Mục tiêu: ${targetReserve}%"></div>
+                    </div>
+                    ${badgeRes}
+                </div>
+            </div>
+
+            <!-- Đầu tư -->
+            <div class="alloc-item-card">
+                <div class="alloc-item-top">
+                    <span class="alloc-item-name"><span class="alloc-dot invest"></span> Đầu tư</span>
+                    <div class="alloc-item-values">
+                        <span class="alloc-amount">${fInv}</span>
+                        <span class="alloc-pct-strong" style="color:#00b894;">${pInv}%</span>
+                        <span class="alloc-target-hint">/ Mục tiêu: ${targetInvest}%</span>
+                    </div>
+                </div>
+                <div class="alloc-item-bottom">
+                    <div class="alloc-mini-track">
+                        <div class="alloc-mini-fill invest" style="width: ${Math.min(100, pInv)}%;"></div>
+                        <div class="alloc-target-marker" style="left: ${Math.min(100, targetInvest)}%;" title="Mục tiêu: ${targetInvest}%"></div>
+                    </div>
+                    ${badgeInv}
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Smart Insight Box -->
+        <div class="alloc-insight-tip">
+            <span class="alloc-insight-icon">💡</span>
+            <span>${tipText}</span>
+        </div>
+    `;
 }
 
 renderPieCharts = function () {
     const yearLabel = document.getElementById('pieYearLabel');
     if (yearLabel) yearLabel.textContent = budgetYear;
+    const overYear = document.getElementById('overviewYearLabel');
+    if (overYear) overYear.textContent = budgetYear;
 
     let yearlyIncome = 0;
     let yearlyExpense = 0;
@@ -2387,13 +2489,17 @@ renderPieCharts = function () {
         allExpense += Number(data.expense || 0);
     });
 
-    // Dynamic ratios based on user-configured 50-30-20 or custom ratios
+    const targetLiving = budgetRatios.livingPct || 50;
+    const targetReserve = budgetRatios.reservePct || 30;
+    const targetInvest = budgetRatios.investPct || 20;
+
     const restPct = (budgetRatios.reservePct + budgetRatios.investPct) || 50;
     const resRatio = restPct > 0 ? (budgetRatios.reservePct / restPct) : 0.6;
 
     const yearlyBalance = Math.max(0, yearlyIncome - yearlyExpense);
     const yearlyReserve = Math.round(yearlyBalance * resRatio);
     const yearlyInvest = Math.max(0, yearlyBalance - yearlyReserve);
+
     const allBalance = Math.max(0, allIncome - allExpense);
     const allReserve = Math.round(allBalance * resRatio);
     const allInvest = Math.max(0, allBalance - allReserve);
@@ -2409,8 +2515,8 @@ renderPieCharts = function () {
         { label: 'Đầu tư', value: allInvest, color: '#2dd4bf' }
     ];
 
-    drawAllocationBars('pieChartYearly', yearlyData);
-    drawAllocationBars('pieChartAllTime', allTimeData);
+    drawAllocationCard('pieChartYearly', yearlyData, `Năm ${budgetYear}`, targetLiving, targetReserve, targetInvest);
+    drawAllocationCard('pieChartAllTime', allTimeData, 'Tất cả các năm', targetLiving, targetReserve, targetInvest);
 
     const yearlyLegend = document.getElementById('pieLegendYearly');
     const allTimeLegend = document.getElementById('pieLegendAllTime');
