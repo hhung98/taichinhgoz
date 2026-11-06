@@ -6784,31 +6784,34 @@ select.goal-currency-select option {
 }
 
 .header-brand .brand-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #0984e3, #6c5ce7);
-    box-shadow: 0 3px 10px rgba(9, 132, 227, 0.35);
+    background: transparent;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .header-brand .brand-avatar img {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .header-brand .brand-title {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 1.1rem;
+    gap: 7px;
+    font-size: 1.22rem;
     font-weight: 800;
     color: var(--text-primary);
-    line-height: 1.1;
+    line-height: 1;
+    letter-spacing: -0.3px;
 }
 
 .header-brand .brand-subtitle {
