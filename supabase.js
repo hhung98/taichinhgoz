@@ -100,21 +100,23 @@ async function loadGoals() {
     if (error) throw error;
     return data.map(g => {
         const isVND = (g.currency === 'VND') || (g.amount_vnd && Number(g.amount_vnd) > 0);
-        const amountVND = g.amount_vnd ? Number(g.amount_vnd) : (isVND ? Number(g.target_amount) : null);
+        const amountVND = g.amount_vnd ? Number(g.amount_vnd) : (isVND && g.target_amount ? Number(g.target_amount) : null);
+        const amountKRW = Number(g.amount_krw) || 0;
+        const targetAmount = g.target_amount ? Number(g.target_amount) : (isVND ? amountVND : amountKRW);
         return {
             id: g.id,
             name: g.name,
-            amountKRW: Number(g.amount_krw),
+            amountKRW: amountKRW,
             amountVND: amountVND,
-            currency: isVND ? 'VND' : (g.currency || 'KRW'),
-            targetAmount: g.target_amount ? Number(g.target_amount) : (isVND ? amountVND : Number(g.amount_krw)),
+            currency: isVND ? 'VND' : 'KRW',
+            targetAmount: targetAmount,
             months: g.months_duration ? Number(g.months_duration) : 0,
             createdAt: g.created_at
         };
     });
 }
 
-async function saveGoal(name, amountKRW, months, currency = 'KRW', rawAmount = 0) {
+async function saveGoal(name, amountKRW, months, currency = 'VND', rawAmount = 0) {
     const monthsVal = (months && Number(months) > 0) ? Number(months) : 0;
     const amountVND = currency === 'VND' ? Number(rawAmount) : null;
     const targetAmount = Number(rawAmount) || (currency === 'VND' ? amountVND : amountKRW);

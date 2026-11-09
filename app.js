@@ -206,11 +206,13 @@ let _scrollRevealDone = false;
 function initScrollReveal() {
     if (_scrollRevealDone) return;
     _scrollRevealDone = true;
-    const targets = document.querySelectorAll(
-        '.exchange-shell, .summary-card, .financial-insight-card, .panel, .budget-dash-item, .pie-card, .goal-item'
-    );
-    // Mark all visible immediately — no stagger delay on first load
-    targets.forEach(el => {
+    // Structural layout panels stay static — NO hover lift or jumping shadows
+    document.querySelectorAll('.panel, .exchange-shell, .savings-goal-panel, .budget-section, .chart-panel, .settings-panel').forEach(el => {
+        el.classList.add('reveal-box', 'is-visible');
+        el.classList.remove('premium-card-hover');
+    });
+    // Only small interactive metric cards get subtle hover elevation
+    document.querySelectorAll('.summary-card, .financial-insight-card, .budget-dash-item, .pie-card').forEach(el => {
         el.classList.add('reveal-box', 'premium-card-hover', 'is-visible');
     });
 }
@@ -1250,13 +1252,18 @@ function enrichGoalsWithMeta(goals) {
     const metas = getGoalsMetaMap();
     return goals.map(g => {
         const meta = metas[g.id] || {};
-        const currency = g.currency || meta.currency || 'KRW';
+        const isVND = (g.currency === 'VND') || (meta.currency === 'VND') || (g.amount_vnd && Number(g.amount_vnd) > 0);
+        const currency = isVND ? 'VND' : (g.currency || meta.currency || 'KRW');
         const amountVND = (g.amountVND !== undefined && g.amountVND !== null)
-            ? g.amountVND
-            : (meta.amountVND !== undefined ? meta.amountVND : null);
+            ? Number(g.amountVND)
+            : (meta.amountVND !== undefined && meta.amountVND !== null
+                ? Number(meta.amountVND)
+                : (g.amount_vnd ? Number(g.amount_vnd) : (isVND && g.target_amount ? Number(g.target_amount) : null)));
         const amountKRW = (g.amountKRW !== undefined && g.amountKRW !== null)
-            ? g.amountKRW
-            : (meta.amountKRW !== undefined ? meta.amountKRW : null);
+            ? Number(g.amountKRW)
+            : (meta.amountKRW !== undefined && meta.amountKRW !== null
+                ? Number(meta.amountKRW)
+                : Number(g.amount_krw) || 0);
         return {
             ...g,
             currency,
@@ -1266,11 +1273,18 @@ function enrichGoalsWithMeta(goals) {
     });
 }
 
+function onGoalCurrencyChange(sel) {
+    if (!sel) return;
+    localStorage.setItem('goz_goal_input_currency', sel.value);
+    previewGoalVND();
+}
+window.onGoalCurrencyChange = onGoalCurrencyChange;
+
 function previewGoalVND() {
-    const currency = document.getElementById('goalCurrency')?.value || 'KRW';
+    const currency = document.getElementById('goalCurrency')?.value || localStorage.getItem('goz_goal_input_currency') || 'VND';
     const raw = parseRawValue(document.getElementById('goalAmount')?.value);
     const amount = raw || 0;
-    const r = exchangeRate || 18.5;
+    const r = (window.exchangeRate && window.exchangeRate > 0) ? window.exchangeRate : 19.18;
     const previewEl = document.getElementById('goalVndPreview');
     if (!previewEl) return;
 
@@ -1285,10 +1299,11 @@ function previewGoalVND() {
         previewEl.textContent = `≈ ${fmtFull(Math.round(amount / r))} ₩`;
     }
 }
+window.previewGoalVND = previewGoalVND;
 
 async function addSavingsGoal() {
     const name = document.getElementById('goalName').value.trim();
-    const currency = document.getElementById('goalCurrency')?.value || 'KRW';
+    const currency = document.getElementById('goalCurrency')?.value || localStorage.getItem('goz_goal_input_currency') || 'VND';
     const rawAmount = parseRawValue(document.getElementById('goalAmount').value);
     const monthsInput = document.getElementById('goalMonths').value.trim();
     const months = monthsInput ? parseInt(monthsInput, 10) : 0;
@@ -1298,13 +1313,13 @@ async function addSavingsGoal() {
         return;
     }
 
-    const r = (exchangeRate && exchangeRate > 0) ? exchangeRate : 19.18;
+    const r = (window.exchangeRate && window.exchangeRate > 0) ? window.exchangeRate : 19.18;
     let amountKRW, amountVND;
     if (currency === 'VND') {
-        amountVND = rawAmount;
+        amountVND = Math.round(rawAmount);
         amountKRW = Math.round(rawAmount / r);
     } else {
-        amountKRW = rawAmount;
+        amountKRW = Math.round(rawAmount);
         amountVND = Math.round(rawAmount * r);
     }
 
@@ -1313,13 +1328,18 @@ async function addSavingsGoal() {
         goal.currency = currency;
         if (currency === 'VND') {
             goal.amountVND = amountVND;
-            delete goal.amountKRW;
+            goal.targetAmount = amountVND;
+            goal.amountKRW = amountKRW;
         } else {
             goal.amountKRW = amountKRW;
-            delete goal.amountVND;
+            goal.targetAmount = amountKRW;
+            goal.amountVND = amountVND;
         }
         saveGoalMeta(goal.id, { currency, amountVND: goal.amountVND, amountKRW: goal.amountKRW });
         savingsGoals.push(goal);
+        try {
+            localStorage.setItem('goz_cached_goals', JSON.stringify(savingsGoals));
+        } catch (e) { }
         document.getElementById('goalName').value = '';
         document.getElementById('goalAmount').value = '';
         document.getElementById('goalMonths').value = '';
@@ -1353,26 +1373,33 @@ async function toggleGoalCurrency(id) {
     g.currency = newCurr;
 
     if (newCurr === 'KRW') {
-        // Đổi sang gốc KRW: lấy giá trị tương đương KRW theo tỷ giá hiện tại và ghim làm gốc KRW mới
-        const currentVND = g.amountVND || g.amount_vnd || (g.amountKRW ? Math.round(g.amountKRW * r) : (g.amount_krw ? Math.round(g.amount_krw * r) : 0));
+        // Chuyển sang hiển thị gốc KRW
+        const currentVND = Number(g.amountVND) || Number(g.amount_vnd) || Number(g.targetAmount) || (g.amountKRW ? Math.round(g.amountKRW * r) : 0);
         g.amountKRW = r > 0 ? Math.round(currentVND / r) : 0;
-        delete g.amountVND;
+        g.targetAmount = g.amountKRW;
         if (typeof updateGoalInDB === 'function') {
-            updateGoalInDB(id, { currency: 'KRW', amount_krw: g.amountKRW, amount_vnd: null });
+            updateGoalInDB(id, { currency: 'KRW', amount_krw: g.amountKRW, target_amount: g.amountKRW });
         }
     } else {
-        // Đổi sang gốc VND: lấy giá trị tương đương VND theo tỷ giá hiện tại và ghim làm gốc VND mới
-        const currentKRW = g.amountKRW || g.amount_krw || (g.amountVND ? Math.round(g.amountVND / r) : 0);
-        g.amountVND = Math.round(currentKRW * r);
-        delete g.amountKRW;
+        // Chuyển lại về gốc VND: Giữ nguyên số tiền VND ban đầu nếu có, tránh sai lệch làm tròn
+        let vnd = Number(g.amountVND) || Number(g.amount_vnd) || Number(g.targetAmount);
+        if (!vnd || vnd <= 0) {
+            const currentKRW = Number(g.amountKRW) || Number(g.amount_krw) || 0;
+            vnd = Math.round(currentKRW * r);
+        }
+        g.amountVND = vnd;
+        g.targetAmount = vnd;
         if (typeof updateGoalInDB === 'function') {
-            updateGoalInDB(id, { currency: 'VND', amount_vnd: g.amountVND });
+            updateGoalInDB(id, { currency: 'VND', amount_vnd: vnd, target_amount: vnd });
         }
     }
 
     saveGoalMeta(id, { currency: newCurr, amountVND: g.amountVND, amountKRW: g.amountKRW });
+    try {
+        localStorage.setItem('goz_cached_goals', JSON.stringify(savingsGoals));
+    } catch (e) { }
     renderSavingsGoals();
-    showToast(`Đã đổi mục tiêu "${g.name}" sang gốc ${newCurr}`, 'info');
+    showToast(`Đã chuyển mục tiêu "${g.name}" sang gốc ${newCurr}`, 'info');
 }
 window.toggleGoalCurrency = toggleGoalCurrency;
 
@@ -1513,10 +1540,10 @@ function renderSavingsGoals() {
     updateGoalSourceUI();
 
     const goalCurrSelect = document.getElementById('goalCurrency');
-    if (goalCurrSelect && !goalCurrSelect.dataset.userChanged) {
-        const cur = window.displayCurrency || localStorage.getItem('goz_display_currency') || 'VND';
-        if (cur === 'VND' || cur === 'KRW') {
-            goalCurrSelect.value = cur;
+    if (goalCurrSelect) {
+        const preferred = localStorage.getItem('goz_goal_input_currency') || 'VND';
+        if (goalCurrSelect.value !== preferred && !goalCurrSelect.dataset.userActive) {
+            goalCurrSelect.value = preferred;
         }
     }
 
@@ -1799,7 +1826,7 @@ function renderMonthlyBudgetTable() {
         const expVal = exp ? fmtFullRaw(exp) : '';
         const expBadge = getExpensePctBadgeHtml(inc, exp);
 
-        rows += `<tr class="budget-month-row${isCurrent ? ' current-month-row' : ''}"${isCurrent ? ' style="background:rgba(108,92,231,0.08);"' : ''}>
+        rows += `<tr class="budget-month-row${isCurrent ? ' current-month-row' : ''}">
             <td>${MONTHS[m]}</td>
             <td><input class="income-input" type="text" inputmode="numeric" value="${incVal}" placeholder="₩" oninput="formatInputLive(this); onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-living">${inc ? fmtFull(living) : '-'}</td>

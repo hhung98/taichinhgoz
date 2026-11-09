@@ -452,8 +452,8 @@
                             <div class="goal-field goal-amount-wrapper">
                                 <span>Số tiền</span>
                                 <div class="goal-amount-box">
-                                    <select id="goalCurrency" class="goal-currency-select" onchange="this.dataset.userChanged='true'; previewGoalVND()">
-                                        <option value="VND">₫ VND</option>
+                                    <select id="goalCurrency" class="goal-currency-select" onchange="onGoalCurrencyChange(this)">
+                                        <option value="VND" selected>₫ VND</option>
                                         <option value="KRW">₩ KRW</option>
                                     </select>
                                     <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền"
@@ -868,15 +868,15 @@
                     </div>
                     <div class="table-legend waterfall-item">
                         <div class="table-legend-item">
-                            <div class="table-legend-dot" style="background:#74b9ff"></div> <span id="legendLiving">Sinh
+                            <div class="table-legend-dot" style="background:var(--accent-blue)"></div> <span id="legendLiving">Sinh
                                 hoạt 40%</span>
                         </div>
                         <div class="table-legend-item">
-                            <div class="table-legend-dot" style="background:#ff9f43"></div> <span id="legendReserve">Dự
+                            <div class="table-legend-dot" style="background:var(--accent-yellow)"></div> <span id="legendReserve">Dự
                                 phòng 40%</span>
                         </div>
                         <div class="table-legend-item">
-                            <div class="table-legend-dot" style="background:#a29bfe"></div> <span id="legendInvest">Đầu
+                            <div class="table-legend-dot" style="background:var(--accent-green)"></div> <span id="legendInvest">Đầu
                                 tư 20%</span>
                         </div>
                     </div>
