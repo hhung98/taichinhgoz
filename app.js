@@ -512,7 +512,7 @@ async function showApp() {
     renderAll();
     switchTab('overview');
     fetchExchangeRate();
-    setInterval(fetchExchangeRate, 1980000);
+    setInterval(fetchExchangeRate, 180000); // Cập nhật realtime mỗi 3 phút chuẩn theo APP JINIL
     registerSW();
 
     // 3. Silent background synchronization with Supabase (non-blocking)
@@ -726,7 +726,41 @@ function updateExchangeMetaUI() {
         lastUpdatedEl.textContent = timeStr + (isStale ? ' (Bản lưu gần nhất)' : '');
     }
     if (sourceEl) {
-        sourceEl.textContent = window.exchangeDataSourceName || 'Open Exchange Rates (Liên ngân hàng)';
+        sourceEl.textContent = window.exchangeDataSourceName || 'Yahoo Finance (Realtime)';
+    }
+}
+
+async function fetchYahooExchangeHistory() {
+    try {
+        const [krwRes, vndRes] = await Promise.all([
+            fetch('/api/yahoo/USDKRW=X?range=3mo&interval=1d'),
+            fetch('/api/yahoo/VND=X?range=3mo&interval=1d')
+        ]);
+        if (!krwRes.ok || !vndRes.ok) return;
+        const krwData = await krwRes.json();
+        const vndData = await vndRes.json();
+        const krwResult = krwData?.chart?.result?.[0];
+        const vndResult = vndData?.chart?.result?.[0];
+        if (!krwResult?.timestamp || !vndResult?.timestamp) return;
+
+        const ts = krwResult.timestamp;
+        const kCloses = krwResult.indicators?.quote?.[0]?.close || [];
+        const vCloses = vndResult.indicators?.quote?.[0]?.close || [];
+
+        for (let i = 0; i < ts.length; i++) {
+            const d = new Date(ts[i] * 1000).toISOString().slice(0, 10);
+            const k = kCloses[i];
+            const v = vCloses[i];
+            if (k && v && k > 0 && v > 0) {
+                const krwVndRate = parseFloat((v / k).toFixed(2));
+                const usdVndRate = Math.round(v);
+                const usdKrwRate = parseFloat(k.toFixed(1));
+                VERIFIED_EXCHANGE_HISTORY[d] = [krwVndRate, usdVndRate, usdKrwRate];
+            }
+        }
+        renderExchangeRateChart();
+    } catch (e) {
+        console.warn('fetchYahooExchangeHistory error:', e);
     }
 }
 
@@ -738,28 +772,40 @@ async function fetchExchangeRate() {
     let isSuccess = false;
     let sourceName = '';
 
-    // Source 1: Open Exchange Rates API (Free, Instantaneous, accurate real-time market cross-rates)
+    // Source 1: Yahoo Finance Realtime (Nguồn chuẩn từ APP JINIL - Cập nhật 1 phút)
     try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD');
-        if (res.ok) {
-            const data = await res.json();
-            if (data && data.rates && data.rates.VND && data.rates.KRW) {
-                const u = parseFloat(data.rates.VND);
-                const uk = parseFloat(data.rates.KRW);
-                const k = u / uk;
+        const krwUrl = '/api/yahoo/USDKRW=X?range=1d&interval=1m';
+        const vndUrl = '/api/yahoo/VND=X?range=1d&interval=1m';
+        const [krwRes, vndRes] = await Promise.all([
+            fetch(krwUrl),
+            fetch(vndUrl)
+        ]);
 
-                exchangeRate = parseFloat(k.toFixed(2));
-                usdRate = Math.round(u);
-                window.exchangeRate = exchangeRate;
-                window.usdRate = usdRate;
-                window.usdKrwRate = parseFloat(uk.toFixed(1));
-                exchangeStatus = 'live';
-                sourceName = 'Open Exchange Rates (Liên ngân hàng)';
-                isSuccess = true;
+        if (krwRes.ok && vndRes.ok) {
+            const krwData = await krwRes.json();
+            const vndData = await vndRes.json();
+            const krwMeta = krwData?.chart?.result?.[0]?.meta;
+            const vndMeta = vndData?.chart?.result?.[0]?.meta;
+            if (krwMeta && vndMeta) {
+                const usdToKrw = krwMeta.regularMarketPrice;
+                const usdToVnd = vndMeta.regularMarketPrice;
+                if (usdToKrw > 0 && usdToVnd > 0) {
+                    const krwToVnd = usdToVnd / usdToKrw;
+                    exchangeRate = parseFloat(krwToVnd.toFixed(2));
+                    usdRate = Math.round(usdToVnd);
+                    window.exchangeRate = exchangeRate;
+                    window.usdRate = usdRate;
+                    window.usdKrwRate = parseFloat(usdToKrw.toFixed(1));
+                    exchangeStatus = 'live';
+                    sourceName = 'Yahoo Finance (Nguồn APP JINIL)';
+                    isSuccess = true;
+                    // Tải lịch sử tỷ giá thực tế từ Yahoo Finance
+                    fetchYahooExchangeHistory();
+                }
             }
         }
     } catch (e) {
-        console.warn('Open.er-api failed, falling back to Twelve Data:', e.message);
+        console.warn('Yahoo Finance proxy failed, falling back to Twelve Data:', e.message);
     }
 
     // Source 2: Twelve Data (Secondary backup)
@@ -782,7 +828,33 @@ async function fetchExchangeRate() {
                 isSuccess = true;
             }
         } catch (e) {
-            console.warn('Twelve Data failed:', e.message);
+            console.warn('Twelve Data failed, trying Open.er-api:', e.message);
+        }
+    }
+
+    // Source 3: Open Exchange Rates (Tertiary backup)
+    if (!isSuccess) {
+        try {
+            const res = await fetch('https://open.er-api.com/v6/latest/USD');
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.rates && data.rates.VND && data.rates.KRW) {
+                    const u = parseFloat(data.rates.VND);
+                    const uk = parseFloat(data.rates.KRW);
+                    const k = u / uk;
+
+                    exchangeRate = parseFloat(k.toFixed(2));
+                    usdRate = Math.round(u);
+                    window.exchangeRate = exchangeRate;
+                    window.usdRate = usdRate;
+                    window.usdKrwRate = parseFloat(uk.toFixed(1));
+                    exchangeStatus = 'live';
+                    sourceName = 'Open Exchange Rates (Liên ngân hàng)';
+                    isSuccess = true;
+                }
+            }
+        } catch (e) {
+            console.warn('Open.er-api failed:', e.message);
         }
     }
 
@@ -810,20 +882,20 @@ async function fetchExchangeRate() {
 
         if (cached && cached.krw) {
             exchangeRate = cached.krw;
-            usdRate = cached.usd || 25744;
+            usdRate = cached.usd || 25528;
             window.exchangeRate = exchangeRate;
             window.usdRate = usdRate;
             window.usdKrwRate = cached.usdKrw || (usdRate / exchangeRate);
             exchangeStatus = 'stale';
             window.exchangeLastUpdatedTime = cached.timestamp || Date.now();
-            window.exchangeDataSourceName = (cached.source || 'Open Exchange Rates') + ' (Cache offline)';
+            window.exchangeDataSourceName = (cached.source || 'Yahoo Finance') + ' (Cache offline)';
             updateRateUI(widget, statusEl, usdWidget, usdSubtext, 'Dữ liệu cũ', true);
         } else {
-            exchangeRate = 19.15;
-            usdRate = 25744;
+            exchangeRate = 18.98;
+            usdRate = 25528;
             window.exchangeRate = exchangeRate;
             window.usdRate = usdRate;
-            window.usdKrwRate = 1344.1;
+            window.usdKrwRate = 1345;
             exchangeStatus = 'stale';
             window.exchangeLastUpdatedTime = Date.now();
             window.exchangeDataSourceName = 'Mặc định (Dữ liệu cũ)';
