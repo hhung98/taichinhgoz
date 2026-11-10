@@ -1,3 +1,4 @@
+window.isPrivacyMode = localStorage.getItem('goz_privacy_mode') === 'true';
 // ===== State =====
 let monthlyBudget = (() => {
     try {
@@ -932,14 +933,27 @@ function renderWithoutTable() {
 }
 
 // ===== Formatters =====
-function fmtVND(v) { return v.toLocaleString('vi-VN') + ' ₫'; }
-function fmtKRW(v) { return v.toLocaleString('vi-VN') + ' ₩'; }
-function fmtFull(v) { return v.toLocaleString('vi-VN'); }
-function fmtFullRaw(v) { return v.toLocaleString('vi-VN'); }
+function fmtVND(v) { 
+    if (window.isPrivacyMode) return '••••••••';
+    return Number(v).toLocaleString('vi-VN') + ' ₫'; 
+}
+function fmtKRW(v) { 
+    if (window.isPrivacyMode) return '••••••••';
+    return Number(v).toLocaleString('vi-VN') + ' ₩'; 
+}
+function fmtFull(v) { 
+    if (window.isPrivacyMode) return '••••••••';
+    return Number(v).toLocaleString('vi-VN'); 
+}
+function fmtFullRaw(v) { 
+    if (window.isPrivacyMode) return '••••••••';
+    return Number(v).toLocaleString('vi-VN'); 
+}
 function fmtCompact(v) {
+    if (window.isPrivacyMode) return '••••';
     if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
     if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
-    return v.toLocaleString('vi-VN');
+    return Number(v).toLocaleString('vi-VN');
 }
 
 function makeSmoothPath(points) {
@@ -1821,9 +1835,9 @@ function renderMonthlyBudgetTable() {
         const isCurrent = budgetYear === new Date().getFullYear() && m === new Date().getMonth();
         const reserveDisplay = inc ? `${fmtFull(reserve)}<span class="cell-new-val">/ ${fmtFull(reserveFromBalance)}</span>` : '-';
         const investDisplay = inc ? `${fmtFull(invest)}<span class="cell-new-val">/ ${fmtFull(investFromBalance)}</span>` : '-';
-        // Extract raw number value to display normally, but formatted
-        const incVal = inc ? fmtFullRaw(inc) : '';
-        const expVal = exp ? fmtFullRaw(exp) : '';
+        // Extract raw number value to display normally, but formatted (masked in privacy mode)
+        const incVal = inc ? (window.isPrivacyMode ? '••••••••' : fmtFullRaw(inc)) : '';
+        const expVal = exp ? (window.isPrivacyMode ? '••••••••' : fmtFullRaw(exp)) : '';
         const expBadge = getExpensePctBadgeHtml(inc, exp);
 
         rows += `<tr class="budget-month-row${isCurrent ? ' current-month-row' : ''}">
@@ -2208,7 +2222,9 @@ function renderBudgetOverviewChart() {
                     } else {
                         labelY = point.y - 12;
                     }
-                    labelsSvg += `<text x="${Math.min(W - 34, Math.max(34, point.x))}" y="${Math.max(14, Math.min(H - 14, labelY))}" text-anchor="middle" class="budget-flow-value budget-flow-value-${cfg.cls}">${fmtCompact(vals[i])}</text>`;
+                    if (!window.isPrivacyMode) {
+                        labelsSvg += `<text x="${Math.min(W - 34, Math.max(34, point.x))}" y="${Math.max(14, Math.min(H - 14, labelY))}" text-anchor="middle" class="budget-flow-value budget-flow-value-${cfg.cls}">${fmtCompact(vals[i])}</text>`;
+                    }
                 }
             }
         });

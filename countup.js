@@ -68,7 +68,7 @@
         // Ensure tabular-nums font variant so digits never jitter horizontally
         el.style.fontVariantNumeric = 'tabular-nums';
 
-        if (window.isPrivacyMode) {
+        if (window.isPrivacyMode || localStorage.getItem('goz_privacy_mode') === 'true') {
             el.textContent = '••••••••';
             return;
         }

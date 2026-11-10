@@ -11207,3 +11207,12 @@ select.goal-currency-select option {
     transform: none !important;
     box-shadow: none !important;
 }
+
+
+/* Privacy mode table inputs */
+html.privacy-mode .income-input,
+html.privacy-mode .expense-input,
+body.privacy-mode .income-input,
+body.privacy-mode .expense-input {
+    letter-spacing: 2px;
+}

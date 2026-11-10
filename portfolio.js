@@ -25,6 +25,8 @@ let displayCurrency = localStorage.getItem('goz_display_currency') || 'KRW';
 window.displayCurrency = displayCurrency;
 window.updateOverviewCards = updateOverviewCards;
 let isPrivacyMode = localStorage.getItem('goz_privacy_mode') === 'true';
+window.isPrivacyMode = isPrivacyMode;
+document.documentElement.classList.toggle('privacy-mode', isPrivacyMode);
 let chartViewMode = 'combo'; // 'combo', 'bar', 'line'
 
 // Helper: Convert between currencies
@@ -86,7 +88,10 @@ window.setDisplayCurrency = function (cur) {
 // Privacy Mode (Lock icon toggle)
 window.togglePrivacyMode = function () {
     isPrivacyMode = !isPrivacyMode;
+    window.isPrivacyMode = isPrivacyMode;
     localStorage.setItem('goz_privacy_mode', isPrivacyMode);
+    document.documentElement.classList.toggle('privacy-mode', isPrivacyMode);
+    document.body.classList.toggle('privacy-mode', isPrivacyMode);
     const icon = document.getElementById('privacyIcon');
     const btn = document.getElementById('privacyToggleBtn');
     if (icon) {
@@ -97,8 +102,16 @@ window.togglePrivacyMode = function () {
         btn.classList.toggle('active', isPrivacyMode);
         btn.setAttribute('title', isPrivacyMode ? 'Đang khóa bảo mật số dư (Bấm để mở)' : 'Khóa bảo mật số dư (Bấm để ẩn)');
     }
+    // Complete sync across all tabs and components
     renderPortfolio();
     updateOverviewCards();
+    if (typeof window.renderAll === 'function') window.renderAll();
+    if (typeof window.renderSavingsGoals === 'function') window.renderSavingsGoals();
+    if (typeof window.renderPieCharts === 'function') window.renderPieCharts();
+    if (typeof window.renderMonthlyBudgetTable === 'function') window.renderMonthlyBudgetTable();
+    if (typeof window.renderBudgetDashboard === 'function') window.renderBudgetDashboard();
+    if (typeof window.renderDebtNotes === 'function') window.renderDebtNotes();
+
     if (typeof window.showToast === 'function') {
         window.showToast(isPrivacyMode ? 'Đã khóa bảo mật số dư' : 'Đã mở khóa hiển thị số dư', 'info');
     }
@@ -862,7 +875,8 @@ window.renderPortfolio = function () {
         const sign = diffUSD >= 0 ? '+' : '';
         const usdSign = diffUSD >= 0 ? '+$' : '-$';
         elCryptoNote.className = 'sub-card-note ' + (diffUSD >= 0 ? 'pos' : 'neg');
-        elCryptoNote.textContent = `${sign}${pct.toFixed(1)}% (${usdSign}${Math.round(Math.abs(diffUSD))})`;
+        const diffText = window.isPrivacyMode ? '••••' : `${usdSign}${Math.round(Math.abs(diffUSD))}`;
+        elCryptoNote.textContent = `${sign}${pct.toFixed(1)}% (${diffText})`;
     }
 
     const elStockPct = document.getElementById('heroStockPct');
@@ -875,7 +889,7 @@ window.renderPortfolio = function () {
         const pct = stockCostVND > 0 ? (diffVND / stockCostVND) * 100 : 0;
         const sign = diffVND >= 0 ? '+' : '';
         elStockNote.className = 'sub-card-note ' + (diffVND >= 0 ? 'pos' : 'neg');
-        const diffM = Math.abs(diffVND) >= 1000000 ? (Math.abs(diffVND) / 1000000).toFixed(1) + 'tr' : Math.round(Math.abs(diffVND)).toLocaleString('vi-VN');
+        const diffM = window.isPrivacyMode ? '••••' : (Math.abs(diffVND) >= 1000000 ? (Math.abs(diffVND) / 1000000).toFixed(1) + 'tr' : Math.round(Math.abs(diffVND)).toLocaleString('vi-VN'));
         elStockNote.textContent = `${sign}${pct.toFixed(1)}% (${sign}${diffM})`;
     }
 
@@ -896,7 +910,7 @@ window.renderPortfolio = function () {
         const pct = goldCostVND > 0 ? (diffVND / goldCostVND) * 100 : 0;
         const sign = diffVND >= 0 ? '+' : '';
         elGoldNote.className = 'sub-card-note ' + (diffVND >= 0 ? 'pos' : 'neg');
-        const diffM = Math.abs(diffVND) >= 1000000 ? (Math.abs(diffVND) / 1000000).toFixed(1) + 'tr' : Math.round(Math.abs(diffVND)).toLocaleString('vi-VN');
+        const diffM = window.isPrivacyMode ? '••••' : (Math.abs(diffVND) >= 1000000 ? (Math.abs(diffVND) / 1000000).toFixed(1) + 'tr' : Math.round(Math.abs(diffVND)).toLocaleString('vi-VN'));
         elGoldNote.textContent = `${sign}${pct.toFixed(1)}% (${sign}${diffM})`;
     }
 
@@ -1104,7 +1118,7 @@ window.renderPortfolio = function () {
                                 <div class="asset-val-main">${fmtDisplayCur(c.valInDisplay)}</div>
                                 <div class="asset-pnl-chip ${isPos ? 'pos' : 'neg'}">
                                     <i class="icon-svg" data-lucide="${isPos ? 'trending-up' : 'trending-down'}"></i>
-                                    <span>${sign}${pct.toFixed(2)}% (${usdSign}${Math.abs(diff).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
+                                    <span>${sign}${pct.toFixed(2)}% (${window.isPrivacyMode ? '••••••••' : usdSign + Math.abs(diff).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
                                 </div>
                             </div>
                             <div class="asset-actions-block">
@@ -1144,13 +1158,13 @@ window.renderPortfolio = function () {
                                     <span class="asset-symbol-strong">${escapeHtml(s.symbol)}</span>
                                     <span class="asset-name-muted">${escapeHtml(cleanName)}</span>
                                     <span class="asset-price-pill" title="Thị giá thời gian thực (DNSE)">
-                                        ${Number(s.current_price).toLocaleString('vi-VN')} ₫
+                                        ${window.isPrivacyMode ? '••••••••' : Number(s.current_price).toLocaleString('vi-VN') + ' ₫'}
                                     </span>
                                 </div>
                                 <div class="asset-meta-line">
-                                    <span>Khối lượng: <strong>${Number(s.amount).toLocaleString('vi-VN')} CP</strong></span>
+                                    <span>Khối lượng: <strong>${window.isPrivacyMode ? '••••' : Number(s.amount).toLocaleString('vi-VN') + ' CP'}</strong></span>
                                     <span class="meta-dot">•</span>
-                                    <span>Giá vốn: <strong>${Number(s.buy_price).toLocaleString('vi-VN')} ₫</strong></span>
+                                    <span>Giá vốn: <strong>${window.isPrivacyMode ? '••••••••' : Number(s.buy_price).toLocaleString('vi-VN') + ' ₫'}</strong></span>
                                 </div>
                             </div>
                         </div>
@@ -1159,7 +1173,7 @@ window.renderPortfolio = function () {
                                 <div class="asset-val-main">${fmtDisplayCur(s.valInDisplay)}</div>
                                 <div class="asset-pnl-chip ${isPos ? 'pos' : 'neg'}">
                                     <i class="icon-svg" data-lucide="${isPos ? 'trending-up' : 'trending-down'}"></i>
-                                    <span>${sign}${pct.toFixed(2)}% (${sign}${diff.toLocaleString('vi-VN')} ₫)</span>
+                                    <span>${sign}${pct.toFixed(2)}% (${window.isPrivacyMode ? '••••••••' : sign + diff.toLocaleString('vi-VN') + ' ₫'})</span>
                                 </div>
                             </div>
                             <div class="asset-actions-block">
@@ -2631,7 +2645,7 @@ window.renderDebtNotes = function () {
                             ${dueBadge}
                         </div>
                         <div class="asset-meta-line">
-                            <span>Số tiền gốc: <strong>${amt.toLocaleString('vi-VN')} ${cur}</strong></span>
+                            <span>Số tiền gốc: <strong>${window.isPrivacyMode ? '••••••••' : amt.toLocaleString('vi-VN') + ' ' + cur}</strong></span>
                             ${dateFormatted ? `<span class="meta-dot">•</span><span>Ngày vay: <strong>${dateFormatted}</strong></span>` : ''}
                         </div>
                         ${item.note ? `<div class="debt-note-text"><i class="icon-svg" data-lucide="quote"></i> ${escapeHtml(item.note)}</div>` : ''}
