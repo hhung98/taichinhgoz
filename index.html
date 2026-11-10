@@ -253,17 +253,17 @@
                             <div class="conv-field">
                                 <label>Won (KRW)</label>
                                 <input type="text" inputmode="numeric" id="krwInput" placeholder="0" value=""
-                                    oninput="formatInputLive(this); convertFromKRW()">
+                                    oninput="formatInputLive(this); convertFromKRW()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </div>
                             <div class="conv-field">
                                 <label>Đồng (VND)</label>
                                 <input type="text" inputmode="numeric" id="vndInput" placeholder="0" value=""
-                                    oninput="formatInputLive(this); convertFromVND()">
+                                    oninput="formatInputLive(this); convertFromVND()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </div>
                             <div class="conv-field">
                                 <label>USD ($)</label>
                                 <input type="text" inputmode="numeric" id="usdInput" placeholder="0" value=""
-                                    oninput="formatInputLive(this); convertFromUSD()">
+                                    oninput="formatInputLive(this); convertFromUSD()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </div>
                         </div>
                         <div class="converter-sync-result" id="converterResult">Nhập số tiền để quy đổi</div>
@@ -447,7 +447,7 @@
                         <div class="goal-form" id="goalForm">
                             <div class="goal-field">
                                 <span>Tên mục tiêu</span>
-                                <input type="text" id="goalName" placeholder="VD: Mua laptop" class="goal-input">
+                                <input type="text" id="goalName" placeholder="VD: Mua laptop" class="goal-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </div>
                             <div class="goal-field goal-amount-wrapper">
                                 <span>Số tiền</span>
@@ -458,14 +458,14 @@
                                     </select>
                                     <input type="text" inputmode="numeric" id="goalAmount" placeholder="Số tiền"
                                         class="goal-input goal-amount-input"
-                                        oninput="formatInputLive(this); previewGoalVND()">
+                                        oninput="formatInputLive(this); previewGoalVND()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                                 </div>
                                 <span class="goal-vnd-preview" id="goalVndPreview"></span>
                             </div>
                             <div class="goal-field goal-month-field">
                                 <span>Thời hạn (tùy chọn)</span>
                                 <input type="number" id="goalMonths" placeholder="Số tháng (tùy chọn)"
-                                    class="goal-input" min="1" max="120">
+                                    class="goal-input" min="1" max="120" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </div>
                             <div class="goal-field goal-btn-field">
                                 <button onclick="addSavingsGoal()" class="goal-add-btn"><i class="icon-svg"
@@ -564,7 +564,7 @@
                     <div class="asset-search-box">
                         <i class="icon-svg" data-lucide="search"></i>
                         <input type="text" id="assetSearchInput" placeholder="Tìm tài sản (BTC, FPT, Tiền mặt...)"
-                            oninput="filterAndSortAssets()">
+                            oninput="filterAndSortAssets()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <button type="button" class="btn-clear-search" id="assetSearchClearBtn"
                             onclick="clearAssetSearch()" style="display:none;" title="Xóa tìm kiếm">✕</button>
                     </div>
@@ -1013,7 +1013,7 @@
                     </div>
                     <div class="ratio-item-input-box">
                         <input type="number" id="inputLivingPct" min="0" max="100" class="ratio-num-field"
-                            oninput="onRatioInputsChange()">
+                            oninput="onRatioInputsChange()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <span class="ratio-unit">%</span>
                     </div>
                 </div>
@@ -1024,7 +1024,7 @@
                     </div>
                     <div class="ratio-item-input-box">
                         <input type="number" id="inputReservePct" min="0" max="100" class="ratio-num-field"
-                            oninput="onRatioInputsChange()">
+                            oninput="onRatioInputsChange()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <span class="ratio-unit">%</span>
                     </div>
                 </div>
@@ -1035,7 +1035,7 @@
                     </div>
                     <div class="ratio-item-input-box">
                         <input type="number" id="inputInvestPct" min="0" max="100" class="ratio-num-field"
-                            oninput="onRatioInputsChange()">
+                            oninput="onRatioInputsChange()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <span class="ratio-unit">%</span>
                     </div>
                 </div>
@@ -1092,18 +1092,18 @@
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Số lượng nắm giữ</span>
                     <input type="number" step="any" min="0" id="inputCryptoAmount" placeholder="VD: 0.085"
-                        class="asset-text-field" oninput="calcCryptoModalPreview()">
+                        class="asset-text-field" oninput="calcCryptoModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Giá mua TB ($ USD)</span>
                     <input type="number" step="any" min="0" id="inputCryptoBuyPrice" placeholder="VD: 62500"
-                        class="asset-text-field" oninput="calcCryptoModalPreview()">
+                        class="asset-text-field" oninput="calcCryptoModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Giá hiện tại ($ USD)</span>
                     <div class="input-with-action">
                         <input type="number" step="any" min="0" id="inputCryptoCurrentPrice" placeholder="VD: 76681"
-                            class="asset-text-field" oninput="calcCryptoModalPreview()">
+                            class="asset-text-field" oninput="calcCryptoModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <button type="button" class="btn-fetch-price" onclick="fetchLiveCryptoPriceForModal()"
                             title="Lấy giá live"><i class="icon-svg" data-lucide="refresh-cw"></i></button>
                     </div>
@@ -1152,27 +1152,27 @@
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Mã cổ phiếu</span>
                     <input type="text" id="inputStockSymbol" placeholder="VD: FPT, HPG..." class="asset-text-field"
-                        oninput="onStockSymbolChange(this.value)">
+                        oninput="onStockSymbolChange(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Tên doanh nghiệp</span>
-                    <input type="text" id="inputStockName" placeholder="VD: Tập đoàn FPT" class="asset-text-field">
+                    <input type="text" id="inputStockName" placeholder="VD: Tập đoàn FPT" class="asset-text-field" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Khối lượng (CP)</span>
                     <input type="number" min="1" id="inputStockAmount" placeholder="VD: 680" class="asset-text-field"
-                        oninput="calcStockModalPreview()">
+                        oninput="calcStockModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Giá vốn / Giá mua (₫)</span>
                     <input type="number" min="0" id="inputStockBuyPrice" placeholder="VD: 125000"
-                        class="asset-text-field" oninput="calcStockModalPreview()">
+                        class="asset-text-field" oninput="calcStockModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Giá thị trường hiện tại (₫)</span>
                     <div class="input-with-action">
                         <input type="number" min="0" id="inputStockCurrentPrice" placeholder="VD: 58200"
-                            class="asset-text-field" oninput="calcStockModalPreview()">
+                            class="asset-text-field" oninput="calcStockModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <button type="button" class="btn-fetch-price" onclick="fetchLiveStockPriceForModal()"
                             title="Lấy giá live"><i class="icon-svg" data-lucide="refresh-cw"></i></button>
                     </div>
@@ -1206,7 +1206,7 @@
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Tên tài khoản / Ngân hàng</span>
                     <input type="text" id="inputCashName" placeholder="VD: Shinhan Bank, Techcombank, Tiền mặt..."
-                        class="asset-text-field">
+                        class="asset-text-field" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Loại tiền tệ</span>
@@ -1219,7 +1219,7 @@
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Số dư hiện có</span>
                     <input type="number" min="0" step="any" id="inputCashAmount" placeholder="VD: 5000000"
-                        class="asset-text-field">
+                        class="asset-text-field" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
             </div>
             <input type="hidden" id="editingCashId" value="">
@@ -1272,7 +1272,7 @@
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Tên hiển thị</span>
                     <input type="text" id="inputGoldName" placeholder="VD: Vàng miếng SJC 9999"
-                        class="asset-text-field">
+                        class="asset-text-field" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Đơn vị tính</span>
@@ -1285,18 +1285,18 @@
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Số lượng nắm giữ</span>
                     <input type="number" step="any" min="0" id="inputGoldAmount" placeholder="VD: 5"
-                        class="asset-text-field" oninput="calcGoldModalPreview()">
+                        class="asset-text-field" oninput="calcGoldModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Giá mua vốn (₫)</span>
                     <input type="number" step="any" min="0" id="inputGoldBuyPrice" placeholder="VD: 13800000"
-                        class="asset-text-field" oninput="calcGoldModalPreview()">
+                        class="asset-text-field" oninput="calcGoldModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Giá thị trường (₫)</span>
                     <div class="input-with-action">
                         <input type="number" step="any" min="0" id="inputGoldCurrentPrice" placeholder="VD: 14240000"
-                            class="asset-text-field" oninput="calcGoldModalPreview()">
+                            class="asset-text-field" oninput="calcGoldModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <button type="button" class="btn-fetch-price" onclick="fetchLiveGoldPriceForModal()"
                             title="Lấy giá live thị trường Việt Nam"><i class="icon-svg"
                                 data-lucide="refresh-cw"></i></button>
@@ -1349,7 +1349,7 @@
                 <!-- Tên người / Bên liên quan -->
                 <div class="ratio-item-row">
                     <span class="asset-field-label" id="labelDebtPerson">Người vay</span>
-                    <input type="text" id="inputDebtPerson" placeholder="" class="asset-text-field" required>
+                    <input type="text" id="inputDebtPerson" placeholder="" class="asset-text-field" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
 
                 <!-- Số tiền & Tiền tệ -->
@@ -1357,7 +1357,7 @@
                     <span class="asset-field-label">Số tiền</span>
                     <div style="display:flex; gap:8px; width:100%;">
                         <input type="number" min="0" step="any" id="inputDebtAmount" placeholder=""
-                            class="asset-text-field" style="flex:1;" oninput="calcDebtModalPreview()">
+                            class="asset-text-field" style="flex:1;" oninput="calcDebtModalPreview()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <div class="debt-currency-dropdown" id="debtCurrencyDropdown">
                             <button type="button" class="debt-currency-trigger" id="debtCurrencyTrigger"
                                 onclick="toggleDebtCurrencyDropdown()" aria-expanded="false">
@@ -1389,11 +1389,11 @@
                 <!-- Ngày ghi nhận & Hạn hoàn trả -->
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Ngày ghi nhận</span>
-                    <input type="date" id="inputDebtDate" class="asset-text-field">
+                    <input type="date" id="inputDebtDate" class="asset-text-field" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="ratio-item-row">
                     <span class="asset-field-label">Hạn hoàn trả</span>
-                    <input type="date" id="inputDebtDueDate" class="asset-text-field" placeholder="">
+                    <input type="date" id="inputDebtDueDate" class="asset-text-field" placeholder="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
 
                 <!-- Trạng thái hoàn trả -->

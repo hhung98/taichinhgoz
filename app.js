@@ -1828,13 +1828,13 @@ function renderMonthlyBudgetTable() {
 
         rows += `<tr class="budget-month-row${isCurrent ? ' current-month-row' : ''}">
             <td>${MONTHS[m]}</td>
-            <td><input class="income-input" type="text" inputmode="numeric" value="${incVal}" placeholder="₩" oninput="formatInputLive(this); onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
+            <td><input class="income-input" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" value="${incVal}" placeholder="₩" oninput="formatInputLive(this); onIncomeInput(${m},this.value)" onfocus="this.select()"></td>
             <td class="cell-living">${inc ? fmtFull(living) : '-'}</td>
             <td class="cell-reserve">${reserveDisplay}</td>
             <td class="cell-invest">${investDisplay}</td>
             <td>
                 <div class="expense-cell-container">
-                    <input class="expense-input" type="text" inputmode="numeric" value="${expVal}" placeholder="₩" oninput="formatInputLive(this); onExpenseInput(${m},this.value)" onfocus="this.select()">
+                    <input class="expense-input" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" value="${expVal}" placeholder="₩" oninput="formatInputLive(this); onExpenseInput(${m},this.value)" onfocus="this.select()">
                     ${expBadge}
                 </div>
             </td>
@@ -4032,3 +4032,16 @@ function initReactBitsSuite() {
     }
 }
 initReactBitsSuite();
+
+
+// ===== Disable Browser Autocomplete Suggestions Globally =====
+document.addEventListener('focusin', (e) => {
+    if (e.target && e.target.tagName === 'INPUT' && e.target.type !== 'hidden' && e.target.type !== 'password') {
+        if (!e.target.hasAttribute('autocomplete')) {
+            e.target.setAttribute('autocomplete', 'off');
+        }
+        e.target.setAttribute('autocorrect', 'off');
+        e.target.setAttribute('autocapitalize', 'off');
+        e.target.setAttribute('spellcheck', 'false');
+    }
+}, true);
